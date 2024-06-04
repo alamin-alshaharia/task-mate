@@ -8,6 +8,8 @@ import 'package:flutter_task_planner_app/widgets/task_column.dart';
 import 'package:flutter_task_planner_app/widgets/active_project_card.dart';
 import 'package:flutter_task_planner_app/widgets/top_container.dart';
 
+import '../notes_taker/screens/search_screen.dart';
+
 class HomePage extends StatelessWidget {
   Text subheading(String title) {
     return Text(
@@ -49,8 +51,7 @@ class HomePage extends StatelessWidget {
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Icon(Icons.menu,
-                            color: LightColors.kDarkBlue, size: 30.0),
+                        IconButton(onPressed:,icon: Icon(Icons.menu),color:LightColors.kDarkBlue, iconSize: 25.0,)
                         Icon(Icons.search,
                             color: LightColors.kDarkBlue, size: 25.0),
                       ],

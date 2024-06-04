@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "495363110160",
+    "project_id": "todo-app-5cb2b",
+    "storage_bucket": "todo-app-5cb2b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:495363110160:android:d08339572fb8fb19f16195",
+        "android_client_info": {
+          "package_name": "com.example.flutter_task_planner_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTVOrbCGCCBe50Y97nVYm6NyHufQZgJkM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
