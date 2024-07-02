@@ -48,10 +48,15 @@ class HomePage extends StatelessWidget {
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        IconButton(onPressed:,icon: Icon(Icons.menu),color:LightColors.kDarkBlue, iconSize: 25.0,)
+                        IconButton(
+                          onPressed: () {},
+                          icon: Icon(Icons.menu),
+                          color: LightColors.kDarkBlue,
+                          iconSize: 25.0,
+                        ),
                         Icon(Icons.search,
                             color: LightColors.kDarkBlue, size: 25.0),
                       ],
@@ -84,7 +89,7 @@ class HomePage extends StatelessWidget {
                             children: <Widget>[
                               Container(
                                 child: const Text(
-                                  'Shaharia',
+                                  'Welcome',
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontSize: 22.0,
@@ -95,7 +100,7 @@ class HomePage extends StatelessWidget {
                               ),
                               Container(
                                 child: const Text(
-                                  'App Developer',
+                                  'To TaskMate',
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontSize: 16.0,
@@ -129,7 +134,7 @@ class HomePage extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (context) => Homenote(),
                           )),
-                      child: Text("Event Manager"))
+                      child: Text("Note  Manager"))
                 ],
               ),
             ),

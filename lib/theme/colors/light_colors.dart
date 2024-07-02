@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class LightColors  {
+class LightColors {
   static const Color kLightYellow = Color(0xFFFFF9EC);
   static const Color kLightYellow2 = Color(0xFFFFE4C7);
   static const Color kDarkYellow = Color(0xFFF9BE7C);
@@ -13,4 +13,12 @@ class LightColors  {
   static const Color kGreen = Color(0xFF309397);
 
   static const Color kDarkBlue = Color(0xFF0D253F);
+  static const LinearGradient kRedlyGradiant = LinearGradient(colors: [
+    Color(0xFFF73B0F),
+    Color(0xFFF07D42),
+  ]);
+  static const LinearGradient kDeepRedlyGradiant = LinearGradient(colors: [
+    Color(0xFFFF8F01),
+    Color(0xFFFF0000),
+  ]);
 }

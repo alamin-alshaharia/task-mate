@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_task_planner_app/screens/home_page.dart';
-import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get_navigation/get_navigation.dart';
+import 'package:flutter_task_planner_app/screens/auth/WelcomeScreen.dart';
+import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:get/get.dart';
+import 'package:get/get_navigation/get_navigation.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
             displayColor: LightColors.kDarkBlue,
             fontFamily: 'Poppins'),
       ),
-      home: HomePage(),
+      home: WelcomeScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
