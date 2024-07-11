@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/screens/auth/regScreen.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
+import 'package:simple_gradient_text/simple_gradient_text.dart';
 
 import 'loginScreen.dart';
 
@@ -16,15 +17,20 @@ class WelcomeScreen extends StatelessWidget {
         decoration:
             const BoxDecoration(gradient: LightColors.kDeepRedlyGradiant),
         child: Column(children: [
-          const Padding(
-              padding: EdgeInsets.only(top: 210.0),
-              child: Text(
-                "TaskMate",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 43,
-                    fontWeight: FontWeight.bold),
-              )),
+          Padding(
+            padding: const EdgeInsets.only(top: 210.0),
+            child: GradientText(
+              'TaskMate',
+              style: const TextStyle(
+                fontSize: 40.0,
+              ),
+              colors: const [
+                Colors.amberAccent,
+                Colors.lightBlueAccent,
+                Colors.indigo,
+              ],
+            ),
+          ),
           const SizedBox(
             height: 110,
           ),
@@ -91,9 +97,9 @@ class WelcomeScreen extends StatelessWidget {
             style: TextStyle(fontSize: 17, color: Colors.white),
           ), //
           const SizedBox(
-            height: 12,
+            height: 20,
           ),
-          const Image(image: AssetImage('assets/google.png'))
+          // const Image(image: AssetImage('assets/google.png'),)
         ]),
       ),
     );

@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:flutter_task_planner_app/widgets/top_container.dart';
 import 'package:flutter_task_planner_app/widgets/back_button.dart';
 import 'package:flutter_task_planner_app/widgets/my_text_field.dart';
 import 'package:flutter_task_planner_app/screens/home_page.dart';
+import 'package:intl/intl.dart';
 
 class CreateNewTaskPage extends StatelessWidget {
   @override
@@ -48,11 +50,14 @@ class CreateNewTaskPage extends StatelessWidget {
                         children: <Widget>[
                           Expanded(
                             child: MyTextField(
-                              label: 'Date',
-                              icon: downwardIcon,
-                            ),
+                                ontap: () async {},
+                                textController: TextEditingController(
+                                    text: DateFormat.yMMMd()
+                                        .format(DateTime.now())),
+                                label: "Date",
+                                icon: downwardIcon),
                           ),
-                          HomePage.calendarIcon(),
+                          InkWell(onTap: () {}, child: HomePage.calendarIcon()),
                         ],
                       )
                     ],
@@ -71,13 +76,19 @@ class CreateNewTaskPage extends StatelessWidget {
                       Expanded(
                           child: MyTextField(
                         label: 'Start Time',
-                        icon: downwardIcon,
+                        icon: Icon(
+                          Icons.access_time_outlined,
+                          color: Colors.black26,
+                        ),
                       )),
                       SizedBox(width: 40),
                       Expanded(
                         child: MyTextField(
                           label: 'End Time',
-                          icon: downwardIcon,
+                          icon: Icon(
+                            Icons.access_time_outlined,
+                            color: Colors.black26,
+                          ),
                         ),
                       ),
                     ],
@@ -141,20 +152,23 @@ class CreateNewTaskPage extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Container(
-                    child: Text(
-                      'Create Task',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18),
-                    ),
-                    alignment: Alignment.center,
-                    margin: EdgeInsets.fromLTRB(20, 10, 20, 20),
-                    width: width - 40,
-                    decoration: BoxDecoration(
-                      color: LightColors.kBlue,
-                      borderRadius: BorderRadius.circular(30),
+                  InkWell(
+                    onTap: () async {},
+                    child: Container(
+                      child: Text(
+                        'Create Task',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18),
+                      ),
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.fromLTRB(20, 10, 20, 20),
+                      width: width - 40,
+                      decoration: BoxDecoration(
+                        color: Colors.lightBlueAccent,
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                     ),
                   ),
                 ],

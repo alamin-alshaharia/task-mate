@@ -1,14 +1,32 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_task_planner_app/notes_taker/screens/home_page.dart';
+import 'package:flutter_task_planner_app/screens/auth/loginScreen.dart';
+import 'package:flutter_task_planner_app/screens/home_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 
-class RegScreen extends StatelessWidget {
+import 'component/radiobutton.dart';
+import 'constant.dart';
+
+class RegScreen extends StatefulWidget {
   const RegScreen({Key? key}) : super(key: key);
 
   @override
+  State<RegScreen> createState() => _RegScreenState();
+}
+
+class _RegScreenState extends State<RegScreen> {
+  @override
+  final GlobalKey<FormState> _signinKey = GlobalKey<FormState>();
+  final RegExp emailValidate = RegExp(
+      r"^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$");
+  final _auth = FirebaseAuth.instance;
+  bool showSpinner = false;
+  late String email;
+  late String password;
   Widget build(BuildContext context) {
     return Scaffold(
         body: Stack(
-      //thanks for watching
       children: [
         Container(
           height: double.infinity,
@@ -36,115 +54,149 @@ class RegScreen extends StatelessWidget {
             height: double.infinity,
             width: double.infinity,
             child: Padding(
-              padding: const EdgeInsets.only(left: 18.0, right: 18),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const TextField(
-                    decoration: InputDecoration(
-                        suffixIcon: Icon(
-                          Icons.check,
-                          color: Colors.grey,
-                        ),
-                        label: Text(
-                          'Full Name',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xffB81736),
-                          ),
-                        )),
-                  ),
-                  const TextField(
-                    decoration: InputDecoration(
-                        suffixIcon: Icon(
-                          Icons.check,
-                          color: Colors.grey,
-                        ),
-                        label: Text(
-                          'Phone or Gmail',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xffB81736),
-                          ),
-                        )),
-                  ),
-                  const TextField(
-                    decoration: InputDecoration(
-                        suffixIcon: Icon(
-                          Icons.visibility_off,
-                          color: Colors.grey,
-                        ),
-                        label: Text(
-                          'Password',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xffB81736),
-                          ),
-                        )),
-                  ),
-                  const TextField(
-                    decoration: InputDecoration(
-                        suffixIcon: Icon(
-                          Icons.visibility_off,
-                          color: Colors.grey,
-                        ),
-                        label: Text(
-                          'Conform Password',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xffB81736),
-                          ),
-                        )),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  const SizedBox(
-                    height: 70,
-                  ),
-                  Container(
-                    height: 55,
-                    width: 300,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        gradient: LightColors.kDeepRedlyGradiant),
-                    child: const Center(
-                      child: Text(
-                        'SIGN IN',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                            color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 80,
-                  ),
-                  const Align(
-                    alignment: Alignment.bottomRight,
+              padding: const EdgeInsets.fromLTRB(0, 170, 0, 0),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 18.0, right: 18),
+                  child: Form(
+                    key: _signinKey,
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          "Don't have account?",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.grey),
+                        TextFormField(
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "please enter your email";
+                            } else if (!emailValidate.hasMatch(value)) {
+                              return "please enter a valid email";
+                            }
+                            return null;
+                          },
+                          keyboardType: TextInputType.emailAddress,
+                          textAlign: TextAlign.center,
+                          onChanged: (value) {
+                            email = value;
+                          },
+                          decoration: kTextFieldDecoration.copyWith(
+                              hintText: 'Enter your email'),
                         ),
-                        Text(
-                          "Sign up",
-                          style: TextStyle(
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        TextFormField(
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "please enter your password";
+                            }
+                            if (password.length < 6) {
+                              return "password must be  at least 6 characters";
+                            }
+                            return null;
+                          },
+                          obscureText: true,
+                          textAlign: TextAlign.center,
+                          onChanged: (value) {
+                            password = value;
+                          },
+                          decoration: kTextFieldDecoration.copyWith(
+                              hintText: 'Enter your password'),
+                        ),
 
-                              ///done login page
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                              color: Colors.black),
+                        const SizedBox(
+                          height: 70,
                         ),
+                        RoundedButton(
+                            widget: showSpinner
+                                ? const CircularProgressIndicator(
+                                    color: Colors.amberAccent,
+                                    strokeWidth: 7,
+                                  )
+                                : const Text("Register"),
+                            colour: Colors.blueAccent,
+                            onPressed: () async {
+                              if (_signinKey.currentState!.validate()) {
+                                setState(() {
+                                  showSpinner = true;
+                                });
+                                try {
+                                  final newUser = await _auth
+                                      .createUserWithEmailAndPassword(
+                                          email: email, password: password);
+                                  if (newUser != null) {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => HomePage(),
+                                        ));
+                                  }
+
+                                  setState(() {
+                                    showSpinner = false;
+                                  });
+                                } catch (e) {
+                                  final snakbar =
+                                      SnackBar(content: Text(e.toString()));
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(snakbar);
+                                }
+                              }
+                            }),
+                        // Container(
+                        //   height: 55,
+                        //   width: 300,
+                        //   decoration: BoxDecoration(
+                        //       borderRadius: BorderRadius.circular(30),
+                        //       gradient: LightColors.kDeepRedlyGradiant),
+                        //   child: const Center(
+                        //     child: Text(
+                        //       'SIGN IN',
+                        //       style: TextStyle(
+                        //           fontWeight: FontWeight.bold,
+                        //           fontSize: 20,
+                        //           color: Colors.white),
+                        //     ),
+                        //   ),
+                        // ),
+                        const SizedBox(
+                          height: 80,
+                        ),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text(
+                                " Have an account?",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const loginScreen()));
+                                },
+                                child: const Text(
+                                  "Sign in",
+                                  style: TextStyle(
+
+                                      ///done login page
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17,
+                                      color: Colors.black),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
                       ],
                     ),
-                  )
-                ],
+                  ),
+                ),
               ),
             ),
           ),

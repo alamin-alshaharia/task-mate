@@ -5,6 +5,7 @@ plugins {
     // END: FlutterFire Configuration
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
+
 }
 
 def localProperties = new Properties()
@@ -67,4 +68,10 @@ flutter {
     source '../..'
 }
 
-dependencies {}
+dependencies {
+//    implementation(platform("com.google.firebase:firebase-bom:33.1.1"))
+//    implementation("com.google.firebase:firebase-analytics")
+
+
+
+}

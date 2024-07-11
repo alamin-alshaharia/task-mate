@@ -1,10 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_task_planner_app/screens/auth/auth_service.dart';
+import 'package:flutter_task_planner_app/screens/auth/regScreen.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../home_page.dart';
+import 'component/radiobutton.dart';
+import 'constant.dart';
 
-class loginScreen extends StatelessWidget {
+import 'package:flutter_task_planner_app/widgets/ButtonItem.dart';
+import 'package:flutter_task_planner_app/screens/auth/auth_service.dart';
+
+class loginScreen extends StatefulWidget {
   const loginScreen({Key? key}) : super(key: key);
+
+  @override
+  State<loginScreen> createState() => _loginScreenState();
+}
+
+class _loginScreenState extends State<loginScreen> {
+  bool showSpinner = false;
+  AuthClass authClass = AuthClass();
+  final _auth = FirebaseAuth.instance;
+  final GlobalKey<FormState> _signinKey = GlobalKey<FormState>();
+  final RegExp emailValidate = RegExp(
+      r"^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$");
+
+  late String email;
+
+  late String password;
 
   @override
   Widget build(BuildContext context) {
@@ -39,104 +63,183 @@ class loginScreen extends StatelessWidget {
             height: double.infinity,
             width: double.infinity,
             child: Padding(
-              padding: const EdgeInsets.only(left: 18.0, right: 18, top: 100),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const TextField(
-                    decoration: InputDecoration(
-                        suffixIcon: Icon(
-                          Icons.check,
-                          color: Colors.grey,
-                        ),
-                        label: Text(
-                          'Gmail',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xffB81736),
-                          ),
-                        )),
-                  ),
-                  const TextField(
-                    decoration: InputDecoration(
-                        suffixIcon: Icon(
-                          Icons.visibility_off,
-                          color: Colors.grey,
-                        ),
-                        label: Text(
-                          'Password',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xffB81736),
-                          ),
-                        )),
-                  ),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  const Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      'Forgot Password?',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17,
-                        color: Color(0xff281537),
+              padding: const EdgeInsets.only(left: 18.0, right: 18, top: 120),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _signinKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextFormField(
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "please enter your email";
+                          } else if (!emailValidate.hasMatch(value)) {
+                            return "please enter a valid email";
+                          }
+                          return null;
+                        },
+                        keyboardType: TextInputType.emailAddress,
+                        textAlign: TextAlign.center,
+                        onChanged: (value) {
+                          email = value;
+                        },
+                        decoration: kTextFieldDecoration.copyWith(
+                            hintText: 'Enter your email'),
                       ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 70,
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => HomePage()));
-                    },
-                    child: Container(
-                      height: 55,
-                      width: 300,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          gradient: LightColors.kDeepRedlyGradiant),
-                      child: const Center(
-                        child: Text(
-                          'SIGN IN',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Colors.white),
-                        ),
+                      const SizedBox(
+                        height: 8.0,
                       ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 120,
-                  ),
-                  const Align(
-                    alignment: Alignment.bottomRight,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          "Don't have account?",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.grey),
-                        ),
-                        Text(
-                          "Sign up",
-                          style: TextStyle(
 
-                              ///done login page
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                              color: Colors.black),
+                      TextFormField(
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "please enter your password";
+                          }
+                          if (password.length < 6) {
+                            return "password must be  at least 6 characters";
+                          }
+                          return null;
+                        },
+                        obscureText: true,
+                        textAlign: TextAlign.center,
+                        onChanged: (value) {
+                          password = value;
+                        },
+                        decoration: kTextFieldDecoration.copyWith(
+                            hintText: 'Enter your password'),
+                      ),
+                      const SizedBox(
+                        height: 30,
+                      ),
+                      ButtonItem(
+                          imagePath: "assets/google.svg",
+                          onClick: () => authClass.googleSignIn(context),
+                          text: "Continue with Google",
+                          iconData: null,
+                          size: 25),
+                      const SizedBox(
+                        height: 30,
+                      ),
+                      const Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          'Forgot Password?',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            color: Color(0xff281537),
+                          ),
                         ),
-                      ],
-                    ),
-                  )
-                ],
+                      ),
+                      const SizedBox(
+                        height: 60,
+                      ),
+                      RoundedButton(
+                          widget: showSpinner
+                              ? const CircularProgressIndicator(
+                                  color: Colors.amberAccent,
+                                  strokeWidth: 6,
+                                )
+                              : const Text(
+                                  "Signin",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                          colour: Colors.lightBlueAccent,
+                          onPressed: () async {
+                            if (_signinKey.currentState!.validate()) {
+                              setState(() {
+                                showSpinner = true;
+                              });
+                              try {
+                                final user =
+                                    await _auth.signInWithEmailAndPassword(
+                                        email: email, password: password);
+                                if (user != null) {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => HomePage()));
+                                }
+
+                                setState(() {
+                                  showSpinner = false;
+                                });
+                              } catch (e) {
+                                final snakbar =
+                                    SnackBar(content: Text(e.toString()));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snakbar);
+                                setState(() {
+                                  showSpinner = false;
+                                });
+                              }
+                            }
+                          }),
+
+                      // InkWell(
+                      //   onTap: () {
+                      //     Navigator.push(context,
+                      //         MaterialPageRoute(builder: (context) => HomePage()));
+                      //   },
+                      //   child: Container(
+                      //     height: 55,
+                      //     width: 300,
+                      //     decoration: BoxDecoration(
+                      //         borderRadius: BorderRadius.circular(30),
+                      //         gradient: LightColors.kDeepRedlyGradiant),
+                      //     child: const Center(
+                      //       child: Text(
+                      //         'SIGN IN',
+                      //         style: TextStyle(
+                      //             fontWeight: FontWeight.bold,
+                      //             fontSize: 20,
+                      //             color: Colors.white),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
+
+                      const SizedBox(
+                        height: 30,
+                      ),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text(
+                              "Don't have account?",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => RegScreen()));
+                              },
+                              child: const Text(
+                                "Sign up",
+                                style: TextStyle(
+
+                                    ///done login page
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 17,
+                                    color: Colors.black),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
               ),
             ),
           ),

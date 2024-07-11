@@ -1,3 +1,4 @@
+import 'package:date_picker_timeline/date_picker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/dates_list.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_task_planner_app/widgets/calendar_dates.dart';
 import 'package:flutter_task_planner_app/widgets/task_container.dart';
 import 'package:flutter_task_planner_app/screens/create_new_task_page.dart';
 import 'package:flutter_task_planner_app/widgets/back_button.dart';
+import 'package:intl/intl.dart';
 
 class CalendarPage extends StatelessWidget {
   Widget _dashedText() {
@@ -76,7 +78,7 @@ class CalendarPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'Productive Day, Sourav',
+                    'Productive Day',
                     style: TextStyle(
                       fontSize: 18.0,
                       color: Colors.grey,
@@ -89,25 +91,22 @@ class CalendarPage extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'April, 2020',
+                  DateFormat.yMMMd().format(DateTime.now()),
                   style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20),
                 ),
               ),
               SizedBox(height: 20.0),
               Container(
-                height: 58.0,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: days.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return CalendarDates(
-                      day: days[index],
-                      date: dates[index],
-                      dayColor: index == 0 ? LightColors.kRed : Colors.black54,
-                      dateColor:
-                          index == 0 ? LightColors.kRed : LightColors.kDarkBlue,
-                    );
-                  },
+                decoration: BoxDecoration(
+                    color: Colors.white54,
+                    borderRadius: BorderRadius.all(Radius.circular(10))),
+                child: DatePicker(
+                  DateTime.now(),
+                  initialSelectedDate: DateTime.now(),
+                  selectionColor: LightColors.kDarkBlue,
+                  height: 100,
+                  width: 80,
+                  selectedTextColor: Colors.white,
                 ),
               ),
               Expanded(
