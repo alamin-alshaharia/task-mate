@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class MyTextField extends StatelessWidget {
@@ -20,6 +22,7 @@ class MyTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       child: TextField(
+        onTap: ontap,
         controller: textController,
         readOnly: icon == null ? false : true,
         style: TextStyle(color: Colors.black),
@@ -28,7 +31,8 @@ class MyTextField extends StatelessWidget {
         decoration: InputDecoration(
           suffixIcon: icon == null ? null : icon,
           labelText: label,
-          labelStyle: TextStyle(color: Colors.black54),
+          labelStyle:
+              TextStyle(color: Colors.black54, fontWeight: FontWeight.w500),
           focusedBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: Colors.lightBlueAccent)),
           border: UnderlineInputBorder(
@@ -38,4 +42,13 @@ class MyTextField extends StatelessWidget {
       ),
     );
   }
+}
+
+_getDate(context) async {
+  DateTime? pickDate = await showDatePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2125),
+      initialDate: DateTime.now());
+  if (pickDate != null) {}
 }

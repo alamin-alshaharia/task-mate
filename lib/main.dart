@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
             displayColor: LightColors.kDarkBlue,
             fontFamily: 'Poppins'),
       ),
-      home: CreateNewTaskPage(),
+      home: WelcomeScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -6,7 +6,12 @@ import 'package:flutter_task_planner_app/widgets/calendar_dates.dart';
 import 'package:flutter_task_planner_app/widgets/task_container.dart';
 import 'package:flutter_task_planner_app/screens/create_new_task_page.dart';
 import 'package:flutter_task_planner_app/widgets/back_button.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+
+import '../task_model.dart';
+import '../widgets/ButtonItem.dart';
+import 'Tesktile.dart';
 
 class CalendarPage extends StatelessWidget {
   Widget _dashedText() {
@@ -78,7 +83,7 @@ class CalendarPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'Productive Day',
+                    'Productive Day,User.',
                     style: TextStyle(
                       fontSize: 18.0,
                       color: Colors.grey,
@@ -96,6 +101,7 @@ class CalendarPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20.0),
+              // TaskTile(),
               Container(
                 decoration: BoxDecoration(
                     color: Colors.white54,
@@ -186,5 +192,36 @@ class CalendarPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  _showBootomSheet(BuildContext, Task task) {
+    Get.bottomSheet(Container(
+      padding: const EdgeInsets.only(top: 4),
+      height: task.isCompleted == 1
+          ? MediaQuery.of(context).size.height * .24
+          : MediaQuery.of(context).size.height * .24,
+      child: Column(
+        children: [
+          Container(
+            height: 6,
+            width: 120,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+          ),
+          ButtonItem(
+              imagePath: "assets/google.svg",
+              onClick: () {},
+              text: "Continue with Google",
+              iconData: null,
+              size: 25),
+          ButtonItem(
+            imagePath: "assets/google.svg",
+            text: "Continue with Google",
+            iconData: null,
+            size: 25,
+            onClick: () {},
+          ),
+        ],
+      ),
+    ));
   }
 }

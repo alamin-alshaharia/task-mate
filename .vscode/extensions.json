@@ -1,5 +1,6 @@
 {
      "recommendations": [
-          "blueneogeo.flutter-view-vscode"
+          "blueneogeo.flutter-view-vscode",
+          "braver.vscode-solarized"
      ]
 }

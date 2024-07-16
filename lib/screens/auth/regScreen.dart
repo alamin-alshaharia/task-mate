@@ -1,10 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_task_planner_app/notes_taker/screens/home_page.dart';
+import 'package:flutter_task_planner_app/screens/auth/auth_service.dart';
 import 'package:flutter_task_planner_app/screens/auth/loginScreen.dart';
 import 'package:flutter_task_planner_app/screens/home_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
-
+import 'package:get/get.dart';
+import '../../widgets/ButtonItem.dart';
 import 'component/radiobutton.dart';
 import 'constant.dart';
 
@@ -18,6 +19,7 @@ class RegScreen extends StatefulWidget {
 class _RegScreenState extends State<RegScreen> {
   @override
   final GlobalKey<FormState> _signinKey = GlobalKey<FormState>();
+  AuthClass authClass = AuthClass();
   final RegExp emailValidate = RegExp(
       r"^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$");
   final _auth = FirebaseAuth.instance;
@@ -101,7 +103,15 @@ class _RegScreenState extends State<RegScreen> {
                           decoration: kTextFieldDecoration.copyWith(
                               hintText: 'Enter your password'),
                         ),
-
+                        const SizedBox(
+                          height: 30,
+                        ),
+                        ButtonItem(
+                            imagePath: "assets/google.svg",
+                            onClick: () => authClass.googleSignIn(context),
+                            text: "Continue with Google",
+                            iconData: null,
+                            size: 25),
                         const SizedBox(
                           height: 70,
                         ),
@@ -123,40 +133,23 @@ class _RegScreenState extends State<RegScreen> {
                                       .createUserWithEmailAndPassword(
                                           email: email, password: password);
                                   if (newUser != null) {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => HomePage(),
-                                        ));
+                                    Get.to(HomePage());
                                   }
 
                                   setState(() {
                                     showSpinner = false;
                                   });
                                 } catch (e) {
-                                  final snakbar =
-                                      SnackBar(content: Text(e.toString()));
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(snakbar);
+                                  Get.snackbar(
+                                    "Warning",
+                                    e.toString(),
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    backgroundColor: LightColors.kRed,
+                                    icon: Icon(Icons.warning_amber_rounded),
+                                  );
                                 }
                               }
                             }),
-                        // Container(
-                        //   height: 55,
-                        //   width: 300,
-                        //   decoration: BoxDecoration(
-                        //       borderRadius: BorderRadius.circular(30),
-                        //       gradient: LightColors.kDeepRedlyGradiant),
-                        //   child: const Center(
-                        //     child: Text(
-                        //       'SIGN IN',
-                        //       style: TextStyle(
-                        //           fontWeight: FontWeight.bold,
-                        //           fontSize: 20,
-                        //           color: Colors.white),
-                        //     ),
-                        //   ),
-                        // ),
                         const SizedBox(
                           height: 80,
                         ),
@@ -174,11 +167,7 @@ class _RegScreenState extends State<RegScreen> {
                               ),
                               InkWell(
                                 onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const loginScreen()));
+                                  Get.back();
                                 },
                                 child: const Text(
                                   "Sign in",

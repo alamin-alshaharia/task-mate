@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_task_planner_app/notes_taker/constants/colors.dart';
 
 class AlertDialogWidget extends StatelessWidget {
   final String headingText;
@@ -17,6 +18,7 @@ class AlertDialogWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      backgroundColor: AppColor.kDarkYellow,
       title: Text(
         headingText,
         textAlign: TextAlign.center,

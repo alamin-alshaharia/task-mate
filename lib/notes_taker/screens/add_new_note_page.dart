@@ -13,14 +13,15 @@ class AddNewNotePage extends StatelessWidget {
     controller.titleController.text = "";
     controller.contentController.text = "";
     return Scaffold(
+      backgroundColor: AppColor.kLightYellow,
       appBar: AppBar(
         title: const Text(
           "Add New Note",
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.black54,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColor.kLightYellow2,
         iconTheme: const IconThemeData(
           color: Colors.black,
         ),
@@ -95,7 +96,7 @@ class AddNewNotePage extends StatelessWidget {
         icon: const Icon(
           Icons.save,
         ),
-        backgroundColor: AppColor.buttonColor,
+        backgroundColor: AppColor.kDarkYellow,
       ),
     );
   }

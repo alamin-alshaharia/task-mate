@@ -11,14 +11,14 @@ class ButtonItem extends StatelessWidget {
 
   final String text;
   final String imagePath;
-  final Function onClick;
+  final void Function() onClick;
   final IconData? iconData;
   final double size;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: onClick,
       child: Container(
         height: 60,
         width: MediaQuery.of(context).size.width - 60,

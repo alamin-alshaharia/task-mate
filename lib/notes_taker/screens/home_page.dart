@@ -15,19 +15,20 @@ class Homenote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.kLightYellow,
       appBar: AppBar(
         centerTitle: true,
         title: const Text(
-          "Notely",
+          "Note",
           style: TextStyle(
-            color: Colors.black,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
+            color: Colors.blueGrey,
+            fontSize: 22,
+            fontWeight: FontWeight.w500,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColor.kLightYellow2,
         iconTheme: const IconThemeData(
-          color: Colors.black,
+          color: Colors.black45,
         ),
         actions: [
           IconButton(
@@ -78,9 +79,10 @@ class Homenote extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.push(context, new MaterialPageRoute(
-              builder: (context) => new AddNewNotePage())
-          );
+          Navigator.push(
+              context,
+              new MaterialPageRoute(
+                  builder: (context) => new AddNewNotePage()));
         },
         label: const Text(
           "Add new note",
@@ -94,7 +96,7 @@ class Homenote extends StatelessWidget {
         icon: const Icon(
           Icons.add,
         ),
-        backgroundColor: AppColor.buttonColor,
+        backgroundColor: AppColor.kDarkYellow,
       ),
     );
   }
@@ -138,7 +140,15 @@ class Homenote extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColor.grayColor,
+                    color: controller.notes[index].id == 1
+                        ? AppColor.kDarkYellow
+                        : controller.notes[index].id == 2
+                            ? AppColor.kPalePink
+                            : controller.notes[index].id == 3
+                                ? Colors.redAccent
+                                : (controller.notes[index].id)! % 2 == 0
+                                    ? AppColor.kDarkYellow
+                                    : AppColor.kPalePink,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   padding: const EdgeInsets.all(15),

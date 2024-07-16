@@ -3,6 +3,7 @@ import 'package:flutter_task_planner_app/screens/auth/auth_service.dart';
 import 'package:flutter_task_planner_app/screens/auth/regScreen.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../home_page.dart';
 import 'component/radiobutton.dart';
@@ -158,20 +159,20 @@ class _loginScreenState extends State<loginScreen> {
                                     await _auth.signInWithEmailAndPassword(
                                         email: email, password: password);
                                 if (user != null) {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => HomePage()));
+                                  Get.to(HomePage());
                                 }
 
                                 setState(() {
                                   showSpinner = false;
                                 });
                               } catch (e) {
-                                final snakbar =
-                                    SnackBar(content: Text(e.toString()));
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(snakbar);
+                                Get.snackbar(
+                                  "Warning",
+                                  e.toString(),
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  backgroundColor: LightColors.kRed,
+                                  icon: Icon(Icons.warning_amber_rounded),
+                                );
                                 setState(() {
                                   showSpinner = false;
                                 });
@@ -219,10 +220,7 @@ class _loginScreenState extends State<loginScreen> {
                             ),
                             InkWell(
                               onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => RegScreen()));
+                                Get.to(RegScreen());
                               },
                               child: const Text(
                                 "Sign up",

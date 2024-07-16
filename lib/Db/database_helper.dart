@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter_task_planner_app/notes_taker/model/note_model.dart';
+import 'package:flutter_task_planner_app/Tasks_taker/model/Task_model.dart';
+import 'package:flutter_task_planner_app/task_model.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -11,9 +12,9 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
   late Database _database;
 
-  static const _dbName = "notes.db";
+  static const _dbName = "Taskmate";
   static const _dbVersion = 1;
-  static const _tableName = "notes";
+  static const _tableName = "task";
 
   Future<Database> get database async {
     _database = await initiateDatabase();
@@ -31,61 +32,63 @@ class DatabaseHelper {
       CREATE TABLE $_tableName(
         id INTEGER PRIMARY KEY,
         title TEXT NOT NULL,
-        content TEXT NOT NULL,
-        dateTimeEdited TEXT NOT NULL,
-        dateTimeCreated TEXT NOT NULL,s
-        isFavorite INTEGER NOT NULL DEFAULT 0
+        description TEXT NOT NULL,
+        date TEXT NOT NULL,
+        startTime TEXT NOT NULL,
+        endTime TEXT NOT NULL,
+        color Created INTEGER  NOT NULL,
+        isComplete NOT NULL DEFAULT 0
       )
       ''');
   }
 
-  // Add Note
-  Future<int> addNote(Note note) async {
+  // Add Task
+  Future<int> addTask(Task task) async {
     Database db = await instance.database;
-    return await db.insert(_tableName, note.toJson());
+    return await db.insert(_tableName, Task.toJson());
   }
 
-  // Delete Note
-  Future<int> deleteNote(Note note) async {
+  // Delete Task
+  Future<int> deleteTask(Task task) async {
     Database db = await instance.database;
     return await db.delete(
       _tableName,
       where: "id = ?",
-      whereArgs: [note.id],
+      whereArgs: [Task.id],
     );
   }
 
-  // Delete All Notes
-  Future<int> deleteAllNotes() async {
+  // Delete All Tasks
+  Future<int> deleteAllTasks() async {
     Database db = await instance.database;
     return await db.delete(_tableName);
   }
 
-  // Update Note
-  Future<int> updateNote(Note note) async {
+  // Update Task
+  Future<int> updateTask(Task task) async {
     Database db = await instance.database;
     return await db.update(
       _tableName,
-      note.toJson(),
+      Task.toJson(),
       where: "id = ?",
-      whereArgs: [note.id],
+      whereArgs: [Task.id],
     );
   }
 
-  Future<List<Note>> getNoteList() async {
+  Future<List<Task>> getTaskList() async {
     Database db = await instance.database;
     final List<Map<String, dynamic>> maps =
         await db.query(_tableName, orderBy: 'dateTimeCreated DESC');
     return List.generate(
       maps.length,
       (index) {
-        return Note(
+        return Task(
           id: maps[index]["id"],
           title: maps[index]["title"],
-          content: maps[index]["content"],
-          dateTimeEdited: maps[index]["dateTimeEdited"],
-          dateTimeCreated: maps[index]["dateTimeCreated"],
-          isFavorite: maps[index]["isFavorite"] == 1 ? true : false,
+          description: maps[index]["description"],
+          startTime: maps[index]["dateTimeEdited"],
+          endTime: maps[index]["dateTimeCreated"],
+          isCompleted: maps[index]["isCompleate"],
         );
       },
     );
