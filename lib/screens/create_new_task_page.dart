@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/Controller/task_controller.dart';
 import 'package:flutter_task_planner_app/screens/calendar_page.dart';
-import 'package:flutter_task_planner_app/task_model.dart';
+import 'package:flutter_task_planner_app/model/task_model.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:flutter_task_planner_app/widgets/top_container.dart';
 import 'package:flutter_task_planner_app/widgets/back_button.dart';

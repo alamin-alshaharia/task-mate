@@ -2,16 +2,14 @@ import 'package:date_picker_timeline/date_picker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/dates_list.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
-import 'package:flutter_task_planner_app/widgets/calendar_dates.dart';
 import 'package:flutter_task_planner_app/widgets/task_container.dart';
 import 'package:flutter_task_planner_app/screens/create_new_task_page.dart';
 import 'package:flutter_task_planner_app/widgets/back_button.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-import '../task_model.dart';
+import '../model/task_model.dart';
 import '../widgets/ButtonItem.dart';
-import 'Tesktile.dart';
 
 class CalendarPage extends StatelessWidget {
   Widget _dashedText() {
@@ -198,8 +196,8 @@ class CalendarPage extends StatelessWidget {
     Get.bottomSheet(Container(
       padding: const EdgeInsets.only(top: 4),
       height: task.isCompleted == 1
-          ? MediaQuery.of(context).size.height * .24
-          : MediaQuery.of(context).size.height * .24,
+          ? MediaQuery.of(BuildContext).size.height * .24
+          : MediaQuery.of(BuildContext).size.height * .24,
       child: Column(
         children: [
           Container(

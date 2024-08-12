@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../task_model.dart';
+import '../model/task_model.dart';
 
 class TaskController extends GetxController {
   @override
@@ -9,7 +9,8 @@ class TaskController extends GetxController {
     super.onReady();
   }
 
-  Future<void> addTask(Task? task, {required Task task}) async {
+  Future<void> addTask({required Task task}) async {
+    Task task;
     return null;
   }
 }

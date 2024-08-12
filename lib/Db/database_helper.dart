@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter_task_planner_app/Tasks_taker/model/Task_model.dart';
-import 'package:flutter_task_planner_app/task_model.dart';
+import 'package:flutter_task_planner_app/model/task_model.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -11,7 +10,7 @@ class DatabaseHelper {
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
   late Database _database;
-
+  final Task task = Task();
   static const _dbName = "Taskmate";
   static const _dbVersion = 1;
   static const _tableName = "task";
@@ -45,7 +44,7 @@ class DatabaseHelper {
   // Add Task
   Future<int> addTask(Task task) async {
     Database db = await instance.database;
-    return await db.insert(_tableName, Task.toJson());
+    return await db.insert(_tableName, task.toJson());
   }
 
   // Delete Task
@@ -54,7 +53,7 @@ class DatabaseHelper {
     return await db.delete(
       _tableName,
       where: "id = ?",
-      whereArgs: [Task.id],
+      whereArgs: [task.id],
     );
   }
 
@@ -69,9 +68,9 @@ class DatabaseHelper {
     Database db = await instance.database;
     return await db.update(
       _tableName,
-      Task.toJson(),
+      task.toJson(),
       where: "id = ?",
-      whereArgs: [Task.id],
+      whereArgs: [task.id],
     );
   }
 
