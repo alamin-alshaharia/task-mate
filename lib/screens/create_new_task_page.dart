@@ -11,6 +11,8 @@ import 'package:flutter_task_planner_app/screens/home_page.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+import '../widgets/input_field_with_widget.dart';
+
 class CreateNewTaskPage extends StatefulWidget {
   @override
   State<CreateNewTaskPage> createState() => _CreateNewTaskPageState();
@@ -19,11 +21,20 @@ class CreateNewTaskPage extends StatefulWidget {
 class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
   @override
   final TaskController _taskController = Get.put(TaskController());
-  final Task task = Task();
+  // final Task task = Task();
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
 
   DateTime _selectedDate = DateTime.now();
+  int _selectedRemind = 5;
+  List<int> remindList = [5, 10, 15, 20];
+  String _selectedRepeat = "None";
+  List<String> repeatList = [
+    "None",
+    "Daily",
+    "Weekly",
+    "Yearly",
+  ];
 
   String _endTime = "9:30 AM";
   String titleText = "";
@@ -37,7 +48,7 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
     String date = DateFormat.yMMMd().format(_selectedDate);
     double width = MediaQuery.of(context).size.width;
 
-    var downwardIcon = Icon(
+    var downwardIcon = const Icon(
       Icons.keyboard_arrow_down,
       color: Colors.black54,
     );
@@ -47,15 +58,15 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
         child: Column(
           children: <Widget>[
             TopContainer(
-              padding: EdgeInsets.fromLTRB(20, 20, 20, 40),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
               width: width,
               child: Column(
                 children: <Widget>[
                   MyBackButton(),
-                  SizedBox(
+                  const SizedBox(
                     height: 30,
                   ),
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       Text(
@@ -65,7 +76,7 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Container(
                       child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +111,7 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
             ),
             Expanded(
                 child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: <Widget>[
                   Row(
@@ -111,18 +122,18 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
                         textController: TextEditingController(text: _startTime),
                         ontap: () => _getTime(isStartTime: true),
                         label: 'Start Time',
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.access_time_outlined,
                           color: Colors.black26,
                         ),
                       )),
-                      SizedBox(width: 40),
+                      const SizedBox(width: 40),
                       Expanded(
                         child: MyTextField(
                           label: 'End Time',
                           textController: TextEditingController(text: _endTime),
                           ontap: () => _getTime(isStartTime: false),
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.access_time_outlined,
                             color: Colors.black26,
                           ),
@@ -130,20 +141,81 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 2),
                   MyTextField(
                     label: 'Description',
                     minLines: 3,
                     maxLines: 3,
                     textController: descriptionController,
                   ),
-                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      MyInputFieldWithWidget(
+                        width: 150,
+                        title: "Repeat",
+                        hint: "$_selectedRepeat",
+                        widget: DropdownButton(
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down,
+                              color: Colors.grey,
+                            ),
+                            iconSize: 32,
+                            underline: Container(
+                              height: 0,
+                            ),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                _selectedRepeat = newValue!;
+                              });
+                            },
+                            elevation: 4,
+                            // style: subTitleStyle,
+                            items: repeatList
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value.toString(),
+                                child: Text(value),
+                              );
+                            }).toList()),
+                      ),
+                      MyInputFieldWithWidget(
+                        width: 180,
+                        title: "Remind",
+                        hint: "$_selectedRemind minutes early",
+                        widget: DropdownButton(
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down,
+                              color: Colors.grey,
+                            ),
+                            iconSize: 32,
+                            underline: Container(
+                              height: 0,
+                            ),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                _selectedRemind = int.parse(newValue!);
+                              });
+                            },
+                            elevation: 4,
+                            // style: subTitleStyle,
+                            items: remindList
+                                .map<DropdownMenuItem<String>>((int value) {
+                              return DropdownMenuItem<String>(
+                                value: value.toString(),
+                                child: Text(value.toString()),
+                              );
+                            }).toList()),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
                   Container(
                     alignment: Alignment.topLeft,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text(
+                        const Text(
                           'Category',
                           style: TextStyle(
                             fontSize: 18,
@@ -164,10 +236,10 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
                                 child: Chip(
                                   elevation: 20,
                                   label: index == 0
-                                      ? Text("Personal")
+                                      ? const Text("Personal")
                                       : index == 1
-                                          ? Text("Important")
-                                          : Text("Planned"),
+                                          ? const Text("Important")
+                                          : const Text("Planned"),
                                   backgroundColor:
                                       _selectedCatagoryColor == index
                                           ? LightColors.kLightBlue
@@ -180,9 +252,8 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
                                 ),
                               );
                             })),
-                        Padding(
-                          padding:
-                              const EdgeInsets.only(top: 8, bottom: 5, left: 2),
+                        const Padding(
+                          padding: EdgeInsets.only(top: 8, bottom: 5, left: 2),
                           child: Text(
                             "Color",
                             style: TextStyle(fontSize: 19),
@@ -209,7 +280,7 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
                                                   ? Colors.amberAccent
                                                   : Colors.lightBlueAccent,
                                       child: _selectedColor == index
-                                          ? Icon(
+                                          ? const Icon(
                                               Icons.done,
                                               color: Colors.white,
                                             )
@@ -230,12 +301,12 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   InkWell(
-                    onTap: () {
-                      _validateData();
-                      _addTaskToDb();
+                    onTap: () async {
+                      await _validateData();
+                      _taskController.getTasks();
                     },
                     child: Container(
-                      child: Text(
+                      child: const Text(
                         'Create Task',
                         style: TextStyle(
                             color: Colors.white,
@@ -243,7 +314,7 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
                             fontSize: 18),
                       ),
                       alignment: Alignment.center,
-                      margin: EdgeInsets.fromLTRB(20, 10, 20, 20),
+                      margin: const EdgeInsets.fromLTRB(20, 10, 20, 20),
                       width: width - 40,
                       decoration: BoxDecoration(
                         color: LightColors.kLightBlue,
@@ -273,18 +344,19 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
     }
   }
 
-  _addTaskToDb() {
-    _taskController.addTask(
+  _addTaskToDb() async {
+    int value = await _taskController.addTask(
         task: Task(
             color: _selectedColor,
-            date: _selectedDate.toString(),
+            date: DateFormat.yMd().format(_selectedDate),
             description: descriptionController.text,
             title: titleController.text,
             endTime: _endTime,
             startTime: _startTime,
             isCompleted: 0,
-            reminder: 5,
-            repeat: "kdf"));
+            reminder: _selectedRemind,
+            repeat: _selectedRepeat));
+    print("my id is $value");
   }
 
   _validateData() {
@@ -295,7 +367,7 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
     } else if (titleController.text.isEmpty ||
         descriptionController.text.isEmpty) {
       return Get.snackbar("Warning", "All Fields are Required",
-          icon: Icon(Icons.warning_amber_rounded),
+          icon: const Icon(Icons.warning_amber_rounded),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: LightColors.kPalePink);
     }

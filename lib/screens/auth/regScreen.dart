@@ -107,6 +107,7 @@ class _RegScreenState extends State<RegScreen> {
                           height: 30,
                         ),
                         ButtonItem(
+                            buttonColor: Colors.black54,
                             imagePath: "assets/google.svg",
                             onClick: () => authClass.googleSignIn(context),
                             text: "Continue with Google",

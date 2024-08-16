@@ -114,6 +114,7 @@ class _loginScreenState extends State<loginScreen> {
                         height: 30,
                       ),
                       ButtonItem(
+                          buttonColor: Colors.black54,
                           imagePath: "assets/google.svg",
                           onClick: () => authClass.googleSignIn(context),
                           text: "Continue with Google",

@@ -3,14 +3,18 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class ButtonItem extends StatelessWidget {
   const ButtonItem(
-      {required this.imagePath,
+      {this.imagePath,
       required this.onClick,
       required this.text,
       this.iconData,
+      this.buttonColor,
+      this.textColor = Colors.white,
       required this.size});
 
+  final Color? buttonColor;
+  final Color? textColor;
   final String text;
-  final String imagePath;
+  final String? imagePath;
   final void Function() onClick;
   final IconData? iconData;
   final double size;
@@ -23,7 +27,7 @@ class ButtonItem extends StatelessWidget {
         height: 60,
         width: MediaQuery.of(context).size.width - 60,
         child: Card(
-          color: Colors.black,
+          color: buttonColor,
           shape: RoundedRectangleBorder(
             side: BorderSide(color: Colors.grey, width: 1),
             borderRadius: BorderRadius.circular(15),
@@ -33,8 +37,9 @@ class ButtonItem extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Icon(iconData),
                 SvgPicture.asset(
-                  imagePath,
+                  "$imagePath",
                   height: size,
                   width: size,
                   // color: Colors.white,
@@ -43,7 +48,7 @@ class ButtonItem extends StatelessWidget {
                 SizedBox(width: 15),
                 Text(
                   text,
-                  style: TextStyle(fontSize: 17, color: Colors.white),
+                  style: TextStyle(fontSize: 17, color: textColor),
                 )
               ],
             ),

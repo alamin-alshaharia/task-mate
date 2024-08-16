@@ -9,8 +9,12 @@ import 'package:get/get.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'Db/database_helper.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseHelper.initDb();
+  // await GetStorage.init()
   await Firebase.initializeApp();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     systemNavigationBarColor: LightColors.kLightYellow, // navigation bar color
@@ -20,33 +24,6 @@ void main() async {
   runApp(MyApp());
 }
 
-// class MyApp extends StatefulWidget {
-//   MyApp({Key ?key}) : super(key: key);
-//
-//   @override
-//   _MyAppState createState() => _MyAppState();
-// }
-//
-// class _MyAppState extends State<MyApp> {
-//   AuthClass authClass = AuthClass();
-//   // Widget currentPage = SignUpPage();
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     // authClass.signOut();
-//     checkLogin();
-//   }
-//
-//   checkLogin() async {
-//     String tokne = await authClass.getToken();
-//     print("tokne");
-//     if (tokne != null)
-//       setState(() {
-//         currentPage = HomePage();
-//       });
-//   }
-//
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
@@ -60,18 +37,8 @@ class MyApp extends StatelessWidget {
             displayColor: LightColors.kDarkBlue,
             fontFamily: 'Poppins'),
       ),
-      home: WelcomeScreen(),
+      home: CreateNewTaskPage(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     // TODO: implement build
-//     throw UnimplementedError();
-//   }
-// }
-//
-// class SignUpPage {
-// }
