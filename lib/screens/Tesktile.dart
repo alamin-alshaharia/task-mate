@@ -9,15 +9,16 @@ class TaskTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      width: MediaQuery.of(context).size.width,
+      padding: EdgeInsets.symmetric(horizontal: 1),
+      width: width * .7 + 38,
       margin: EdgeInsets.only(bottom: 12),
       child: Container(
         padding: EdgeInsets.all(16),
-        //  width: SizeConfig.screenWidth * 0.78,
+        // width: 150,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(30),
           color: _getBGClr(task?.color ?? 0),
         ),
         child: Row(children: [
@@ -93,9 +94,11 @@ class TaskTile extends StatelessWidget {
       case 0:
         return Colors.red;
       case 1:
-        return Colors.amber;
+        return Colors.blueAccent;
       case 2:
-        return Colors.pinkAccent;
+        return Colors.amber;
+      case 3:
+        return Colors.lightBlueAccent;
       default:
         return Colors.blueAccent;
     }

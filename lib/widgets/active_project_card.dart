@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
+import '../model/task_model.dart';
+
 class ActiveProjectsCard extends StatelessWidget {
   final Color? cardColor;
   final double? loadingPercent;
   final String? title;
   final String? subtitle;
+  final Task? task;
 
   ActiveProjectsCard({
+    this.task,
     this.cardColor,
-    this.loadingPercent,
+    this.loadingPercent = 30,
     this.title,
     this.subtitle,
   });
@@ -23,7 +27,7 @@ class ActiveProjectsCard extends StatelessWidget {
         padding: EdgeInsets.all(15.0),
         height: 200,
         decoration: BoxDecoration(
-          color: cardColor,
+          color: _getBGClr(task?.color ?? 0),
           borderRadius: BorderRadius.circular(40.0),
         ),
         child: Column(
@@ -51,7 +55,7 @@ class ActiveProjectsCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  title!,
+                  task?.title ?? "",
                   style: TextStyle(
                     fontSize: 14.0,
                     color: Colors.white,
@@ -59,7 +63,7 @@ class ActiveProjectsCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  subtitle!,
+                  ' ${task!.startTime} - ${task!.endTime}',
                   style: TextStyle(
                     fontSize: 12.0,
                     color: Colors.white54,
@@ -72,5 +76,20 @@ class ActiveProjectsCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  _getBGClr(int no) {
+    switch (no) {
+      case 0:
+        return Colors.red;
+      case 1:
+        return Colors.blueAccent;
+      case 2:
+        return Colors.amber;
+      case 3:
+        return Colors.lightBlueAccent;
+      default:
+        return Colors.blueAccent;
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:date_picker_timeline/date_picker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_task_planner_app/Controller/task_controller.dart';
+import 'package:flutter_task_planner_app/Db/database_helper.dart';
 import 'package:flutter_task_planner_app/dates_list.dart';
 import 'package:flutter_task_planner_app/screens/Tesktile.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
@@ -46,7 +47,9 @@ class _CalendarPageState extends State<CalendarPage> {
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Column(
                 children: [
-                  MyBackButton(),
+                  MyBackButton(
+                    leftPdding: 0,
+                  ),
                   const SizedBox(height: 30.0),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -126,81 +129,79 @@ class _CalendarPageState extends State<CalendarPage> {
               ),
             ),
             const SizedBox(height: 15),
-
-            _showTasks(),
-
-            // Expanded(
-            //   child: SingleChildScrollView(
-            //     child: Container(
-            //       padding: EdgeInsets.symmetric(vertical: 20.0),
-            //       child: Row(
-            //         crossAxisAlignment: CrossAxisAlignment.start,
-            //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //         children: <Widget>[
-            //           Expanded(
-            //             flex: 1,
-            //             child: ListView.builder(
-            //               itemCount: time.length,
-            //               shrinkWrap: true,
-            //               physics: NeverScrollableScrollPhysics(),
-            //               itemBuilder: (BuildContext context, int index) =>
-            //                   Padding(
-            //                 padding:
-            //                     const EdgeInsets.symmetric(vertical: 15.0),
-            //                 child: Align(
-            //                   alignment: Alignment.centerLeft,
-            //                   child: Text(
-            //                     '${time[index]} ${time[index] > 8 ? 'PM' : 'AM'}',
-            //                     style: TextStyle(
-            //                       fontSize: 16.0,
-            //                       color: Colors.black54,
-            //                     ),
-            //                   ),
-            //                 ),
-            //               ),
-            //             ),
-            //           ),
-            //           SizedBox(
-            //             width: 20,
-            //           ),
-            //           Expanded(
-            //             flex: 5,
-            //             child: ListView(
-            //               shrinkWrap: true,
-            //               physics: NeverScrollableScrollPhysics(),
-            //               children: <Widget>[
-            //                 _dashedText(),
-            //                 TaskContainer(
-            //                   title: 'Project Research',
-            //                   subtitle:
-            //                       'Discuss with the colleagues about the future plan',
-            //                   boxColor: LightColors.kLightYellow2,
-            //                 ),
-            //                 _dashedText(),
-            //                 TaskContainer(
-            //                   title: 'Work on Medical App',
-            //                   subtitle: 'Add medicine tab',
-            //                   boxColor: LightColors.kLavender,
-            //                 ),
-            //                 TaskContainer(
-            //                   title: 'Call',
-            //                   subtitle: 'Call to david',
-            //                   boxColor: LightColors.kPalePink,
-            //                 ),
-            //                 TaskContainer(
-            //                   title: 'Design Meeting',
-            //                   subtitle:
-            //                       'Discuss with designers for new task for the medical app',
-            //                   boxColor: LightColors.kLightGreen,
-            //                 ),
-            //               ],
-            //             ),
-            //           )
-            //         ],
-            //       ),
-            //     ),
-            //   ),
-            // ),
+            // _showTasks(),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 20.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        flex: 1,
+                        child: ListView.builder(
+                          itemCount: time.length,
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (BuildContext context, int index) =>
+                              Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 15.0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '${time[index]} ${time[index] > 8 ? 'PM' : 'AM'}',
+                                style: TextStyle(
+                                  fontSize: 16.0,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 20,
+                      ),
+                      Expanded(
+                        flex: 5,
+                        child: ListView(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          children: <Widget>[
+                            _dashedText(),
+                            // TaskContainer(
+                            //   title: 'Project Research',
+                            //   subtitle:
+                            //       'Discuss with the colleagues about the future plan',
+                            //   boxColor: LightColors.kLightYellow2,
+                            // ),
+                            // _dashedText(),
+                            _showTasks(),
+                            // TaskContainer(
+                            //   title: 'Work on Medical App',
+                            //   subtitle: 'Add medicine tab',
+                            //   boxColor: LightColors.kLavender,
+                            // ),
+                            // TaskContainer(
+                            //   title: 'Call',
+                            //   subtitle: 'Call to david',
+                            //   boxColor: LightColors.kPalePink,
+                            // ),
+                            // TaskContainer(
+                            //   title: 'Design Meeting',
+                            //   subtitle:
+                            //       'Discuss with designers for new task for the medical app',
+                            //   boxColor: LightColors.kLightGreen,
+                            // ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -223,20 +224,22 @@ class _CalendarPageState extends State<CalendarPage> {
           task.isCompleted == 1
               ? Container()
               : ButtonItem(
-                  buttonColor: Colors.blueAccent,
+                  textColor: Colors.black54,
+                  buttonColor: Colors.greenAccent,
                   onClick: () {
                     _taskController.markTaskCompleted(task.id!);
+                    DatabaseHelper.countCompletedTasks();
 
                     Get.back();
                   },
                   text: "Task Completed",
-                  iconData: Icons.done_outline_rounded,
+                  imagePath: 'assets/done.svg',
                   size: 25),
           ButtonItem(
             text: "Delete Task",
-            iconData: Icons.delete_forever,
+            imagePath: "assets/delete.svg",
             size: 25,
-            buttonColor: Colors.red,
+            buttonColor: Colors.red.shade300,
             onClick: () {
               _taskController.delete(task);
 
@@ -247,6 +250,7 @@ class _CalendarPageState extends State<CalendarPage> {
             height: 10,
           ),
           ButtonItem(
+            imagePath: "assets/close.svg",
             text: "Close",
             size: 25,
             textColor: Colors.black,
@@ -269,10 +273,7 @@ class _CalendarPageState extends State<CalendarPage> {
               itemCount: _taskController.taskList.length,
               itemBuilder: (_, index) {
                 Task task = _taskController.taskList[index];
-                print(
-                    "formated date is${DateFormat.yMd().format(_selectedDate)}");
-                print("ate is${_taskController.taskList[index].date}");
-                print(task.toJson());
+
                 if (task.repeat == 'Daily') {
                   return AnimationConfiguration.staggeredList(
                       position: index,

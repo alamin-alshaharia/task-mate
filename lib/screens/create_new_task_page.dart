@@ -54,18 +54,15 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
     );
     return Scaffold(
       backgroundColor: LightColors.kLightYellow,
+      appBar: _appBar(context),
       body: SafeArea(
         child: Column(
           children: <Widget>[
             TopContainer(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+              padding: const EdgeInsets.fromLTRB(20, 5, 20, 30),
               width: width,
               child: Column(
                 children: <Widget>[
-                  MyBackButton(),
-                  const SizedBox(
-                    height: 30,
-                  ),
                   const Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
@@ -76,7 +73,7 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
                   Container(
                       child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,7 +88,9 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
                         children: <Widget>[
                           Expanded(
                             child: MyTextField(
-                                ontap: () async {},
+                                ontap: () {
+                                  _getDate(context);
+                                },
                                 textController:
                                     TextEditingController(text: date),
                                 label: "Date",
@@ -111,7 +110,7 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
             ),
             Expanded(
                 child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Column(
                 children: <Widget>[
                   Row(
@@ -363,7 +362,7 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
     if (titleController.text.isNotEmpty &&
         descriptionController.text.isNotEmpty) {
       _addTaskToDb();
-      Get.to(CalendarPage());
+      Get.to(HomePage());
     } else if (titleController.text.isEmpty ||
         descriptionController.text.isEmpty) {
       return Get.snackbar("Warning", "All Fields are Required",
@@ -396,4 +395,24 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
             minute: int.parse(_startTime.split(":")[1].split(" ")[0])),
         context: context);
   }
+}
+
+_appBar(BuildContext context) {
+  return AppBar(
+    elevation: 0, // pembatas antara appbar dan main screen
+    backgroundColor: LightColors.kDarkYellow,
+    leading: GestureDetector(
+        onTap: () {
+          Get.back();
+        },
+        child: MyBackButton()),
+    actions: const [
+      CircleAvatar(
+        backgroundImage: AssetImage("assets/images/avatar.png"),
+      ),
+      SizedBox(
+        width: 20,
+      ),
+    ],
+  );
 }

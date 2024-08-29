@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter_task_planner_app/model/task_model.dart';
 import 'package:sqflite/sqflite.dart';
@@ -14,7 +13,9 @@ class DatabaseHelper {
   //   _database = await initiateDatabase();
   //   return _database;
   // }
+  // static final DatabaseHelper instance = DatabaseHelper._private();
 
+  // DatabaseHelper._private();
   static Future<void> initDb() async {
     if (_database != null) {
       return;
@@ -43,6 +44,41 @@ class DatabaseHelper {
     }
   }
 
+  static Future<void> listenForChanges(
+      void Function(int) onCountChanged) async {
+    final db = await _database;
+    // Replace with your actual table and column names
+    await db?.query(_tableName, columns: ['COUNT(*) AS count']).then((rows) {
+      final count = Sqflite.firstIntValue(rows);
+      onCountChanged(count ?? 0);
+    });
+  }
+
+  static Future<int> countCompletedTasks() async {
+    final db = await _database;
+    final count = Sqflite.firstIntValue(
+      await db!.query(
+        _tableName,
+        columns: ['COUNT(*)'],
+        where: 'isCompleted = ?',
+        whereArgs: [1],
+      ),
+    );
+    return count ?? 0;
+  }
+  // static void name() {}
+  // static Future<int> countCompletedTasks() async {
+  //   final count = Sqflite.firstIntValue(
+  //     await _database!.query(
+  //       _tableName,
+  //       columns: ['COUNT(*)'],
+  //       where: 'isCompleted = ?',
+  //       whereArgs: [1],
+  //     ),
+  //   );
+  //   return count ?? 0;
+  // }
+
   // Add Task
   static Future<int> insertTask(Task? task) async {
     return await _database?.insert(_tableName, task!.toJson()) ?? 1;
@@ -67,6 +103,7 @@ class DatabaseHelper {
       whereArgs: [task.id],
     );
   }
+
   // Delete Task
   // Future<int> deleteTask(Task task) async {
   //   Database db = await instance.database;

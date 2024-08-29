@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 
-
 class MyBackButton extends StatelessWidget {
- 
-
+  MyBackButton({this.leftPdding = 25});
+  final double leftPdding;
   @override
   Widget build(BuildContext context) {
-    return Hero(
-      tag: 'backButton',
-        child: GestureDetector(
-        onTap: (){
-          Navigator.pop(context);
-        },
-          child: Align(
+    return Padding(
+      padding: EdgeInsets.only(left: leftPdding, top: 5),
+      child: Hero(
+        tag: 'backButton',
+        child: Align(
           alignment: Alignment.centerLeft,
           child: Icon(
             Icons.arrow_back_ios,
-            size: 25,
+            size: 23,
             color: LightColors.kDarkBlue,
           ),
         ),

@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:flutter_task_planner_app/Db/database_helper.dart';
 import 'package:flutter_task_planner_app/notes_taker/screens/home_page.dart';
 import 'package:flutter_task_planner_app/screens/calendar_page.dart';
 import 'package:flutter_task_planner_app/screens/create_new_task_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
+import 'package:get/get.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:flutter_task_planner_app/widgets/task_column.dart';
 import 'package:flutter_task_planner_app/widgets/active_project_card.dart';
 import 'package:flutter_task_planner_app/widgets/top_container.dart';
+import 'package:sqflite/sqflite.dart';
 
+import '../Controller/task_controller.dart';
+import '../model/task_model.dart';
 import '../notes_taker/screens/search_screen.dart';
 
-class HomePage extends StatelessWidget {
-  Text subheading(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-          color: LightColors.kDarkBlue,
-          fontSize: 20.0,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.2),
-    );
-  }
-
+class HomePage extends StatefulWidget {
   static CircleAvatar calendarIcon() {
     return const CircleAvatar(
       radius: 25.0,
@@ -35,7 +30,33 @@ class HomePage extends StatelessWidget {
   }
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int? completedTaskCount;
+  final TaskController _taskController = Get.put(TaskController());
+
+  @override
+  // void initState() {
+  //   super.initState();
+  //   completedTaskCount = _taskController.getCount() as int?;
+  // }
+
+  Text subheading(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+          color: LightColors.kDarkBlue,
+          fontSize: 20.0,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.2),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    DatabaseHelper.listenForChanges(_taskController.updateCount);
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: LightColors.kLightYellow,
@@ -122,18 +143,10 @@ class HomePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
-                      onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CreateNewTaskPage(),
-                          )),
+                      onPressed: () => Get.to(CreateNewTaskPage()),
                       child: Text("Task Manager")),
                   ElevatedButton(
-                      onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Homenote(),
-                          )),
+                      onPressed: () => Get.to(Homenote()),
                       child: Text("Note  Manager"))
                 ],
               ),
@@ -156,14 +169,11 @@ class HomePage extends StatelessWidget {
                               children: <Widget>[
                                 subheading('My Tasks'),
                                 GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => CalendarPage()),
-                                    );
+                                  onTap: () async {
+                                    Get.to(CalendarPage());
+                                    _taskController.getTasks();
                                   },
-                                  child: calendarIcon(),
+                                  child: HomePage.calendarIcon(),
                                 ),
                               ],
                             ),
@@ -188,8 +198,9 @@ class HomePage extends StatelessWidget {
                               icon: Icons.check_circle_outline,
                               iconBackgroundColor: LightColors.kBlue,
                               title: 'Done',
-                              subtitle: '18 tasks now. 13 started',
-                            ),
+                              subtitle:
+                                  '${_taskController.count.value} tasks now. 13 started',
+                            )
                           ],
                         ),
                       ),
@@ -202,40 +213,41 @@ class HomePage extends StatelessWidget {
                           children: <Widget>[
                             subheading('Active Projects'),
                             const SizedBox(height: 5.0),
-                            Row(
-                              children: <Widget>[
-                                ActiveProjectsCard(
-                                  cardColor: LightColors.kGreen,
-                                  loadingPercent: 0.25,
-                                  title: 'Medical App',
-                                  subtitle: '9 hours progress',
-                                ),
-                                const SizedBox(width: 20.0),
-                                ActiveProjectsCard(
-                                  cardColor: LightColors.kRed,
-                                  loadingPercent: 0.6,
-                                  title: 'Making History Notes',
-                                  subtitle: '20 hours progress',
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: <Widget>[
-                                ActiveProjectsCard(
-                                  cardColor: LightColors.kDarkYellow,
-                                  loadingPercent: 0.45,
-                                  title: 'Sports App',
-                                  subtitle: '5 hours progress',
-                                ),
-                                const SizedBox(width: 20.0),
-                                ActiveProjectsCard(
-                                  cardColor: LightColors.kBlue,
-                                  loadingPercent: 0.9,
-                                  title: 'Online Flutter Course',
-                                  subtitle: '23 hours progress',
-                                ),
-                              ],
-                            ),
+                            // Row(
+                            //   children: <Widget>[
+                            //     ActiveProjectsCard(
+                            //       cardColor: LightColors.kGreen,
+                            //       loadingPercent: 0.25,
+                            //       title: 'Medical App',
+                            //       subtitle: '9 hours progress',
+                            //     ),
+                            //     const SizedBox(width: 20.0),
+                            //     ActiveProjectsCard(
+                            //       cardColor: LightColors.kRed,
+                            //       loadingPercent: 0.6,
+                            //       title: 'Making History Notes',
+                            //       subtitle: '20 hours progress',
+                            //     ),
+                            //   ],
+                            // ),
+                            // Row(
+                            //   children: <Widget>[
+                            //     ActiveProjectsCard(
+                            //       cardColor: LightColors.kDarkYellow,
+                            //       loadingPercent: 0.45,
+                            //       title: 'Sports App',
+                            //       subtitle: '5 hours progress',
+                            //     ),
+                            //     const SizedBox(width: 20.0),
+                            //     ActiveProjectsCard(
+                            //       cardColor: LightColors.kBlue,
+                            //       loadingPercent: 0.9,
+                            //       title: 'Online Flutter Course',
+                            //       subtitle: '23 hours progress',
+                            //     ),
+                            //   ],
+                            // ),
+                            // _showAvtiveProject(),
                           ],
                         ),
                       ),
@@ -248,5 +260,50 @@ class HomePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  _showAvtiveProject() {
+    return Wrap(
+      children: [
+        Obx(
+          () {
+            return ListView.builder(
+                itemCount: _taskController.taskList.length,
+                itemBuilder: (_, index) {
+                  Task task = _taskController.taskList[index];
+
+                  return AnimationConfiguration.staggeredList(
+                      position: index,
+                      child: SlideAnimation(
+                        child: FadeInAnimation(
+                          child: Row(
+                            children: [
+                              ActiveProjectsCard(
+                                task: task,
+                              )
+                            ],
+                          ),
+                        ),
+                      ));
+                });
+          },
+        ),
+      ],
+    );
+  }
+
+  _getBGClr(int no) {
+    switch (no) {
+      case 0:
+        return Colors.red;
+      case 1:
+        return Colors.blueAccent;
+      case 2:
+        return Colors.amber;
+      case 3:
+        return Colors.lightBlueAccent;
+      default:
+        return Colors.blueAccent;
+    }
   }
 }
