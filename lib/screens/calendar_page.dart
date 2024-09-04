@@ -11,7 +11,6 @@ import 'package:flutter_task_planner_app/widgets/back_button.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-
 import '../Controller/task_controller.dart';
 import '../model/task_model.dart';
 import '../widgets/ButtonItem.dart';
@@ -72,7 +71,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: LightColors.kDarkYellow),
                             onPressed: () async {
-                              await Get.to(AllTaskPage());
+                              await Get.to(CreateNewTaskPage());
                             },
                             child: const Center(
                               child: Text(

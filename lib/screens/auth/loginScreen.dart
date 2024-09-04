@@ -12,14 +12,14 @@ import 'constant.dart';
 import 'package:flutter_task_planner_app/widgets/ButtonItem.dart';
 import 'package:flutter_task_planner_app/screens/auth/auth_service.dart';
 
-class loginScreen extends StatefulWidget {
-  const loginScreen({Key? key}) : super(key: key);
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<loginScreen> createState() => _loginScreenState();
+  State<LoginScreen> createState() => _loginScreenState();
 }
 
-class _loginScreenState extends State<loginScreen> {
+class _loginScreenState extends State<LoginScreen> {
   bool showSpinner = false;
   AuthClass authClass = AuthClass();
   final _auth = FirebaseAuth.instance;

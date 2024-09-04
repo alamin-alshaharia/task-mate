@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/Controller/task_controller.dart';
+import 'package:flutter_task_planner_app/screens/all_task_page.dart';
 import 'package:flutter_task_planner_app/screens/calendar_page.dart';
 import 'package:flutter_task_planner_app/model/task_model.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
@@ -362,7 +363,7 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
     if (titleController.text.isNotEmpty &&
         descriptionController.text.isNotEmpty) {
       _addTaskToDb();
-      Get.to(HomePage());
+      Get.to(AllTaskPage());
     } else if (titleController.text.isEmpty ||
         descriptionController.text.isEmpty) {
       return Get.snackbar("Warning", "All Fields are Required",

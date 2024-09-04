@@ -7,23 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator_v2/liquid_progress_indicator.dart';
 import 'package:flutter_task_planner_app/model/task_model.dart';
-
 import '../Controller/task_controller.dart';
-// import 'package:flutter_task_planner_app/services/notification_services.dart';
-// import 'package:flutter_task_planner_app/services/theme_services.dart';
-// import 'package:flutter_task_planner_app/ui/screens/side_bar_entry/all_task.dart';
-// import 'package:flutter_task_planner_app/ui/screens/side_bar_entry/calendar.dart';
-// import 'package:flutter_task_planner_app/ui/screens/side_bar_entry/highlight.dart';
-// import 'package:flutter_task_planner_app/ui/screens/side_bar_entry/report.dart';
-// import 'package:flutter_task_planner_app/ui/widgets/btm_nav/navigation.dart';
-// import 'package:flutter_task_planner_app/ui/add_task_bar.dart';
-// import 'package:flutter_task_planner_app/ui/details.dart';
-// import 'package:flutter_task_planner_app/ui/widgets/task_tile/all_task_tile.dart';
-// import 'package:flutter_task_planner_app/ui/widgets/task_tile/grey_task_tile.dart';
-// import 'package:flutter_task_planner_app/ui/widgets/task_tile/task_tile.dart';
-// import 'package:flutter_task_planner_app/utils/constants.dart';
-// import 'package:flutter_task_planner_app/utils/icons.dart';
-// import 'package:flutter_task_planner_app/utils/theme.dart';
 
 class AllTaskPage extends StatefulWidget {
   const AllTaskPage({Key? key}) : super(key: key);
@@ -44,11 +28,6 @@ class _AllTaskPageState extends State<AllTaskPage> {
   void onIndexChanged(int index) {
     setState(() {
       currentIndex = index;
-      // [GETX] WARNING, consider using: "Get.to(() => Page())" instead of "Get.to(Page())".
-      // Using a widget function instead of a widget fully
-      // guarantees that the widget and its controllers
-      // will be removed from memory when they are no longer used.
-      // Get.to(pages[index]);
     });
   }
 
@@ -56,21 +35,12 @@ class _AllTaskPageState extends State<AllTaskPage> {
   void initState() {
     // implement initState
     super.initState();
-    // notifyHelper = NotifyHelper();
-    // notifyHelper.initializeNotification();
-    // notifyHelper.requestIOSPermissions();
+
     setState(() {
       _taskController.getTasks();
       print("Initialize");
     });
   }
-
-  // List pages = [
-  //   AllTask(),
-  //   Calendar(),
-  //   Highlight(),
-  //   Report(),
-  // ];
 
   @override
   Widget build(BuildContext context) {
@@ -79,124 +49,66 @@ class _AllTaskPageState extends State<AllTaskPage> {
       appBar: _appBar(),
       backgroundColor: Colors.amber[50],
       // using for the two columns on the top to show Time, date and add task bar
-      body: Container(
-        decoration: BoxDecoration(
-            //     image: DecorationImage(
-            //   fit: BoxFit.fill,
-            //   colorFilter: ColorFilter.mode(
-            //       Colors.black.withOpacity(0.4), BlendMode.dstATop),
-            //   image: Get.isDarkMode
-            //       ? Image.asset("assets/Backgrounds/colorful_dark_bg.png").image
-            //       : Image.asset("assets/Backgrounds/colorful_bg.png").image,
-            // )
-            ),
-        child: Column(
-          children: [
-            _addTaskBar(),
-            // Container(
-            //   width: double.infinity,
-            //   height: 15,
-            //   padding: EdgeInsets.symmetric(horizontal: 24.0),
-            //   child: LiquidLinearProgressIndicator(
-            //     backgroundColor: Colors.white,
-            //     valueColor: AlwaysStoppedAnimation(Colors.pink),
-            //     borderColor: Colors.red,
-            //     borderWidth: 5.0,
-            //     direction: Axis.horizontal,
-            //   ),
-            // ),
-            // _addDateBar(),
-            const SizedBox(
-              height: 10,
-            ),
-            // CategoryList(),
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 5 / 2),
-              height: 30,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: categories.length,
-                itemBuilder: (context, index) => GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      selectedIndex = index;
-                    });
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    margin: EdgeInsets.only(
-                      left: 5,
-                      // At end item it add extra 20 right  padding
-                      right: index == categories.length - 1 ? 5 : 0,
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 5),
-                    decoration: BoxDecoration(
-                      color: index == selectedIndex
-                          ? Colors.pink[100]?.withOpacity(0.95)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      categories[index],
-                      style: GoogleFonts.lato(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color:
-                            index == selectedIndex ? Colors.white : Colors.grey,
-                      ),
+      body: Column(
+        children: [
+          _addTaskBar(),
+
+          const SizedBox(
+            height: 10,
+          ),
+          // CategoryList(),
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 20 / 2),
+            height: 35,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+              itemBuilder: (context, index) => GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedIndex = index;
+                  });
+                },
+                child: Container(
+                  alignment: Alignment.center,
+                  margin: EdgeInsets.only(
+                    left: 70,
+                    // At end item it add extra 20 right  padding
+                    right: index == categories.length - 1 ? 5 : 0,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  decoration: BoxDecoration(
+                    color: index == selectedIndex
+                        ? Colors.pink[100]?.withOpacity(0.95)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    categories[index],
+                    style: GoogleFonts.lato(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          index == selectedIndex ? Colors.white : Colors.grey,
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
-            // Category logic
-            selectedIndex == 0
-                ? _showTodoTasks()
-                : selectedIndex == 1
-                    ? _showCompletedTasks()
-                    : selectedIndex == 2
-                        ? _showTasks()
-                        : null,
-          ],
-        ),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          // Category logic
+          selectedIndex == 0
+              ? _showTodoTasks()
+              : selectedIndex == 1
+                  ? _showCompletedTasks()
+                  : selectedIndex == 2
+                      ? _showTasks()
+                      : null,
+        ],
       ),
-      // bottomNavigationBar: BuildNavigation(
-      //   currentIndex: currentIndex,
-      //   onTap: onIndexChanged, // tab switch event
-      //   items: [
-      //     NavigationItemModel(
-      //       label: "All Task",
-      //       icon: SvgIcon.layout,
-      //     ),
-      //     NavigationItemModel(
-      //       label: "Calendar",
-      //       icon: SvgIcon.calendar,
-      //     ),
-      //     NavigationItemModel(
-      //       label: "Highlight",
-      //       icon: SvgIcon.tag,
-      //     ),
-      //     NavigationItemModel(
-      //       label: "Report",
-      //       icon: SvgIcon.clipboard,
-      //       // count: 3,
-      //     ),
-      //   ],
-      // ),
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: menuIconColor,
-      //   onPressed: () async {
-      //     await Get.to(() => const AddTaskPage());
-      //     _taskController.getTasks();
-      //   },
-      //   child: const Icon(Icons.add_circle_rounded, size: 50),
-      // ),
-      // float button
-      //   floatingActionButtonLocation:
-      //       FloatingActionButtonLocation.centerDocked, //控制浮动按钮停靠在底部中间位置
     );
   }
 
@@ -328,10 +240,10 @@ class _AllTaskPageState extends State<AllTaskPage> {
   * */
   _showBottomSheet(BuildContext context, Task task) {
     Get.bottomSheet(Container(
-      padding: EdgeInsets.only(top: 4),
+      padding: EdgeInsets.only(top: 5),
       // judge the BottomSheet height by the variable: isCompleted 0/1
-      height: MediaQuery.of(context).size.height * 0.32,
-      color: Colors.white,
+      height: MediaQuery.of(context).size.height * 0.30,
+      color: Colors.transparent,
       child: Column(
         children: [
           Container(
@@ -396,17 +308,17 @@ class _AllTaskPageState extends State<AllTaskPage> {
           SizedBox(
             height: 22,
           ),
-          _bottomSheetButton(
-            label: "Details",
-            onTap: () async {
-              await Get.to(() => CreateNewTaskPage());
-              _taskController.getTasks();
-            },
-            clr: Colors.white,
-            isClose: true,
-            // set as ture
-            context: context,
-          ),
+          // _bottomSheetButton(
+          //   label: "Details",
+          //   onTap: () async {
+          //     await Get.to(() => CreateNewTaskPage());
+          //     _taskController.getTasks();
+          //   },
+          //   clr: Colors.white38,
+          //   isClose: true,
+          //   // set as ture
+          //   context: context,
+          // ),
           SizedBox(
             height: 10,
           ),
@@ -427,7 +339,7 @@ class _AllTaskPageState extends State<AllTaskPage> {
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 4.0),
         height: 55,
-        width: MediaQuery.of(context).size.width * 0.9,
+        width: MediaQuery.of(context).size.width * 0.8,
         decoration: BoxDecoration(
           border: Border.all(
             width: 2,

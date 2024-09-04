@@ -1,20 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 
 import '../Controller/task_controller.dart';
-
-// import 'package:flutter_task_planner_app/services/notification_services.dart';
-// import 'package:flutter_task_planner_app/services/theme_services.dart';
-// import 'package:flutter_task_planner_app/ui/screens/side_bar_entry/all_task.dart';
-// import 'package:flutter_task_planner_app/ui/screens/side_bar_entry/calendar.dart';
-// import 'package:flutter_task_planner_app/ui/screens/side_bar_entry/highlight.dart';
-// import 'package:flutter_task_planner_app/ui/widgets/btm_nav/navigation.dart';
-// import 'package:flutter_task_planner_app/utils/constants.dart';
-// import 'package:flutter_task_planner_app/utils/icons.dart';
-// import 'package:flutter_task_planner_app/utils/theme.dart';
 
 class ReportPage extends StatefulWidget {
   const ReportPage({Key? key}) : super(key: key);
@@ -29,7 +20,6 @@ const double kDefaultPadding = 20;
 
 class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
   final _taskController = Get.put(TaskController());
-  // var notifyHelper;TaskController()
   int currentIndex = 3;
   int totalTask = 0;
   int completedTask = 0;
@@ -41,13 +31,6 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
   // by default first item will be selected
   int selectedIndex = 0;
   List<String> categories = ['All', 'Today', '7 day', 'This Month'];
-
-  // void onIndexChanged(int index) {
-  //   setState(() {
-  //     currentIndex = index;
-  //     Get.to(pages[index]);
-  //   });
-  // }
 
   Future<void> _fetchAllTaskStats() async {
     try {
@@ -124,9 +107,7 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
   void initState() {
     // implement initState
     super.initState();
-    // notifyHelper = NotifyHelper();
-    // notifyHelper.initializeNotification(); // initialize
-    // notifyHelper.requestIOSPermissions();
+
     _fetchAllTaskStats();
     _controller = AnimationController(
       duration: Duration(milliseconds: 500),
@@ -140,13 +121,6 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  // List pages = [
-  //   const AllTask(),
-  //   const Calendar(),
-  //   const Highlight(),
-  //   const ReportPage(),
-  // ];
-
   @override
   Widget build(BuildContext context) {
     print("Report Task Page");
@@ -158,188 +132,159 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
 
     return Scaffold(
       appBar: _appBar(),
-      backgroundColor: Colors.amberAccent,
+      backgroundColor: LightColors.kLightYellow,
       // using for the two columns on the top to show Time, date and add task bar
-      body: Container(
-        decoration: BoxDecoration(
-            image: DecorationImage(
-          fit: BoxFit.fill,
-          colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.4), BlendMode.dstATop),
-          image: Get.isDarkMode
-              ? Image.asset("assets/Backgrounds/colorful_dark_bg.png").image
-              : Image.asset("assets/Backgrounds/colorful_bg.png").image,
-        )),
-        child: Column(
-          children: [
-            _addTaskBar(),
-            const SizedBox(
-              height: 10,
-            ),
-            // CategoryList(),
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: kDefaultPadding / 2),
-              height: 30,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: categories.length,
-                itemBuilder: (context, index) => GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      selectedIndex = index;
-                      switchFunc();
-                    });
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    margin: EdgeInsets.only(
-                      left: kDefaultPadding,
-                      // At end item it add extra 20 right  padding
-                      right:
-                          index == categories.length - 1 ? kDefaultPadding : 0,
-                    ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: kDefaultPadding),
-                    decoration: BoxDecoration(
-                      color: index == selectedIndex
-                          ? primaryClr.withOpacity(0.95)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      categories[index],
-                      style: GoogleFonts.lato(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color:
-                            index == selectedIndex ? Colors.white : Colors.grey,
-                      ),
+      body: Column(
+        children: [
+          _addTaskBar(),
+          const SizedBox(
+            height: 10,
+          ),
+          // CategoryList(),
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: kDefaultPadding / 2),
+            height: 30,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+              itemBuilder: (context, index) => GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedIndex = index;
+                    switchFunc();
+                  });
+                },
+                child: Container(
+                  alignment: Alignment.center,
+                  margin: EdgeInsets.only(
+                    left: kDefaultPadding,
+                    // At end item it add extra 20 right  padding
+                    right: index == categories.length - 1 ? kDefaultPadding : 0,
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                  decoration: BoxDecoration(
+                    color: index == selectedIndex
+                        ? LightColors.kBlue.withOpacity(0.95)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    categories[index],
+                    style: GoogleFonts.lato(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          index == selectedIndex ? Colors.white : Colors.grey,
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+          ),
+          const SizedBox(
+            height: 15,
+          ),
 
-            // buildStepProgressIndicator(),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Padding(
-                    //   padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 4.0),
-                    //   child: const Divider(thickness: 2),
-                    // ),
-                    SizedBox(
-                      width: 180.0,
-                      height: 180.0,
-                      child: isCircular
-                          ? CircularStepProgressIndicator(
-                              selectedColor: bluishClr,
-                              totalSteps: totalTask == 0 ? 1 : totalTask,
-                              currentStep: completedTask,
-                              width: 150,
-                              stepSize: 9,
-                              roundedCap: (_, isSelected) => isSelected,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '${totalTask == 0 ? 0 : percent} %',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 24.0,
-                                    ),
+          // buildStepProgressIndicator(),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Padding(
+                  //   padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 4.0),
+                  //   child: const Divider(thickness: 2),
+                  // ),
+                  SizedBox(
+                    width: 180.0,
+                    height: 180.0,
+                    child: isCircular
+                        ? CircularStepProgressIndicator(
+                            selectedColor: bluishClr,
+                            totalSteps: totalTask == 0 ? 1 : totalTask,
+                            currentStep: completedTask,
+                            width: 150,
+                            stepSize: 9,
+                            roundedCap: (_, isSelected) => isSelected,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${totalTask == 0 ? 0 : percent} %',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24.0,
                                   ),
-                                  const SizedBox(height: 1.0),
-                                  const Text(
-                                    "Efficiency",
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16.0,
-                                    ),
-                                  )
-                                ],
-                              ),
-                            )
-                          : CircularStepProgressIndicator(
-                              totalSteps: totalTask == 0 ? 1 : totalTask,
-                              currentStep: completedTask,
-                              stepSize: 20,
-                              selectedColor: Colors.green,
-                              unselectedColor: Colors.grey[200],
-                              padding: 0,
-                              selectedStepSize: 22,
-                              roundedCap: (_, __) => true,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '${totalTask == 0 ? 0 : percent} %',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20.0,
-                                    ),
+                                ),
+                                const SizedBox(height: 1.0),
+                                const Text(
+                                  "Efficiency",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16.0,
                                   ),
-                                  const SizedBox(height: 1.0),
-                                  const Text(
-                                    "Efficiency",
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12.0,
-                                    ),
-                                  )
-                                ],
-                              ),
+                                )
+                              ],
                             ),
+                          )
+                        : CircularStepProgressIndicator(
+                            totalSteps: totalTask == 0 ? 1 : totalTask,
+                            currentStep: completedTask,
+                            stepSize: 20,
+                            selectedColor: Colors.green,
+                            unselectedColor: Colors.grey[200],
+                            padding: 0,
+                            selectedStepSize: 22,
+                            roundedCap: (_, __) => true,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${totalTask == 0 ? 0 : percent} %',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20.0,
+                                  ),
+                                ),
+                                const SizedBox(height: 1.0),
+                                const Text(
+                                  "Efficiency",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12.0,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                  ),
+                  SizedBox(height: 20.0),
+                  Padding(
+                    // padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+                    padding: EdgeInsets.only(
+                        top: 10, left: 35, right: 45, bottom: 10),
+                    child: Column(
+                      children: [
+                        _buildStatus(
+                            isCircular ? bluishClr : LightColors.kGreen,
+                            completedTask,
+                            'Completed Tasks'),
+                        _buildStatus(
+                            LightColors.kLightBlue, todoTasks, 'Todo Tasks'),
+                        _buildStatus(
+                            LightColors.kDarkYellow, totalTask, 'Total Tasks'),
+                      ],
                     ),
-                    SizedBox(height: 20.0),
-                    Padding(
-                      // padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
-                      padding: EdgeInsets.only(
-                          top: 10, left: 35, right: 45, bottom: 10),
-                      child: Column(
-                        children: [
-                          _buildStatus(isCircular ? bluishClr : Colors.green,
-                              completedTask, 'Completed Tasks'),
-                          _buildStatus(Colors.grey, todoTasks, 'Todo Tasks'),
-                          _buildStatus(Colors.blue, totalTask, 'Total Tasks'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-      // bottomNavigationBar: BuildNavigation(
-      //   currentIndex: currentIndex,
-      //   onTap: onIndexChanged, // tab switch event
-      //   items: [
-      //     NavigationItemModel(
-      //       label: "All Task",
-      //       icon: SvgIcon.layout,
-      //     ),
-      //     NavigationItemModel(
-      //       label: "Calendar",
-      //       icon: SvgIcon.calendar,
-      //     ),
-      //     NavigationItemModel(
-      //       label: "Highlight",
-      //       icon: SvgIcon.tag,
-      //     ),
-      //     NavigationItemModel(
-      //       label: "Report",
-      //       icon: SvgIcon.clipboard,
-      //     ),
-      //   ],
-      // ),
+
       floatingActionButton: FloatingActionButton(
         backgroundColor: bluishClr,
         onPressed: () async {
@@ -350,8 +295,7 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
         // child: const Icon(Icons.add_circle_rounded, size: 50),
       ),
       // float button
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.centerDocked, //控制浮动按钮停靠在底部中间位置
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -511,28 +455,8 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
     return AppBar(
       elevation: 0,
       // eliminate the shadow of header banner
-      backgroundColor: Colors.amberAccent,
+      backgroundColor: LightColors.kLightYellow2,
       actions: [
-        // IconButton(
-        //     onPressed: () {
-        //       // Logic for theme change
-        //       ThemeServices().switchTheme();
-        //       notifyHelper.displayNotification(
-        //         title: "Theme changed",
-        //         body: Get.isDarkMode
-        //             ? "Activated Light Theme"
-        //             : "Activated Dark Theme",
-        //       );
-        //     },
-        //     icon: Icon(
-        //       // Day and moon icon should change according to the Theme Mode
-        //       Get.isDarkMode
-        //           ? Icons.wb_sunny_outlined
-        //           : Icons.nightlight_rounded,
-        //       size: 20,
-        //       // Icon color should change according to the Theme Mode
-        //       color: Get.isDarkMode ? Colors.white : Colors.black,
-        //     )),
         SizedBox(
           width: 20,
         )

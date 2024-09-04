@@ -164,12 +164,14 @@ class _HomePageState extends State<HomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                      onPressed: () => Get.to(ReportPage()),
-                      child: Text("Task Manager")),
-                  ElevatedButton(
-                      onPressed: () => Get.to(CreateNewTaskPage()),
-                      child: Text("Note  Manager"))
+                  HomepageButton(
+                    buttonTitle: "Task Report",
+                    onpress: () => ReportPage(),
+                  ),
+                  HomepageButton(
+                    buttonTitle: "Note  Manager",
+                    onpress: () => Homenote(),
+                  ),
                 ],
               ),
             ),
@@ -327,5 +329,23 @@ class _HomePageState extends State<HomePage> {
       default:
         return Colors.blueAccent;
     }
+  }
+}
+
+class HomepageButton extends StatelessWidget {
+  const HomepageButton(
+      {super.key, required this.buttonTitle, required this.onpress});
+  final String buttonTitle;
+  final Function() onpress;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 150,
+      height: 43,
+      child: ElevatedButton(
+          style: ElevatedButton.styleFrom(),
+          onPressed: () => Get.to(onpress),
+          child: Text(buttonTitle)),
+    );
   }
 }

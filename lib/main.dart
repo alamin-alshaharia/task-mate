@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_task_planner_app/screens/all_task_page.dart';
 import 'package:flutter_task_planner_app/screens/auth/WelcomeScreen.dart';
 import 'package:flutter_task_planner_app/screens/auth/auth_service.dart';
+import 'package:flutter_task_planner_app/screens/auth/loginScreen.dart';
 import 'package:flutter_task_planner_app/screens/calendar_page.dart';
 import 'package:flutter_task_planner_app/screens/create_new_task_page.dart';
 import 'package:flutter_task_planner_app/screens/home_page.dart';
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
             displayColor: LightColors.kDarkBlue,
             fontFamily: 'Poppins'),
       ),
-      home: HomePage(),
+      home: LoginScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
