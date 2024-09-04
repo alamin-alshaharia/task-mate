@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_task_planner_app/Db/database_helper.dart';
 import 'package:flutter_task_planner_app/notes_taker/screens/home_page.dart';
+
 import 'package:flutter_task_planner_app/screens/calendar_page.dart';
-import 'package:flutter_task_planner_app/screens/create_new_task_page.dart';
+
+import 'package:flutter_task_planner_app/screens/report_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:flutter_task_planner_app/widgets/task_column.dart';
 import 'package:flutter_task_planner_app/widgets/active_project_card.dart';
 import 'package:flutter_task_planner_app/widgets/top_container.dart';
-import 'package:sqflite/sqflite.dart';
 
 import '../Controller/task_controller.dart';
 import '../model/task_model.dart';
-import '../notes_taker/screens/search_screen.dart';
+import 'create_new_task_page.dart';
 
 class HomePage extends StatefulWidget {
   static CircleAvatar calendarIcon() {
@@ -36,12 +37,33 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int? completedTaskCount;
   final TaskController _taskController = Get.put(TaskController());
+  int totalTask = 0;
+  int completedTask = 0;
+  double totalProgress = .75;
+  Future<void> _fetchAllTaskStats() async {
+    try {
+      double totalResult = await _taskController.getTotalTask();
+      double completedResult = await _taskController.getTotalCompletedTask();
+
+      setState(() {
+        totalTask = totalResult.toInt();
+        completedTask = completedResult.toInt();
+      });
+    } catch (error) {
+      print('Error: $error');
+    }
+  }
 
   @override
   // void initState() {
   //   super.initState();
-  //   completedTaskCount = _taskController.getCount() as int?;
+  //   _fetchAllTaskStats();
+  //   // completedTaskCount = _taskController.getCount() as int?;
   // }
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _fetchAllTaskStats();
+  }
 
   Text subheading(String title) {
     return Text(
@@ -93,7 +115,7 @@ class _HomePageState extends State<HomePage> {
                             radius: 65.0,
                             lineWidth: 7.0,
                             animation: true,
-                            percent: 0.75,
+                            percent: .75,
                             circularStrokeCap: CircularStrokeCap.round,
                             progressColor: LightColors.kRed,
                             backgroundColor: LightColors.kDarkYellow,
@@ -143,10 +165,10 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
-                      onPressed: () => Get.to(CreateNewTaskPage()),
+                      onPressed: () => Get.to(ReportPage()),
                       child: Text("Task Manager")),
                   ElevatedButton(
-                      onPressed: () => Get.to(Homenote()),
+                      onPressed: () => Get.to(CreateNewTaskPage()),
                       child: Text("Note  Manager"))
                 ],
               ),
@@ -182,7 +204,7 @@ class _HomePageState extends State<HomePage> {
                               icon: Icons.alarm,
                               iconBackgroundColor: LightColors.kRed,
                               title: 'To Do',
-                              subtitle: '5 tasks now. 1 started',
+                              subtitle: '${totalTask}tasks now. 1 started',
                             ),
                             const SizedBox(
                               height: 15.0,
@@ -191,15 +213,15 @@ class _HomePageState extends State<HomePage> {
                               icon: Icons.blur_circular,
                               iconBackgroundColor: LightColors.kDarkYellow,
                               title: 'In Progress',
-                              subtitle: '1 tasks now. 1 started',
+                              subtitle:
+                                  '${totalTask - completedTask} tasks now. 1 started',
                             ),
                             const SizedBox(height: 15.0),
                             TaskColumn(
                               icon: Icons.check_circle_outline,
                               iconBackgroundColor: LightColors.kBlue,
                               title: 'Done',
-                              subtitle:
-                                  '${_taskController.count.value} tasks now. 13 started',
+                              subtitle: '${completedTask} tasks now. 1 started',
                             )
                           ],
                         ),

@@ -1,10 +1,9 @@
 import 'package:date_picker_timeline/date_picker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:flutter_task_planner_app/Controller/task_controller.dart';
 import 'package:flutter_task_planner_app/Db/database_helper.dart';
 import 'package:flutter_task_planner_app/dates_list.dart';
-import 'package:flutter_task_planner_app/screens/Tesktile.dart';
+import 'package:flutter_task_planner_app/screens/all_task_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:flutter_task_planner_app/widgets/task_container.dart';
 import 'package:flutter_task_planner_app/screens/create_new_task_page.dart';
@@ -12,8 +11,11 @@ import 'package:flutter_task_planner_app/widgets/back_button.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+
+import '../Controller/task_controller.dart';
 import '../model/task_model.dart';
 import '../widgets/ButtonItem.dart';
+import '../widgets/tasktile_calender_page.dart';
 
 class CalendarPage extends StatefulWidget {
   @override
@@ -70,7 +72,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: LightColors.kDarkYellow),
                             onPressed: () async {
-                              await Get.to(CreateNewTaskPage());
+                              await Get.to(AllTaskPage());
                             },
                             child: const Center(
                               child: Text(
@@ -170,30 +172,9 @@ class _CalendarPageState extends State<CalendarPage> {
                           physics: NeverScrollableScrollPhysics(),
                           children: <Widget>[
                             _dashedText(),
-                            // TaskContainer(
-                            //   title: 'Project Research',
-                            //   subtitle:
-                            //       'Discuss with the colleagues about the future plan',
-                            //   boxColor: LightColors.kLightYellow2,
-                            // ),
+
                             // _dashedText(),
                             _showTasks(),
-                            // TaskContainer(
-                            //   title: 'Work on Medical App',
-                            //   subtitle: 'Add medicine tab',
-                            //   boxColor: LightColors.kLavender,
-                            // ),
-                            // TaskContainer(
-                            //   title: 'Call',
-                            //   subtitle: 'Call to david',
-                            //   boxColor: LightColors.kPalePink,
-                            // ),
-                            // TaskContainer(
-                            //   title: 'Design Meeting',
-                            //   subtitle:
-                            //       'Discuss with designers for new task for the medical app',
-                            //   boxColor: LightColors.kLightGreen,
-                            // ),
                           ],
                         ),
                       )
@@ -228,7 +209,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   buttonColor: Colors.greenAccent,
                   onClick: () {
                     _taskController.markTaskCompleted(task.id!);
-                    DatabaseHelper.countCompletedTasks();
+                    // DatabaseHelper.countCompletedTasks();
 
                     Get.back();
                   },

@@ -35,7 +35,8 @@ class DatabaseHelper {
         repeat STRING ,
         endTime STRING,
        color  INTEGER ,
-     isCompleted INTEGER
+     isCompleted INTEGER,
+     isStar INTEGER
           )''');
         },
       );
@@ -54,17 +55,37 @@ class DatabaseHelper {
     });
   }
 
-  static Future<int> countCompletedTasks() async {
-    final db = await _database;
-    final count = Sqflite.firstIntValue(
-      await db!.query(
-        _tableName,
-        columns: ['COUNT(*)'],
-        where: 'isCompleted = ?',
-        whereArgs: [1],
-      ),
+  // static Future<int> countCompletedTasks() async {
+  //   final db = await _database;
+  //   final count = Sqflite.firstIntValue(
+  //     await db!.query(
+  //       _tableName,
+  //       columns: ['COUNT(*)'],
+  //       where: 'isCompleted = ?',
+  //       whereArgs: [1],
+  //     ),
+  //   );
+  //   return count ?? 0;
+  // }
+
+  static Future<int> undoCompleted(int id) async {
+    print("undoCompleted function called");
+    return await _database!.update(
+      _tableName,
+      {'isCompleted': 0},
+      where: 'id = ?',
+      whereArgs: [id],
     );
-    return count ?? 0;
+  }
+
+  static Future<int> undoStar(int id) async {
+    print("undoStar function called");
+    return await _database!.update(
+      _tableName,
+      {'isStar': 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
   // static void name() {}
   // static Future<int> countCompletedTasks() async {
@@ -101,6 +122,16 @@ class DatabaseHelper {
       _tableName,
       where: "id=?",
       whereArgs: [task.id],
+    );
+  }
+
+  static Future<int> markStar(int id) async {
+    print("markStar function called");
+    return await _database!.update(
+      _tableName,
+      {'isStar': 1},
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 

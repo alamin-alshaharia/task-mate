@@ -353,7 +353,7 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage> {
             endTime: _endTime,
             startTime: _startTime,
             isCompleted: 0,
-            reminder: _selectedRemind,
+            // reminder: _selectedRemind,
             repeat: _selectedRepeat));
     print("my id is $value");
   }
