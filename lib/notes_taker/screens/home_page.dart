@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_task_planner_app/notes_taker/screens/note_detail_page.dart';
 import 'package:get/get.dart';
 import 'package:flutter_task_planner_app/notes_taker/routing/app_routes.dart';
 import 'package:flutter_task_planner_app/notes_taker/screens/search_screen.dart';
@@ -79,10 +80,7 @@ class Homenote extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.push(
-              context,
-              new MaterialPageRoute(
-                  builder: (context) => new AddNewNotePage()));
+          Get.to(AddNewNotePage());
         },
         label: const Text(
           "Add new note",
@@ -115,7 +113,7 @@ class Homenote extends StatelessWidget {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () {
-                Get.toNamed(AppRoute.NOTE_DETAILS, arguments: index);
+                Get.to(NoteDetailPage(), arguments: index);
               },
               onLongPress: () {
                 showDialog(

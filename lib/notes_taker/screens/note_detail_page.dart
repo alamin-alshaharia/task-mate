@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:get/get.dart';
 import 'package:flutter_task_planner_app/notes_taker/routing/app_routes.dart';
 
@@ -13,8 +14,9 @@ class NoteDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final int i = ModalRoute.of(context)?.settings.arguments as int;
     return Scaffold(
+      backgroundColor: LightColors.kLightYellow,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: LightColors.kLightYellow2,
         iconTheme: const IconThemeData(
           color: Colors.black,
         ),

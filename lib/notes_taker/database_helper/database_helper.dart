@@ -33,7 +33,7 @@ class DatabaseHelper {
         title TEXT NOT NULL,
         content TEXT NOT NULL,
         dateTimeEdited TEXT NOT NULL,
-        dateTimeCreated TEXT NOT NULL,s
+        dateTimeCreated TEXT NOT NULL,
         isFavorite INTEGER NOT NULL DEFAULT 0
       )
       ''');
