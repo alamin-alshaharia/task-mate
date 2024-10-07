@@ -55,6 +55,11 @@ class DatabaseHelper {
     });
   }
 
+  static Future<int> updateTaskDetail(Task task) async {
+    print("update task detail function called");
+    return await _database!.update(_tableName, task.toJson(),
+        where: 'id = ?', whereArgs: [task.id]);
+  }
   // static Future<int> countCompletedTasks() async {
   //   final db = await _database;
   //   final count = Sqflite.firstIntValue(

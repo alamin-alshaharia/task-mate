@@ -18,8 +18,43 @@ class LightColors {
     Color(0xFFF73B0F),
     Color(0xFFF07D42),
   ]);
+
+  static const Color yellow = Color(0xFFFFE324);
+  static const Color darkYellow = Color(0xFFFFB533);
+  static const LinearGradient yellowGradient = LinearGradient(
+    colors: [yellow, darkYellow],
+  );
+
   static const LinearGradient kDeepRedlyGradiant = LinearGradient(colors: [
     Color(0xFFFF8F01),
     Color(0xFFFF0000),
   ]);
+
+  static const Color flesh = Color(0xFFFED3A0);
+  static const Color yellowOrange = Color(0xFFFFA63F);
+  static const LinearGradient orangeGradient = LinearGradient(
+    colors: [flesh, yellowOrange],
+  );
+  static const Color lightOrange = Color(0xFFFFCB52);
+  static const Color orange = Color(0xFFFF7B02);
+  static const LinearGradient darkOrangeGradient = LinearGradient(
+    colors: [orange, lightOrange],
+  );
+  static const Color lightBrown = Color(0xFFFEB395);
+  static const Color brown = Color(0xFFF17E50);
+  static const LinearGradient brownGradient = LinearGradient(
+    colors: [lightOrange, brown],
+  );
+
+  static const Color lightTosca = Color(0xFF95D1FE);
+  static const Color tosca = Color(0xFF509EF1);
+  static const LinearGradient toscaGradient = LinearGradient(
+    colors: [lightTosca, tosca],
+  );
+
+  static const Color lightDonker = Color(0xFF9C95FE);
+  static const Color donker = Color(0xFF6850F1);
+  static const LinearGradient donkerGradient = LinearGradient(
+    colors: [lightDonker, donker],
+  );
 }

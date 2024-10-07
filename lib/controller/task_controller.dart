@@ -37,6 +37,12 @@ class TaskController extends GetxController {
     return res;
   }
 
+  void updateTask({Task? task}) async {
+    print("update task detail");
+    await DatabaseHelper.updateTaskDetail(task!);
+    getTasks();
+  }
+
   // get total completed tasks
   Future<double> getTotalCompletedTask() async {
     double res = 0;

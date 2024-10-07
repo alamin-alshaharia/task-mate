@@ -1,7 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slider_drawer/flutter_slider_drawer.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_task_planner_app/Db/database_helper.dart';
 import 'package:flutter_task_planner_app/notes_taker/screens/home_page.dart';
+import 'package:flutter_task_planner_app/screens/all_task_page.dart';
 
 import 'package:flutter_task_planner_app/screens/calendar_page.dart';
 
@@ -35,6 +38,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  GlobalKey<SliderDrawerState> dKey = GlobalKey<SliderDrawerState>();
   int? completedTaskCount;
   final TaskController _taskController = Get.put(TaskController());
   int totalTask = 0;
@@ -81,206 +85,212 @@ class _HomePageState extends State<HomePage> {
     DatabaseHelper.listenForChanges(_taskController.updateCount);
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: LightColors.kLightYellow,
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            TopContainer(
-              height: 220,
-              width: width,
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        IconButton(
-                          onPressed: () {},
-                          icon: Icon(Icons.menu),
-                          color: LightColors.kDarkBlue,
-                          iconSize: 25.0,
-                        ),
-                        Icon(Icons.search,
-                            color: LightColors.kDarkBlue, size: 25.0),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 0, vertical: 0.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          CircularPercentIndicator(
-                            radius: 65.0,
-                            lineWidth: 7.0,
-                            animation: true,
-                            percent: .75,
-                            circularStrokeCap: CircularStrokeCap.round,
-                            progressColor: LightColors.kRed,
-                            backgroundColor: LightColors.kDarkYellow,
-                            center: const CircleAvatar(
-                              backgroundColor: LightColors.kBlue,
-                              radius: 40.0,
-                              backgroundImage: AssetImage(
-                                'assets/images/avatar.png',
+      // backgroundColor: LightColors.kLightYellow,
+      body: SliderDrawer(
+        // isDraggable: false,
+        key: dKey,
+        animationDuration: 200,
+        slider: MySlider(),
+        appBar: SliderAppBar(
+          appBarPadding: EdgeInsets.fromLTRB(20, 35, 22, 0),
+          appBarColor: LightColors.kDarkYellow,
+          title: Container(),
+          trailing: IconButton(
+            icon: Icon(Icons.search),
+            iconSize: 31,
+            onPressed: () {},
+          ),
+        ),
+        child: Container(
+          color: LightColors.kLightYellow,
+          child: Column(
+            children: <Widget>[
+              TopContainer(
+                height: 190,
+                width: width,
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 0, vertical: 0.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            CircularPercentIndicator(
+                              radius: 65.0,
+                              lineWidth: 7.0,
+                              animation: true,
+                              percent: .75,
+                              circularStrokeCap: CircularStrokeCap.round,
+                              progressColor: LightColors.kRed,
+                              backgroundColor: LightColors.kDarkYellow,
+                              center: const CircleAvatar(
+                                backgroundColor: LightColors.kBlue,
+                                radius: 40.0,
+                                backgroundImage: AssetImage(
+                                  'assets/images/avatar.png',
+                                ),
                               ),
                             ),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Container(
-                                child: const Text(
-                                  'Welcome',
-                                  textAlign: TextAlign.start,
-                                  style: TextStyle(
-                                    fontSize: 22.0,
-                                    color: LightColors.kDarkBlue,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                child: const Text(
-                                  'To TaskMate',
-                                  textAlign: TextAlign.start,
-                                  style: TextStyle(
-                                    fontSize: 16.0,
-                                    color: Colors.black45,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  ]),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  HomepageButton(
-                    buttonTitle: "Task Report",
-                    onpress: () => ReportPage(),
-                  ),
-                  HomepageButton(
-                    buttonTitle: "Note  Manager",
-                    onpress: () => Homenote(),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Column(
-                    children: <Widget>[
-                      Container(
-                        color: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20.0, vertical: 10.0),
-                        child: Column(
-                          children: <Widget>[
-                            Row(
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
-                                subheading('My Tasks'),
-                                GestureDetector(
-                                  onTap: () async {
-                                    Get.to(CalendarPage());
-                                    _taskController.getTasks();
-                                  },
-                                  child: HomePage.calendarIcon(),
+                                Container(
+                                  child: const Text(
+                                    'Welcome',
+                                    textAlign: TextAlign.start,
+                                    style: TextStyle(
+                                      fontSize: 22.0,
+                                      color: LightColors.kDarkBlue,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  child: const Text(
+                                    'To TaskMate',
+                                    textAlign: TextAlign.start,
+                                    style: TextStyle(
+                                      fontSize: 16.0,
+                                      color: Colors.black45,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
                                 ),
                               ],
-                            ),
-                            const SizedBox(height: 15.0),
-                            TaskColumn(
-                              icon: Icons.alarm,
-                              iconBackgroundColor: LightColors.kRed,
-                              title: 'To Do',
-                              subtitle: '${totalTask}tasks now. 1 started',
-                            ),
-                            const SizedBox(
-                              height: 15.0,
-                            ),
-                            TaskColumn(
-                              icon: Icons.blur_circular,
-                              iconBackgroundColor: LightColors.kDarkYellow,
-                              title: 'In Progress',
-                              subtitle:
-                                  '${totalTask - completedTask} tasks now. 1 started',
-                            ),
-                            const SizedBox(height: 15.0),
-                            TaskColumn(
-                              icon: Icons.check_circle_outline,
-                              iconBackgroundColor: LightColors.kBlue,
-                              title: 'Done',
-                              subtitle: '${completedTask} tasks now. 1 started',
                             )
                           ],
                         ),
                       ),
-                      Container(
-                        color: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20.0, vertical: 10.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            subheading('Active Projects'),
-                            const SizedBox(height: 5.0),
-                            // Row(
-                            //   children: <Widget>[
-                            //     ActiveProjectsCard(
-                            //       cardColor: LightColors.kGreen,
-                            //       loadingPercent: 0.25,
-                            //       title: 'Medical App',
-                            //       subtitle: '9 hours progress',
-                            //     ),
-                            //     const SizedBox(width: 20.0),
-                            //     ActiveProjectsCard(
-                            //       cardColor: LightColors.kRed,
-                            //       loadingPercent: 0.6,
-                            //       title: 'Making History Notes',
-                            //       subtitle: '20 hours progress',
-                            //     ),
-                            //   ],
-                            // ),
-                            // Row(
-                            //   children: <Widget>[
-                            //     ActiveProjectsCard(
-                            //       cardColor: LightColors.kDarkYellow,
-                            //       loadingPercent: 0.45,
-                            //       title: 'Sports App',
-                            //       subtitle: '5 hours progress',
-                            //     ),
-                            //     const SizedBox(width: 20.0),
-                            //     ActiveProjectsCard(
-                            //       cardColor: LightColors.kBlue,
-                            //       loadingPercent: 0.9,
-                            //       title: 'Online Flutter Course',
-                            //       subtitle: '23 hours progress',
-                            //     ),
-                            //   ],
-                            // ),
-                            // _showAvtiveProject(),
-                          ],
+                    ]),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    HomepageButton(
+                      buttonTitle: "Task Report",
+                      onpress: () => ReportPage(),
+                    ),
+                    HomepageButton(
+                      buttonTitle: "Note  Manager",
+                      onpress: () => Homenote(),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                          color: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0, vertical: 10.0),
+                          child: Column(
+                            children: <Widget>[
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  subheading('My Tasks'),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      Get.to(CalendarPage());
+                                      _taskController.getTasks();
+                                    },
+                                    child: HomePage.calendarIcon(),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 15.0),
+                              TaskColumn(
+                                icon: Icons.alarm,
+                                iconBackgroundColor: LightColors.kRed,
+                                title: 'To Do',
+                                subtitle: '${totalTask}tasks now. 1 started',
+                              ),
+                              const SizedBox(
+                                height: 15.0,
+                              ),
+                              TaskColumn(
+                                icon: Icons.blur_circular,
+                                iconBackgroundColor: LightColors.kDarkYellow,
+                                title: 'In Progress',
+                                subtitle:
+                                    '${totalTask - completedTask} tasks now. 1 started',
+                              ),
+                              const SizedBox(height: 15.0),
+                              TaskColumn(
+                                icon: Icons.check_circle_outline,
+                                iconBackgroundColor: LightColors.kBlue,
+                                title: 'Done',
+                                subtitle:
+                                    '${completedTask} tasks now. 1 started',
+                              )
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                        Container(
+                          color: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0, vertical: 10.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              subheading('Active Projects'),
+                              const SizedBox(height: 5.0),
+                              // Row(
+                              //   children: <Widget>[
+                              //     ActiveProjectsCard(
+                              //       cardColor: LightColors.kGreen,
+                              //       loadingPercent: 0.25,
+                              //       title: 'Medical App',
+                              //       subtitle: '9 hours progress',
+                              //     ),
+                              //     const SizedBox(width: 20.0),
+                              //     ActiveProjectsCard(
+                              //       cardColor: LightColors.kRed,
+                              //       loadingPercent: 0.6,
+                              //       title: 'Making History Notes',
+                              //       subtitle: '20 hours progress',
+                              //     ),
+                              //   ],
+                              // ),
+                              // Row(
+                              //   children: <Widget>[
+                              //     ActiveProjectsCard(
+                              //       cardColor: LightColors.kDarkYellow,
+                              //       loadingPercent: 0.45,
+                              //       title: 'Sports App',
+                              //       subtitle: '5 hours progress',
+                              //     ),
+                              //     const SizedBox(width: 20.0),
+                              //     ActiveProjectsCard(
+                              //       cardColor: LightColors.kBlue,
+                              //       loadingPercent: 0.9,
+                              //       title: 'Online Flutter Course',
+                              //       subtitle: '23 hours progress',
+                              //     ),
+                              //   ],
+                              // ),
+                              // _showAvtiveProject(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -346,6 +356,103 @@ class HomepageButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(),
           onPressed: () => Get.to(onpress),
           child: Text(buttonTitle)),
+    );
+  }
+}
+
+// drwar widget
+class MySlider extends StatelessWidget {
+  MySlider({
+    Key? key,
+  }) : super(key: key);
+
+  /// Icons
+  List<IconData> icons = [
+    // CupertinoIcons.home,
+    CupertinoIcons.person_fill,
+    CupertinoIcons.doc_richtext,
+    CupertinoIcons.calendar_circle_fill,
+    CupertinoIcons.rectangle_fill_on_rectangle_angled_fill,
+    CupertinoIcons.settings,
+    CupertinoIcons.info_circle_fill,
+  ];
+
+  /// Texts
+  List<String> texts = [
+    // "Home",
+    "Profile",
+    "All Task",
+    "Task Calender",
+    "Task Report",
+    "Settings",
+    "Details",
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 90),
+      decoration: const BoxDecoration(gradient: LightColors.brownGradient),
+      child: Column(
+        children: [
+          const CircleAvatar(
+            radius: 50,
+            backgroundImage: AssetImage('assets/images/avatar.png'),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          Text(
+            "Shaharia",
+          ),
+          Text(
+            "junior flutter dev",
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(
+              vertical: 30,
+              horizontal: 10,
+            ),
+            width: double.infinity,
+            height: 400,
+            child: ListView.builder(
+                itemCount: icons.length,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (ctx, i) {
+                  return InkWell(
+                    // ignore: avoid_print
+                    onTap: () {
+                      if (i == 3) {
+                        Get.to(ReportPage());
+                      }
+                      if (i == 2) {
+                        Get.to(CalendarPage());
+                      }
+                      if (i == 1) {
+                        Get.to(AllTaskPage());
+                      }
+                      if (i == 4) {}
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.all(5),
+                      child: ListTile(
+                          leading: Icon(
+                            icons[i],
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                          title: Text(
+                            texts[i],
+                            style: const TextStyle(
+                              color: Colors.white,
+                            ),
+                          )),
+                    ),
+                  );
+                }),
+          )
+        ],
+      ),
     );
   }
 }
