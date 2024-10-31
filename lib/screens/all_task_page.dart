@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:flutter_task_planner_app/screens/home_page.dart';
 import 'package:flutter_task_planner_app/widgets/Tesktile.dart';
 import 'package:flutter_task_planner_app/screens/create_new_task_page.dart';
 import 'package:get/get.dart';
@@ -424,6 +425,9 @@ class _AllTaskPageState extends State<AllTaskPage> {
   _appBar() {
     return AppBar(
       elevation: 0,
+      leading: IconButton(
+          onPressed: () => Get.to(HomePage()),
+          icon: const Icon(Icons.arrow_back)),
       // eliminate the shadow of header banner
       backgroundColor: Colors.amber[50],
       actions: [

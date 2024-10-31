@@ -9,6 +9,7 @@ import 'package:flutter_task_planner_app/screens/all_task_page.dart';
 import 'package:flutter_task_planner_app/screens/calendar_page.dart';
 
 import 'package:flutter_task_planner_app/screens/report_page.dart';
+import 'package:flutter_task_planner_app/screens/search_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/percent_indicator.dart';
@@ -59,14 +60,26 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  // void initState() {
-  //   super.initState();
-  //   _fetchAllTaskStats();
-  //   // completedTaskCount = _taskController.getCount() as int?;
-  // }
+  void initState() {
+    super.initState();
+    _fetchAllTaskStats();
+    _taskController.getTasks();
+    setState(() {
+      _taskController.getTasks();
+      print("Initialize");
+    });
+    // completedTaskCount = _taskController.getCount() as int?;
+  }
+
   void didChangeDependencies() {
     super.didChangeDependencies();
     _fetchAllTaskStats();
+    // _showActiveProject();
+    // _taskController.getTasks();
+    setState(() {
+      _taskController.getTasks();
+      print("Initialize");
+    });
   }
 
   Text subheading(String title) {
@@ -82,6 +95,11 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var todoTasks = totalTask - completedTask;
+    setState(() {
+      _taskController.getTasks();
+      print("Initialize");
+    });
     DatabaseHelper.listenForChanges(_taskController.updateCount);
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
@@ -98,7 +116,9 @@ class _HomePageState extends State<HomePage> {
           trailing: IconButton(
             icon: Icon(Icons.search),
             iconSize: 31,
-            onPressed: () {},
+            onPressed: () {
+              Get.to(SearchPage());
+            },
           ),
         ),
         child: Container(
@@ -182,113 +202,61 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 10),
+              Column(
+                children: [
+                  Container(
+                    color: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0, vertical: 10.0),
                     child: Column(
                       children: <Widget>[
-                        Container(
-                          color: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20.0, vertical: 10.0),
-                          child: Column(
-                            children: <Widget>[
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  subheading('My Tasks'),
-                                  GestureDetector(
-                                    onTap: () async {
-                                      Get.to(CalendarPage());
-                                      _taskController.getTasks();
-                                    },
-                                    child: HomePage.calendarIcon(),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 15.0),
-                              TaskColumn(
-                                icon: Icons.alarm,
-                                iconBackgroundColor: LightColors.kRed,
-                                title: 'To Do',
-                                subtitle: '${totalTask}tasks now. 1 started',
-                              ),
-                              const SizedBox(
-                                height: 15.0,
-                              ),
-                              TaskColumn(
-                                icon: Icons.blur_circular,
-                                iconBackgroundColor: LightColors.kDarkYellow,
-                                title: 'In Progress',
-                                subtitle:
-                                    '${totalTask - completedTask} tasks now. 1 started',
-                              ),
-                              const SizedBox(height: 15.0),
-                              TaskColumn(
-                                icon: Icons.check_circle_outline,
-                                iconBackgroundColor: LightColors.kBlue,
-                                title: 'Done',
-                                subtitle:
-                                    '${completedTask} tasks now. 1 started',
-                              )
-                            ],
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            subheading('My Tasks'),
+                            GestureDetector(
+                              onTap: () async {
+                                Get.to(CalendarPage());
+                                _taskController.getTasks();
+                              },
+                              child: HomePage.calendarIcon(),
+                            ),
+                          ],
                         ),
-                        Container(
-                          color: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20.0, vertical: 10.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              subheading('Active Projects'),
-                              const SizedBox(height: 5.0),
-                              // Row(
-                              //   children: <Widget>[
-                              //     ActiveProjectsCard(
-                              //       cardColor: LightColors.kGreen,
-                              //       loadingPercent: 0.25,
-                              //       title: 'Medical App',
-                              //       subtitle: '9 hours progress',
-                              //     ),
-                              //     const SizedBox(width: 20.0),
-                              //     ActiveProjectsCard(
-                              //       cardColor: LightColors.kRed,
-                              //       loadingPercent: 0.6,
-                              //       title: 'Making History Notes',
-                              //       subtitle: '20 hours progress',
-                              //     ),
-                              //   ],
-                              // ),
-                              // Row(
-                              //   children: <Widget>[
-                              //     ActiveProjectsCard(
-                              //       cardColor: LightColors.kDarkYellow,
-                              //       loadingPercent: 0.45,
-                              //       title: 'Sports App',
-                              //       subtitle: '5 hours progress',
-                              //     ),
-                              //     const SizedBox(width: 20.0),
-                              //     ActiveProjectsCard(
-                              //       cardColor: LightColors.kBlue,
-                              //       loadingPercent: 0.9,
-                              //       title: 'Online Flutter Course',
-                              //       subtitle: '23 hours progress',
-                              //     ),
-                              //   ],
-                              // ),
-                              // _showAvtiveProject(),
-                            ],
-                          ),
+                        const SizedBox(height: 15.0),
+                        TaskColumn(
+                          icon: Icons.alarm,
+                          iconBackgroundColor: LightColors.kRed,
+                          title: 'To Do',
+                          subtitle: '${totalTask}tasks now. 1 started',
                         ),
+                        const SizedBox(
+                          height: 15.0,
+                        ),
+                        TaskColumn(
+                          icon: Icons.blur_circular,
+                          iconBackgroundColor: LightColors.kDarkYellow,
+                          title: 'In Progress',
+                          subtitle: '${todoTasks} tasks now. 1 started',
+                        ),
+                        const SizedBox(height: 15.0),
+                        TaskColumn(
+                          icon: Icons.check_circle_outline,
+                          iconBackgroundColor: LightColors.kBlue,
+                          title: 'Done',
+                          subtitle: '${completedTask} tasks now. 1 started',
+                        )
                       ],
                     ),
                   ),
-                ),
+                  Container(
+                    child: subheading('Active Projects'),
+                  ),
+                ],
               ),
+              const SizedBox(height: 5.0),
+              _showActiveProject()
             ],
           ),
         ),
@@ -296,34 +264,29 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  _showAvtiveProject() {
-    return Wrap(
-      children: [
-        Obx(
-          () {
-            return ListView.builder(
-                itemCount: _taskController.taskList.length,
-                itemBuilder: (_, index) {
-                  Task task = _taskController.taskList[index];
-
-                  return AnimationConfiguration.staggeredList(
-                      position: index,
-                      child: SlideAnimation(
-                        child: FadeInAnimation(
-                          child: Row(
-                            children: [
-                              ActiveProjectsCard(
-                                task: task,
-                              )
-                            ],
-                          ),
-                        ),
-                      ));
-                });
+  Widget _showActiveProject() {
+    return Obx(() {
+      return Expanded(
+        child: GridView.builder(
+          itemCount: _taskController.taskList.length,
+          itemBuilder: (context, index) {
+            Task task = _taskController.taskList[index];
+            if (task.isCompleted == 0) {
+              return Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: ActiveProjectsCard(
+                  task: task,
+                ),
+              );
+            }
           },
+          shrinkWrap: true,
+          gridDelegate:
+              SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+          padding: EdgeInsets.all(10),
         ),
-      ],
-    );
+      );
+    });
   }
 
   _getBGClr(int no) {

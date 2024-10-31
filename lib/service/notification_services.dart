@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
+// import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:flutter_task_planner_app/screens/calendar_page.dart';
 import 'package:get/get.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -11,31 +11,55 @@ import 'package:flutter_task_planner_app/model/task_model.dart';
 class NotifyHelper {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-
+  static Future<void> onDidReceiveBackgroundNotificationResponse(
+      NotificationResponse notificationResponce) async {}
   get selectNotificationSubject => null;
   Set<int> notifiedTasks = {};
 
   initializeNotification() async {
     _configureLocalTimeZone();
     // tz.initializeTimeZones();
-
-    final IOSInitializationSettings initializationSettingsIOS =
-        IOSInitializationSettings(
-            requestSoundPermission: false,
-            requestBadgePermission: false,
-            requestAlertPermission: false,
-            onDidReceiveLocalNotification: onDidReceiveLocalNotification);
-
-    final AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings("app_icon");
-
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-      iOS: initializationSettingsIOS,
-      android: initializationSettingsAndroid,
+    final DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings(
+      requestSoundPermission: false,
+      requestBadgePermission: false,
+      requestAlertPermission: false,
+      // onDidReceiveLocalNotification: _onDidReceiveLocalNotification,
     );
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: selectNotification);
+    Future<void> _onDidReceiveLocalNotification(
+        int id, String? title, String? body, String? payload) async {
+      // Handle the notification here
+    }
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    //initialize the ios settings
+    const DarwinInitializationSettings initializationSettingsIos =
+        DarwinInitializationSettings();
+    //combine the android and ios settings
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIos,
+    );
+    //initialize the plugin
+    await flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveBackgroundNotificationResponse:
+          onDidReceiveBackgroundNotificationResponse,
+      onDidReceiveNotificationResponse:
+          onDidReceiveBackgroundNotificationResponse,
+    );
+
+    // Handle local notification received while the app is in the foreground
+
+    //request permission to show notifications andriod
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+    //   await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+    //       onSelectNotification: selectNotification);
   }
 
   // Just show the source code of onSelectNotification(flutter_local_notifications: ^9.9.0 )
@@ -56,7 +80,7 @@ class NotifyHelper {
       importance: Importance.max,
       priority: Priority.high,
     );
-    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
     var platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
         iOS: iOSPlatformChannelSpecifics);
@@ -86,7 +110,7 @@ class NotifyHelper {
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
-      payload: "Task: ${task.title}\nNote: ${task.note}",
+      payload: "Task: ${task.title}\nNote: ${task.description}",
     );
   }
 
@@ -96,7 +120,7 @@ class NotifyHelper {
         channelDescription: 'your channel description',
         importance: Importance.max,
         priority: Priority.high);
-    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
     var platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
         iOS: iOSPlatformChannelSpecifics);
