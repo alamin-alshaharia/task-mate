@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../home_page.dart';
+import '../task_screen/home_page.dart';
 
 class AuthClass {
   final FirebaseAuth _auth = FirebaseAuth.instance;

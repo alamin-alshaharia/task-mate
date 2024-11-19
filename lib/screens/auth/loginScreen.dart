@@ -5,11 +5,11 @@ import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../home_page.dart';
+import '../task_screen/home_page.dart';
 import 'component/radiobutton.dart';
 import 'constant.dart';
 
-import 'package:flutter_task_planner_app/widgets/ButtonItem.dart';
+import 'package:flutter_task_planner_app/widgets/task_widget/ButtonItem.dart';
 import 'package:flutter_task_planner_app/screens/auth/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {

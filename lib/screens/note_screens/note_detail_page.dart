@@ -1,0 +1,336 @@
+// import 'package:flutter/material.dart';
+// import 'package:flutter/services.dart';
+//
+// import 'package:flutter_task_planner_app/screens/note_screens/edit_note_page.dart';
+// import 'package:flutter_task_planner_app/screens/note_screens/home_page.dart';
+// import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
+// import 'package:flutter_task_planner_app/widgets/note_widgets/alert_dialog.dart';
+// import 'package:get/get.dart';
+//
+// import '../../controller/note_controller.dart';
+//
+// class NoteDetailPage extends StatelessWidget {
+//   final NoteController controller = Get.find();
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final int i = ModalRoute.of(context)?.settings.arguments as int;
+//     return Scaffold(
+//       backgroundColor: LightColors.kLightYellow,
+//       appBar: AppBar(
+//         backgroundColor: LightColors.kLightYellow2,
+//         iconTheme: const IconThemeData(
+//           color: Colors.black,
+//         ),
+//         title: const Text(
+//           "Note Details",
+//           style: TextStyle(
+//             color: Colors.black,
+//           ),
+//         ),
+//         actions: [
+//           PopupMenuButton(
+//             onSelected: (val) {
+//               if (val == 0) {
+//                 editNote(i);
+//               } else if (val == 1) {
+//                 deleteNote(context, i);
+//               } else if (val == 2) {
+//                 shareNote(i);
+//               }
+//             },
+//             itemBuilder: (BuildContext bc) {
+//               return const [
+//                 PopupMenuItem(
+//                   value: 0,
+//                   child: Text(
+//                     "Edit Note",
+//                     style: TextStyle(
+//                       fontWeight: FontWeight.normal,
+//                     ),
+//                   ),
+//                 ),
+//                 PopupMenuItem(
+//                   value: 1,
+//                   child: Text(
+//                     "Delete Note",
+//                     style: TextStyle(
+//                       fontWeight: FontWeight.normal,
+//                     ),
+//                   ),
+//                 ),
+//                 PopupMenuItem(
+//                   value: 2,
+//                   child: Text(
+//                     "Share Note",
+//                     style: TextStyle(
+//                       fontWeight: FontWeight.normal,
+//                     ),
+//                   ),
+//                 )
+//               ];
+//             },
+//           ),
+//         ],
+//         systemOverlayStyle: SystemUiOverlayStyle.dark,
+//       ),
+//       body: GetBuilder<NoteController>(
+//         builder: (_) => Scrollbar(
+//           child: Container(
+//             padding: const EdgeInsets.only(
+//               top: 15,
+//               left: 15,
+//               right: 15,
+//             ),
+//             child: SingleChildScrollView(
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   const SizedBox(
+//                     height: 10,
+//                   ),
+//                   SelectableText(
+//                     controller.notes[i].title!,
+//                     style: const TextStyle(
+//                       fontSize: 27,
+//                       fontWeight: FontWeight.w900,
+//                     ),
+//                   ),
+//                   const SizedBox(
+//                     height: 15,
+//                   ),
+//                   Text(
+//                     "Last Edited : ${controller.notes[i].dateTimeEdited}",
+//                     style: TextStyle(
+//                       fontSize: 17,
+//                       fontWeight: FontWeight.bold,
+//                       color: Colors.grey[600],
+//                     ),
+//                   ),
+//                   const SizedBox(
+//                     height: 15,
+//                   ),
+//                   SelectableText(
+//                     controller.notes[i].content!,
+//                     style: const TextStyle(
+//                       fontSize: 22,
+//                     ),
+//                   ),
+//                   const SizedBox(
+//                     height: 10,
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+//
+//   void editNote(int i) async {
+//     Get.to(EditNotePage());
+//   }
+//
+//   void deleteNote(BuildContext context, int i) async {
+//     showDialog(
+//       context: context,
+//       builder: (context) {
+//         return AlertDialogWidget(
+//           headingText: "Are you sure you want to delete this note?",
+//           contentText:
+//               "This will delete the note permanently. You cannot undo this action.",
+//           confirmFunction: () {
+//             controller.deleteNote(controller.notes[i].id!);
+//             Get.to(Homenote());
+//           },
+//           declineFunction: () {
+//             Get.back();
+//           },
+//         );
+//       },
+//     );
+//   }
+//
+//   void shareNote(int i) async {
+//     controller.shareNote(
+//       controller.notes[i].title!,
+//       controller.notes[i].content!,
+//     );
+//   }
+// }
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_task_planner_app/screens/note_screens/edit_note_page.dart';
+import 'package:flutter_task_planner_app/screens/note_screens/home_page.dart';
+import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
+import 'package:flutter_task_planner_app/widgets/note_widgets/alert_dialog.dart';
+import 'package:get/get.dart';
+
+import '../../controller/note_controller.dart';
+
+class NoteDetailPage extends StatelessWidget {
+  final NoteController controller = Get.find();
+
+  @override
+  Widget build(BuildContext context) {
+    // Retrieve the arguments safely
+    final arguments = ModalRoute.of(context)?.settings.arguments;
+
+    // Check if arguments are provided and are of the expected type
+    if (arguments is int) {
+      final int i = arguments;
+
+      return Scaffold(
+        backgroundColor: LightColors.kLightYellow,
+        appBar: AppBar(
+          backgroundColor: LightColors.kLightYellow2,
+          iconTheme: const IconThemeData(
+            color: Colors.black,
+          ),
+          title: const Text(
+            "Note Details",
+            style: TextStyle(
+              color: Colors.black,
+            ),
+          ),
+          actions: [
+            PopupMenuButton(
+              onSelected: (val) {
+                if (val == 0) {
+                  editNote(i);
+                } else if (val == 1) {
+                  deleteNote(context, i);
+                } else if (val == 2) {
+                  shareNote(i);
+                }
+              },
+              itemBuilder: (BuildContext bc) {
+                return const [
+                  PopupMenuItem(
+                    value: 0,
+                    child: Text(
+                      "Edit Note",
+                      style: TextStyle(
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 1,
+                    child: Text(
+                      "Delete Note",
+                      style: TextStyle(
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 2,
+                    child: Text(
+                      "Share Note",
+                      style: TextStyle(
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  )
+                ];
+              },
+            ),
+          ],
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
+        ),
+        body: GetBuilder<NoteController>(
+          builder: (_) => Scrollbar(
+            child: Container(
+              padding: const EdgeInsets.only(
+                top: 15,
+                left: 15,
+                right: 15,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    SelectableText(
+                      controller.notes[i].title!,
+                      style: const TextStyle(
+                        fontSize: 27,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    Text(
+                      "Last Edited : ${controller.notes[i].dateTimeEdited}",
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    SelectableText(
+                      controller.notes[i].content!,
+                      style: const TextStyle(
+                        fontSize: 22,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      // Handle the case where arguments are not an int
+      return Scaffold(
+        body: Center(
+          child: Text('No note index provided.'),
+        ),
+      );
+    }
+  }
+
+  void editNote(int i) async {
+    Get.to(() => EditNotePage(),
+        arguments: i); // Pass the index to EditNotePage
+  }
+
+  void deleteNote(BuildContext context, int i) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialogWidget(
+          headingText: "Are you sure you want to delete this note?",
+          contentText:
+              "This will delete the note permanently. You cannot undo this action.",
+          confirmFunction: () {
+            controller.deleteNote(controller.notes[i].id!);
+            Get.to(Homenote());
+          },
+          declineFunction: () {
+            Get.back();
+          },
+        );
+      },
+    );
+  }
+
+  void shareNote(int i) async {
+    controller.shareNote(
+      controller.notes[i].title!,
+      controller.notes[i].content!,
+    );
+  }
+}

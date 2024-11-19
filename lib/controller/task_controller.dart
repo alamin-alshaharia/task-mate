@@ -5,206 +5,223 @@ import '../db/database_helper.dart';
 import '../model/task_model.dart';
 
 class TaskController extends GetxController {
-  @override
-  void onReady() {
-    // TODO: implement onReady
-    super.onReady();
-  }
-
   var taskList = <Task>[].obs;
-  var taskDetailList = <Task>[].obs;
-
-  Future<int> addTask({Task? task}) async {
-    return await DatabaseHelper.insertTask(task!);
-  }
-
-  var count = 0.obs;
-
-  void updateCount(int newCount) {
-    count.value = newCount;
-  }
-
-  void getTasks() async {
-    List<Map<String, dynamic>> tasks = await DatabaseHelper.query();
-    taskList.assignAll(tasks.map((data) => new Task.fromJson(data)).toList());
-  }
-
-  Future<double> getTotalTask() async {
-    double res = 0;
-    List<Map<String, dynamic>> tasks = await DatabaseHelper.query();
-    taskList.assignAll(tasks.map((data) => Task.fromJson(data)).toList());
-    res = taskList.length.toDouble();
-    return res;
-  }
-
-  void updateTask({Task? task}) async {
-    print("update task detail");
-    await DatabaseHelper.updateTaskDetail(task!);
-    getTasks();
-  }
-
-  // get total completed tasks
-  Future<double> getTotalCompletedTask() async {
-    double res = 0;
-    List<Map<String, dynamic>> tasks = await DatabaseHelper.query();
-    taskList.assignAll(tasks.map((data) => Task.fromJson(data)).toList());
-    for (int i = 0; i < taskList.length; i++) {
-      if (taskList[i].isCompleted == 1) {
-        res += 1;
-      }
-    }
-    return res;
-  }
-
-  Future<int> getTotalCompletedProgress() async {
-    int totalProgress = 0;
-    double comp = await getTotalCompletedTask();
-    double total = await getTotalTask();
-    // use toInt() but not as int
-    // totalProgress = ((comp / total) * 100) as int; // wrong
-    totalProgress = ((comp / total) * 100).toInt();
-    return totalProgress;
-  }
-
-  void undoTaskCompleted(int id) async {
-    await DatabaseHelper.undoCompleted(id);
-    getTasks(); // update the current new task list
-  }
-
-  void undoTaskStar(int id) async {
-    await DatabaseHelper.undoStar(id);
-    getTasks(); // update the current new task list
-  }
-
-  void delete(Task task) {
-    DatabaseHelper.delete(task);
-    getTasks();
-  }
-
-  // //
-  // void isCompled() async {
-  //   int value = await DatabaseHelper.query();
-  // }
-
-  void markTaskCompleted(int id) async {
-    await DatabaseHelper.update(id);
-    getTasks();
-  }
-
-  void markTaskStar(int id) async {
-    await DatabaseHelper.markStar(id);
-    getTasks(); // update the current new task list
-  }
 
   @override
   void onInit() {
     super.onInit();
-    getTasks();
-    listenForTaskChanges();
+    _initializeDatabase();
   }
 
-  void listenForTaskChanges() async {
-    DatabaseHelper.initDb(); // Ensure database is initialized
-    DatabaseHelper.listenForChanges((newCount) {
-      updateCount(newCount);
-    });
+  Future<void> _initializeDatabase() async {
+    try {
+      // Ensure the database is initialized
+      await DatabaseHelper.instance.database; // Access the singleton instance
+      await getTasks();
+    } catch (e) {
+      print('Error initializing database: $e');
+    }
+  }
+
+  Future<void> getTasks() async {
+    try {
+      List<Map<String, dynamic>> tasks = await DatabaseHelper.instance.query();
+      taskList.assignAll(tasks.map((data) => Task.fromJson(data)).toList());
+    } catch (e) {
+      print('Error fetching tasks: $e');
+    }
+  }
+
+  Future<int> addTask({Task? task}) async {
+    try {
+      int result = await DatabaseHelper.instance.insertTask(task);
+      await getTasks();
+      return result;
+    } catch (e) {
+      print('Error adding task: $e');
+      return -1;
+    }
+  }
+
+  void updateTask({Task? task}) async {
+    try {
+      await DatabaseHelper.instance.updateTaskDetail(task!);
+      await getTasks();
+    } catch (e) {
+      print('Error updating task: $e');
+    }
+  }
+
+  Future<double> getTotalTask() async {
+    try {
+      await getTasks();
+      return taskList.length.toDouble();
+    } catch (e) {
+      print('Error getting total tasks: $e');
+      return 0.0;
+    }
+  }
+
+  Future<double> getTotalCompletedTask() async {
+    try {
+      await getTasks();
+      return taskList.where((task) => task.isCompleted == 1).length.toDouble();
+    } catch (e) {
+      print('Error getting completed tasks: $e');
+      return 0.0;
+    }
+  }
+
+  Future<int> getTotalCompletedProgress() async {
+    try {
+      double comp = await getTotalCompletedTask();
+      double total = await getTotalTask();
+      return total > 0 ? ((comp / total) * 100).toInt() : 0;
+    } catch (e) {
+      print('Error calculating completion progress: $e');
+      return 0;
+    }
+  }
+
+  void undoTaskCompleted(int id) async {
+    try {
+      await DatabaseHelper.instance.undoCompleted(id);
+      await getTasks();
+    } catch (e) {
+      print('Error undoing task completion: $e');
+    }
+  }
+
+  void undoTaskStar(int id) async {
+    try {
+      await DatabaseHelper.instance.undoStar(id);
+      await getTasks();
+    } catch (e) {
+      print('Error undoing task star: $e');
+    }
+  }
+
+  void delete(Task task) async {
+    try {
+      await DatabaseHelper.instance.delete(task);
+      await getTasks();
+    } catch (e) {
+      print('Error deleting task: $e');
+    }
+  }
+
+  void markTaskCompleted(int id) async {
+    try {
+      await DatabaseHelper.instance.update(id);
+      await getTasks();
+    } catch (e) {
+      print('Error marking task as completed: $e');
+    }
+  }
+
+  void markTaskStar(int id) async {
+    try {
+      await DatabaseHelper.instance.markStar(id);
+      await getTasks();
+    } catch (e) {
+      print('Error marking task as star: $e');
+    }
   }
 
   Future<double> getOneDayTask() async {
-    DateTime today = DateTime.now();
-    List<Map<String, dynamic>> tasks = await DatabaseHelper.query();
-    taskList.assignAll(tasks.map((data) => Task.fromJson(data)).toList());
-    double res = taskList
-        .where((task) => task.date == DateFormat.yMd().format(today))
-        .length
-        .toDouble();
-
-    // using .where() to simplify the codes below:
-    // double res = 0;
-    // List<Map<String, dynamic>> tasks = await DBHelper.query();
-    // taskList.assignAll(tasks.map((data) => Task.fromJson(data)).toList());
-    // for (int i = 0; i < taskList.length; i++) {
-    //   if (taskList[i].date == DateFormat.yMd().format(today)) {
-    //     res += 1;
-    //   }
-    // }
-    return res;
+    try {
+      DateTime today = DateTime.now();
+      await getTasks();
+      return taskList
+          .where((task) => task.date == DateFormat.yMd().format(today))
+          .length
+          .toDouble();
+    } catch (e) {
+      print('Error getting one-day tasks: $e');
+      return 0.0;
+    }
   }
 
   Future<double> getOneDayCompletedTask() async {
-    DateTime today = DateTime.now();
-    double res = 0;
-    List<Map<String, dynamic>> tasks = await DatabaseHelper.query();
-    taskList.assignAll(tasks.map((data) => Task.fromJson(data)).toList());
-    for (int i = 0; i < taskList.length; i++) {
-      if (taskList[i].date == DateFormat.yMd().format(today) &&
-          taskList[i].isCompleted == 1) {
-        res += 1;
-      }
+    try {
+      DateTime today = DateTime.now();
+      await getTasks();
+      return taskList
+          .where((task) =>
+              task.date == DateFormat.yMd().format(today) &&
+              task.isCompleted == 1)
+          .length
+          .toDouble();
+    } catch (e) {
+      print('Error getting one-day completed tasks: $e');
+      return 0.0;
     }
-    return res;
   }
 
-  // get total tasks under 7 days (started from today)
   Future<double> getSevenDaysTasks() async {
-    DateTime today = DateTime.now();
-    List<Map<String, dynamic>> tasks = await DatabaseHelper.query();
-    taskList.assignAll(tasks.map((data) => Task.fromJson(data)).toList());
-    double res = taskList
-        .where((task) =>
-            isWithinSevenDays(DateFormat.yMd().parse(task.date!), today) &&
-            isWithinSameMonth(DateFormat.yMd().parse(task.date!), today))
-        .length
-        .toDouble();
-    return res;
+    try {
+      DateTime today = DateTime.now();
+      await getTasks();
+      return taskList
+          .where((task) =>
+              isWithinSevenDays(DateFormat.yMd().parse(task.date!), today) &&
+              isWithinSameMonth(DateFormat.yMd().parse(task.date!), today))
+          .length
+          .toDouble();
+    } catch (e) {
+      print('Error getting seven-day tasks: $e');
+      return 0.0;
+    }
   }
 
   Future<double> getSevenDaysCompletedTasks() async {
-    DateTime today = DateTime.now();
-    double res = taskList
-        .where((task) =>
-            task.isCompleted == 1 &&
-            isWithinSevenDays(DateFormat.yMd().parse(task.date!), today) &&
-            isWithinSameMonth(DateFormat.yMd().parse(task.date!), today))
-        .length
-        .toDouble();
-
-    return res;
+    try {
+      DateTime today = DateTime.now();
+      await getTasks();
+      return taskList
+          .where((task) =>
+              task.isCompleted == 1 &&
+              isWithinSevenDays(DateFormat.yMd().parse(task.date!), today) &&
+              isWithinSameMonth(DateFormat.yMd().parse(task.date!), today))
+          .length
+          .toDouble();
+    } catch (e) {
+      print('Error getting seven-day completed tasks: $e');
+      return 0.0;
+    }
   }
 
   Future<double> getThisMonthTasks() async {
-    DateTime today = DateTime.now();
-    double res = 0;
-    List<Map<String, dynamic>> tasks = await DatabaseHelper.query();
-    taskList.assignAll(tasks.map((data) => Task.fromJson(data)).toList());
-
-    for (int i = 0; i < taskList.length; i++) {
-      DateTime taskDate = DateFormat.yMd().parse(taskList[i].date!);
-      if (isWithinSameMonth(taskDate, today)) {
-        res += 1;
-      }
+    try {
+      DateTime today = DateTime.now();
+      await getTasks();
+      return taskList
+          .where((task) =>
+              isWithinSameMonth(DateFormat.yMd().parse(task.date!), today))
+          .length
+          .toDouble();
+    } catch (e) {
+      print('Error getting this month tasks: $e');
+      return 0.0;
     }
-
-    return res;
   }
 
   Future<double> getMonthCompletedTasks() async {
-    DateTime today = DateTime.now();
-    double res = 0;
-    List<Map<String, dynamic>> tasks = await DatabaseHelper.query();
-    taskList.assignAll(tasks.map((data) => Task.fromJson(data)).toList());
-
-    for (int i = 0; i < taskList.length; i++) {
-      DateTime taskDate = DateFormat.yMd().parse(taskList[i].date!);
-      if (taskList[i].isCompleted == 1 && isWithinSameMonth(taskDate, today)) {
-        res += 1;
-      }
+    try {
+      DateTime today = DateTime.now();
+      await getTasks();
+      return taskList
+          .where((task) =>
+              task.isCompleted == 1 &&
+              isWithinSameMonth(DateFormat.yMd().parse(task.date!), today))
+          .length
+          .toDouble();
+    } catch (e) {
+      print('Error getting month completed tasks: $e');
+      return 0.0;
     }
-
-    return res;
   }
 
-  // judge logic
   bool isWithinSameMonth(DateTime taskDate, DateTime today) {
     return taskDate.month == today.month && taskDate.year == today.year;
   }

@@ -2,10 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/screens/auth/auth_service.dart';
 import 'package:flutter_task_planner_app/screens/auth/loginScreen.dart';
-import 'package:flutter_task_planner_app/screens/home_page.dart';
+import 'package:flutter_task_planner_app/screens/task_screen/home_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:get/get.dart';
-import '../../widgets/ButtonItem.dart';
+import '../../widgets/task_widget/ButtonItem.dart';
 import 'component/radiobutton.dart';
 import 'constant.dart';
 
