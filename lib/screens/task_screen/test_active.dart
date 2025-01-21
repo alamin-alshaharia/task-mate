@@ -71,7 +71,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../Controller/task_controller.dart';
 import '../../model/task_model.dart';
 
-import '../../widgets/task_widget/active_project_card.dart'; // Update with your actual import
+import '../../widgets/task_widget/home_page/active_project_card.dart'; // Update with your actual import
 
 class Active extends StatefulWidget {
   const Active({super.key});

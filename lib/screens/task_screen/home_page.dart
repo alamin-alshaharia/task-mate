@@ -1,30 +1,24 @@
-import 'dart:io';
-import 'package:flutter_task_planner_app/screens/note_screens/home_page.dart';
-import 'package:flutter_task_planner_app/screens/task_screen/profile.dart';
-import 'package:flutter_task_planner_app/service/notification_services.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slider_drawer/flutter_slider_drawer.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-
-import 'package:flutter_task_planner_app/screens/task_screen/all_task_page.dart';
-import 'package:flutter_task_planner_app/screens/task_screen/calendar_page.dart';
-import 'package:flutter_task_planner_app/screens/task_screen/report_page.dart';
-import 'package:flutter_task_planner_app/screens/task_screen/search_page.dart';
-import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
+import 'package:flutter_task_planner_app/controller/task_controller.dart';
+import 'package:flutter_task_planner_app/latest_calender_screen.dart';
+import 'package:flutter_task_planner_app/screens/task_screen/category_details.dart';
 import 'package:get/get.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 
-import 'package:percent_indicator/percent_indicator.dart';
-import 'package:flutter_task_planner_app/widgets/task_widget/task_column.dart';
-import 'package:flutter_task_planner_app/widgets/task_widget/active_project_card.dart';
-import 'package:flutter_task_planner_app/widgets/task_widget/top_container.dart';
-
-import '../../Controller/task_controller.dart';
 import '../../controller/profile_controller.dart';
+import '../../model/category_model.dart';
+import '../../theme/colors/light_colors.dart';
+import '../../widgets/task_widget/home_page/top_container.dart';
+import '../../widgets/task_widget/home_page/homepage_button.dart';
+import '../../widgets/task_widget/task_column.dart';
+import '../../widgets/task_widget/home_page/drawer.dart';
 
-import '../../latest_calender_screen.dart';
-import 'create_new_task_page.dart';
+import '../note_screens/home_page.dart';
+import '../task_screen/all_task_page.dart';
+import '../task_screen/create_new_task_page.dart';
+import '../task_screen/report_page.dart';
+import '../task_screen/search_page.dart';
 
 class HomePage extends StatefulWidget {
   static CircleAvatar calendarIcon() {
@@ -45,69 +39,177 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   GlobalKey<SliderDrawerState> dKey = GlobalKey<SliderDrawerState>();
-  int? completedTaskCount;
   final TaskController _taskController = Get.put(TaskController());
+  final ProfileController _profileController = Get.put(ProfileController());
+
   int totalTask = 0;
   int completedTask = 0;
-  double totalProgress = .75;
-  Future<void> _fetchAllTaskStats() async {
-    try {
-      double totalResult = await _taskController.getTotalTask();
-      double completedResult = await _taskController.getTotalCompletedTask();
-
-      setState(() {
-        totalTask = totalResult.toInt();
-        completedTask = completedResult.toInt();
-        _taskController.getTasks();
-      });
-    } catch (error) {
-      print('Error: $error');
-    }
-  }
+  int todoTask = 0;
+  double totalProgress = 0.0;
+  List<CategoryModel> _categories = [];
 
   @override
   void initState() {
     super.initState();
     _fetchAllTaskStats();
-    // _taskController.getTasks();
-    _taskController.getTasks();
-    setState(() {
-      _taskController.getTasks();
-      print("Initialize");
-    });
+    _setDefaultCategories();
+    _fetchCategories();
+  }
+
+  void _setDefaultCategories() {
+    _categories = [
+      CategoryModel(
+        id: 1,
+        name: 'Personal',
+        icon: 'person_outline',
+        color: '#FF7B86',
+        remainingTasks: 0,
+        completedTasks: 0,
+      ),
+      CategoryModel(
+        name: 'Work',
+        icon: 'work_outline',
+        color: '#4ECDC4',
+        remainingTasks: 0,
+        completedTasks: 0,
+        id: 2,
+      ),
+      CategoryModel(
+        id: 3,
+        name: 'Important',
+        icon: 'priority_high',
+        color: '#FFB900',
+        remainingTasks: 0,
+        completedTasks: 0,
+      ),
+    ];
+  }
+
+  Future<void> _fetchAllTaskStats() async {
+    try {
+      totalTask = (await _taskController.getTotalTask()).toInt();
+      completedTask = (await _taskController.getTotalCompletedTask()).toInt();
+      todoTask = totalTask - completedTask;
+      totalProgress = (await _taskController.getTotalCompletedProgress()) / 100;
+      setState(() {});
+    } catch (error) {
+      print('Error: $error');
+    }
+  }
+
+  Future<void> _fetchCategories() async {
+    try {
+      // Fetch categories from the task controller
+      List<CategoryModel> fetchedCategories =
+          await _taskController.getCategories();
+
+      // Create a new list to store updated categories
+      List<CategoryModel> updatedCategories = List.from(_categories);
+
+      // Merge fetched categories with existing ones
+      for (var fetchedCategory in fetchedCategories) {
+        // Check if the category already exists
+        int existingIndex = updatedCategories.indexWhere((cat) =>
+            cat.name.toLowerCase() == fetchedCategory.name.toLowerCase());
+
+        if (existingIndex == -1) {
+          // Add new category if it doesn't exist
+          updatedCategories.add(fetchedCategory);
+        } else {
+          // Update existing category
+          updatedCategories[existingIndex] = CategoryModel(
+            id: updatedCategories[existingIndex].id,
+            name: fetchedCategory.name,
+            icon: fetchedCategory.icon ?? updatedCategories[existingIndex].icon,
+            color:
+                fetchedCategory.color ?? updatedCategories[existingIndex].color,
+            remainingTasks: fetchedCategory.remainingTasks ??
+                updatedCategories[existingIndex].remainingTasks,
+            completedTasks: fetchedCategory.completedTasks ??
+                updatedCategories[existingIndex].completedTasks,
+          );
+        }
+      }
+
+      // Ensure default categories are always present
+      _ensureDefaultCategories(updatedCategories);
+
+      // Update the categories list
+      setState(() {
+        _categories = updatedCategories;
+      });
+    } catch (error) {
+      print('Error fetching categories: $error');
+
+      // Fallback to default categories if fetching fails
+      _ensureDefaultCategories(_categories);
+    }
+  }
+
+  void _ensureDefaultCategories(List<CategoryModel> categories) {
+    // List of default categories to always include
+    final defaultCategories = [
+      CategoryModel(
+        id: 1,
+        name: 'Personal',
+        icon: 'person_outline',
+        color: '#FF7B86',
+        remainingTasks: 0,
+        completedTasks: 0,
+      ),
+      CategoryModel(
+        id: 2,
+        name: 'Work',
+        icon: 'work_outline',
+        color: '#4ECDC4',
+        remainingTasks: 0,
+        completedTasks: 0,
+      ),
+      CategoryModel(
+        id: 3,
+        name: 'Important',
+        icon: 'priority_high',
+        color: '#FFB900',
+        remainingTasks: 0,
+        completedTasks: 0,
+      ),
+    ];
+
+    // Add default categories if they don't exist
+    for (var defaultCategory in defaultCategories) {
+      bool exists = categories.any((cat) =>
+          cat.name.toLowerCase() == defaultCategory.name.toLowerCase());
+
+      if (!exists) {
+        categories.add(defaultCategory);
+      }
+    }
   }
 
   Text subheading(String title) {
     return Text(
       title,
       style: const TextStyle(
-          color: LightColors.kDarkBlue,
-          fontSize: 20.0,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.2),
+        color: LightColors.kDarkBlue,
+        fontSize: 20.0,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.2,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final ProfileController _profileController = Get.put(ProfileController());
-    var todoTasks = totalTask - completedTask;
-    setState(() {
-      _taskController.getTasks();
-      print("Initialize");
-    });
-    // DatabaseHelper.listenForChanges(_taskController.updateCount);
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
-      floatingActionButton: todoTasks != 0
+      floatingActionButton: todoTask != 0
           ? FloatingActionButton(
               onPressed: () => Get.to(CreateNewTaskPage()),
-              child: Icon(Icons.add), // You can change the icon as needed
+              child: Icon(Icons.add),
             )
           : Container(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: SliderDrawer(
-        // isDraggable: false,
         key: dKey,
         animationDuration: 200,
         slider: MySlider(),
@@ -131,71 +233,72 @@ class _HomePageState extends State<HomePage> {
                 height: 190,
                 width: width,
                 child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 0, vertical: 0.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            Obx(() {
-                              final profile = _profileController.profile.value;
-                              return CircularPercentIndicator(
-                                radius: 65.0,
-                                lineWidth: 7.0,
-                                animation: true,
-                                percent: .75,
-                                circularStrokeCap: CircularStrokeCap.round,
-                                progressColor: LightColors.kRed,
-                                backgroundColor: LightColors.kDarkYellow,
-                                center: CircleAvatar(
-                                  backgroundColor: LightColors.kBlue,
-                                  radius: 40.0,
-                                  backgroundImage: profile.imageData != null
-                                      ? MemoryImage(profile.imageData!)
-                                      : const AssetImage(
-                                              'assets/images/avatar.png')
-                                          as ImageProvider,
-                                ),
-                              );
-                            }),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Container(
-                                  child: const Text(
-                                    'Welcome',
-                                    textAlign: TextAlign.start,
-                                    style: TextStyle(
-                                      fontSize: 22.0,
-                                      color: LightColors.kDarkBlue,
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 0, vertical: 0.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          Obx(() {
+                            final profile = _profileController.profile.value;
+                            return CircularPercentIndicator(
+                              radius: 65.0,
+                              lineWidth: 7.0,
+                              animation: true,
+                              percent: totalProgress,
+                              circularStrokeCap: CircularStrokeCap.round,
+                              progressColor: LightColors.kRed,
+                              backgroundColor: LightColors.kDarkYellow,
+                              center: CircleAvatar(
+                                backgroundColor: LightColors.kBlue,
+                                radius: 40.0,
+                                backgroundImage: profile.imageData != null
+                                    ? MemoryImage(profile.imageData!)
+                                    : const AssetImage(
+                                            'assets/images/avatar.png')
+                                        as ImageProvider,
+                              ),
+                            );
+                          }),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Container(
+                                child: const Text(
+                                  'Welcome',
+                                  textAlign: TextAlign.start,
+                                  style: TextStyle(
+                                    fontSize: 22.0,
+                                    color: LightColors.kDarkBlue,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                                Obx(() {
-                                  final profile =
-                                      _profileController.profile.value;
-                                  return Container(
-                                    child: Text(
-                                      profile.name ?? "User Name",
-                                      textAlign: TextAlign.start,
-                                      style: TextStyle(
-                                        fontSize: 16.0,
-                                        color: Colors.black45,
-                                        fontWeight: FontWeight.w400,
-                                      ),
+                              ),
+                              Obx(() {
+                                final profile =
+                                    _profileController.profile.value;
+                                return Container(
+                                  child: Text(
+                                    profile.name ?? "User Name",
+                                    textAlign: TextAlign.start,
+                                    style: TextStyle(
+                                      fontSize: 16.0,
+                                      color: Colors.black45,
+                                      fontWeight: FontWeight.w400,
                                     ),
-                                  );
-                                }),
-                              ],
-                            )
-                          ],
-                        ),
+                                  ),
+                                );
+                              }),
+                            ],
+                          )
+                        ],
                       ),
-                    ]),
+                    ),
+                  ],
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 10),
@@ -207,112 +310,109 @@ class _HomePageState extends State<HomePage> {
                       onpress: () => ReportPage(),
                     ),
                     HomepageButton(
-                      buttonTitle: "Note  Manager",
+                      buttonTitle: "Note Manager",
                       onpress: () => Homenote(),
                     ),
                   ],
                 ),
               ),
-              Column(
-                children: [
-                  Container(
-                    color: Colors.transparent,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20.0, vertical: 10.0),
-                    child: Column(
-                      children: <Widget>[
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Container(
+                        color: Colors.transparent,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0, vertical: 10.0),
+                        child: Column(
                           children: <Widget>[
-                            subheading('My Tasks'),
-                            GestureDetector(
-                              onTap: () async {
-                                Get.to(CalendarTimelinePage());
-                                _taskController.getTasks();
-                              },
-                              child: HomePage.calendarIcon(),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                subheading('My Tasks'),
+                                GestureDetector(
+                                  onTap: () async {
+                                    Get.to(CalendarTimelinePage());
+                                    await _taskController.getTasks();
+                                  },
+                                  child: HomePage.calendarIcon(),
+                                ),
+                              ],
                             ),
+                            const SizedBox(height: 15.0),
+                            GestureDetector(
+                              onTap: () => Get.to(AllTaskPage(indexs: 0)),
+                              child: TaskColumn(
+                                icon: Icons.alarm,
+                                iconBackgroundColor: LightColors.kRed,
+                                title: 'To Do',
+                                subtitle: '$todoTask tasks now. ',
+                              ),
+                            ),
+                            const SizedBox(height: 15.0),
+                            GestureDetector(
+                              onTap: () => Get.to(AllTaskPage(indexs: 2)),
+                              child: TaskColumn(
+                                icon: Icons.blur_circular,
+                                iconBackgroundColor: LightColors.kDarkYellow,
+                                title: 'Total Task',
+                                subtitle: '$totalTask tasks now. ',
+                              ),
+                            ),
+                            const SizedBox(height: 15.0),
+                            GestureDetector(
+                              onTap: () => Get.to(AllTaskPage(indexs: 1)),
+                              child: TaskColumn(
+                                icon: Icons.check_circle_outline,
+                                iconBackgroundColor: LightColors.kBlue,
+                                title: 'Done',
+                                subtitle: '$completedTask tasks now. ',
+                              ),
+                            )
                           ],
                         ),
-                        const SizedBox(height: 15.0),
-                        GestureDetector(
-                          onTap: () => Get.to(AllTaskPage(
-                            indexs: 0,
-                          )),
-                          child: TaskColumn(
-                            icon: Icons.alarm,
-                            iconBackgroundColor: LightColors.kRed,
-                            title: 'To Do',
-                            subtitle: '${todoTasks}tasks now. ',
+                      ),
+                      Container(
+                        child: subheading('Categories'),
+                      ),
+                      const SizedBox(height: 15.0),
+                      Container(
+                        height: 300, // Set a fixed height for the GridView
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: GridView.builder(
+                          itemCount: _categories.length +
+                              1, // Add 1 for the "Add" card
+                          itemBuilder: (context, index) {
+                            // If it's the last item, return the _buildAddCard
+                            if (index == _categories.length) {
+                              return _buildAddCard();
+                            }
+
+                            // Otherwise, return the category card
+                            final category = _categories[index];
+                            return _buildCategoryCard(
+                              category.name,
+                              category.icon,
+                              Color(int.parse(
+                                  category.color.replaceAll('#', '0xff'))),
+                              category.remainingTasks,
+                              category.completedTasks,
+                            );
+                          },
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16.0,
+                            mainAxisSpacing: 16.0,
+                            childAspectRatio: 1, // Adjust as needed
                           ),
                         ),
-                        const SizedBox(
-                          height: 15.0,
-                        ),
-                        GestureDetector(
-                          onTap: () => Get.to(AllTaskPage(
-                            indexs: 2,
-                          )),
-                          child: TaskColumn(
-                            icon: Icons.blur_circular,
-                            iconBackgroundColor: LightColors.kDarkYellow,
-                            title: 'Total Task',
-                            subtitle: '${totalTask} tasks now. ',
-                          ),
-                        ),
-                        const SizedBox(height: 15.0),
-                        GestureDetector(
-                          onTap: () => Get.to(AllTaskPage(
-                            indexs: 1,
-                          )),
-                          child: TaskColumn(
-                            icon: Icons.check_circle_outline,
-                            iconBackgroundColor: LightColors.kBlue,
-                            title: 'Done',
-                            subtitle: '${completedTask} tasks now. ',
-                          ),
-                        )
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    child: subheading('Active Projects'),
-                  ),
-                ],
+                ),
               ),
-              const SizedBox(height: 5.0),
-              todoTasks == 0
-                  ? Padding(
-                      padding: const EdgeInsets.only(left: 20.0, top: 7),
-                      child: Row(children: [
-                        Container(
-                          margin: EdgeInsets.symmetric(vertical: 10.0),
-                          padding: EdgeInsets.all(15.0),
-                          height: 160,
-                          width: 160,
-                          decoration: BoxDecoration(
-                            gradient: LightColors.brownGradient,
-                            borderRadius: BorderRadius.circular(40.0),
-                          ),
-                          child: CircularPercentIndicator(
-                              animation: true,
-                              radius: 50.0,
-                              percent: 1.0,
-                              lineWidth: 5.0,
-                              circularStrokeCap: CircularStrokeCap.round,
-                              backgroundColor: Colors.white10,
-                              progressColor: LightColors.kLightBlue,
-                              center: IconButton(
-                                  onPressed: () => Get.to(CreateNewTaskPage()),
-                                  icon: Icon(
-                                    Icons.add,
-                                    size: 50,
-                                  ))),
-                        ),
-                      ]),
-                    )
-                  : _showActiveProject()
             ],
           ),
         ),
@@ -320,550 +420,293 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _showActiveProject() {
-    return Obx(() {
-      // 1. Filter the task list inside the Obx
-      final activeTasks = _taskController.taskList
-          .where((task) => task.isCompleted == 0)
-          .toList();
-
-      return Expanded(
-        child: GridView.builder(
-          // 2. Use the filtered list length
-          itemCount: activeTasks.length,
-          itemBuilder: (context, index) {
-            // 3. Access tasks directly from the filtered list
-            var task = activeTasks[index];
-
-            return AnimationConfiguration.staggeredGrid(
-              columnCount: 2,
-              position: index,
-              child: SlideAnimation(
-                child: FadeInAnimation(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 20),
-                    child: ActiveProjectsCard(
-                      task: task,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-          shrinkWrap: true,
-          gridDelegate:
-              SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-          padding: EdgeInsets.all(10),
+  Widget _buildAddCard() {
+    return GestureDetector(
+      onTap: () {
+        _showAddCategoryDialog();
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.grey.shade300,
+            style: BorderStyle.solid,
+            width: 2,
+          ),
         ),
-      );
-    });
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(
+              Icons.add,
+              size: 24,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Add Category',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  _getBGClr(int no) {
-    switch (no) {
-      case 0:
-        return Colors.red;
-      case 1:
-        return Colors.blueAccent;
-      case 2:
-        return Colors.amber;
-      case 3:
-        return Colors.lightBlueAccent;
+  void _showAddCategoryDialog() {
+    final nameController = TextEditingController();
+    String? selectedIcon;
+    String? selectedColor;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Add New Category'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  hintText: 'Category Name',
+                ),
+              ),
+              const SizedBox(height: 16),
+              DropdownButton<String>(
+                value: selectedIcon,
+                hint: const Text('Select Icon'),
+                onChanged: (value) {
+                  setState(() {
+                    selectedIcon = value;
+                  });
+                },
+                items: [
+                  'person_outline',
+                  'work_outline',
+                  'favorite_border',
+                  'priority_high',
+                  'calendar_today',
+                ].map((icon) {
+                  return DropdownMenuItem<String>(
+                    value: icon,
+                    child: Icon(_getIconData(icon)),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              DropdownButton<String>(
+                value: selectedColor,
+                hint: const Text('Select Color'),
+                onChanged: (value) {
+                  setState(() {
+                    selectedColor = value;
+                  });
+                },
+                items: [
+                  '#FF7B86', // Red-ish
+                  '#4ECDC4', // Teal
+                  '#FFB900', // Yellow
+                  '#A569BD', // Purple
+                  '#2ECC71', // Green
+                ].map((color) {
+                  return DropdownMenuItem<String>(
+                    value: color,
+                    child: Container(
+                      width: 100,
+                      height: 30,
+                      color: Color(int.parse(color.replaceAll('#', '0xff'))),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (nameController.text.trim().isNotEmpty &&
+                    selectedIcon != null &&
+                    selectedColor != null) {
+                  // Check if category name already exists
+                  bool categoryExists = _categories.any((category) =>
+                      category.name.toLowerCase() ==
+                      nameController.text.trim().toLowerCase());
+
+                  if (categoryExists) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content:
+                              Text('Category with this name already exists')),
+                    );
+                  } else {
+                    _addCategory(
+                      nameController.text.trim(),
+                      selectedIcon!,
+                      selectedColor!,
+                    );
+                    Navigator.of(context).pop();
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please fill all fields')),
+                  );
+                }
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _addCategory(
+    String name,
+    String icon,
+    String color,
+  ) async {
+    try {
+      // Call the addCategory method and get the new category ID
+      final newCategoryId = await _taskController.addCategory(
+        name: name,
+        icon: icon,
+        color: color,
+      );
+
+      if (newCategoryId != -1) {
+        // Create a new CategoryModel using the new category ID
+        final newCategory = CategoryModel(
+          id: newCategoryId,
+          name: name,
+          icon: icon,
+          color: color,
+          remainingTasks: 0,
+          completedTasks: 0,
+        );
+
+        // Update the local categories list
+        setState(() {
+          _categories.add(newCategory);
+        });
+
+        // Optionally refresh categories if needed
+        await _fetchCategories();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add category')),
+        );
+      }
+    } catch (e) {
+      print('Error adding category: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding category')),
+      );
+    }
+  }
+
+  Widget _buildCategoryCard(
+    String title,
+    String icon,
+    Color color,
+    int totalTasks,
+    int completedTasks,
+  ) {
+    final iconData = _getIconData(icon);
+    final remainingTasks = totalTasks - completedTasks;
+
+    return GestureDetector(
+      onTap: () {
+        // Navigate to CategoryDetailPage with the selected category
+        Get.to(CategoryDetailPage(
+          category: CategoryModel(
+            id: _categories.firstWhere((cat) => cat.name == title).id,
+            name: title,
+            icon: icon,
+            color: color.toString(),
+            remainingTasks: remainingTasks,
+            completedTasks: completedTasks,
+          ),
+        ));
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Icon(
+              iconData,
+              color: Colors.grey[600],
+            ),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Row(
+              children: [
+                Text(
+                  '$remainingTasks left',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '$completedTasks done',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTasksForCategory(String categoryName) {
+    Get.to(AllTaskPage());
+  }
+
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'person_outline':
+        return Icons.person_outline;
+      case 'work_outline':
+        return Icons.work_outline;
+      case 'favorite_border':
+        return Icons.favorite_border;
+      case 'calendar_today':
+        return Icons.calendar_today;
+      case 'priority_high':
+        return Icons.priority_high;
       default:
-        return Colors.blueAccent;
+        return Icons.search;
     }
   }
 }
 
-class HomepageButton extends StatelessWidget {
-  const HomepageButton(
-      {super.key, required this.buttonTitle, required this.onpress});
-  final String buttonTitle;
-  final Function() onpress;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 150,
-      height: 43,
-      child: ElevatedButton(
-          style: ElevatedButton.styleFrom(),
-          onPressed: () => Get.to(onpress),
-          child: Text(buttonTitle)),
-    );
-  }
+extension on TaskController {
+  addCategory(
+      {required String name, required String icon, required String color}) {}
 }
-
-// drwar widget
-class MySlider extends StatelessWidget {
-  MySlider({
-    Key? key,
-  }) : super(key: key);
-  final ProfileController _profileController = Get.put(ProfileController());
-
-  /// Icons
-  List<IconData> icons = [
-    // CupertinoIcons.home,
-    CupertinoIcons.person_fill,
-    CupertinoIcons.doc_richtext,
-    CupertinoIcons.calendar_circle_fill,
-    CupertinoIcons.rectangle_fill_on_rectangle_angled_fill,
-    CupertinoIcons.settings,
-    CupertinoIcons.info_circle_fill,
-  ];
-
-  /// Texts
-  List<String> texts = [
-    // "Home",
-    "Profile",
-    "All Task",
-    "Task Calender",
-    "Task Report",
-    "Settings",
-    "Details",
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 90),
-      decoration: const BoxDecoration(gradient: LightColors.brownGradient),
-      child: Obx(() {
-        final profile = _profileController.profile.value;
-        return Column(
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: profile.imageData != null
-                  ? MemoryImage(profile.imageData!)
-                  : const AssetImage('assets/images/avatar.png')
-                      as ImageProvider,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              profile.name ?? "User Name",
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              profile.profession ?? "Profession",
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(
-                vertical: 30,
-                horizontal: 10,
-              ),
-              width: double.infinity,
-              height: 400,
-              child: ListView.builder(
-                itemCount: icons.length,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (ctx, i) {
-                  return InkWell(
-                    onTap: () {
-                      switch (i) {
-                        case 0:
-                          // Navigate to Profile Edit Page
-                          Get.to(() => ProfilePage());
-                          break;
-                        case 1:
-                          Get.to(() => AllTaskPage());
-                          break;
-                        case 2:
-                          Get.to(() => CalendarPage());
-                          break;
-                        case 3:
-                          Get.to(() => ReportPage());
-                          break;
-                        case 4:
-                          _showSettingsDialog(context);
-                          break;
-                      }
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      child: ListTile(
-                        leading: Icon(
-                          icons[i],
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                        title: Text(
-                          texts[i],
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            )
-          ],
-        );
-      }),
-    );
-  }
-  // Widget build(BuildContext context) {
-  //   return Container(
-  //     padding: const EdgeInsets.symmetric(vertical: 90),
-  //     decoration: const BoxDecoration(gradient: LightColors.brownGradient),
-  //     child: Column(
-  //       children: [
-  //         const CircleAvatar(
-  //           radius: 50,
-  //           backgroundImage: AssetImage('assets/images/avatar.png'),
-  //         ),
-  //         const SizedBox(
-  //           height: 8,
-  //         ),
-  //         Text(
-  //           "Shaharia",
-  //         ),
-  //         Text(
-  //           "junior flutter dev",
-  //         ),
-  //         Container(
-  //           margin: const EdgeInsets.symmetric(
-  //             vertical: 30,
-  //             horizontal: 10,
-  //           ),
-  //           width: double.infinity,
-  //           height: 400,
-  //           child: ListView.builder(
-  //               itemCount: icons.length,
-  //               physics: const NeverScrollableScrollPhysics(),
-  //               itemBuilder: (ctx, i) {
-  //                 return InkWell(
-  //                   // ignore: avoid_print
-  //                   onTap: () {
-  //                     if (i == 3) {
-  //                       Get.to(ReportPage());
-  //                     }
-  //                     if (i == 2) {
-  //                       Get.to(CalendarPage());
-  //                     }
-  //                     if (i == 1) {
-  //                       Get.to(AllTaskPage());
-  //                     }
-  //                     if (i == 4) {}
-  //                   },
-  //                   child: Container(
-  //                     margin: const EdgeInsets.all(5),
-  //                     child: ListTile(
-  //                         leading: Icon(
-  //                           icons[i],
-  //                           color: Colors.white,
-  //                           size: 30,
-  //                         ),
-  //                         title: Text(
-  //                           texts[i],
-  //                           style: const TextStyle(
-  //                             color: Colors.white,
-  //                           ),
-  //                         )),
-  //                   ),
-  //                 );
-  //               }),
-  //         )
-  //       ],
-  //     ),
-  //   );
-  // }
-}
-
-void _showSettingsDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return SettingsDialog();
-    },
-  );
-}
-
-class SettingsDialog extends StatefulWidget {
-  @override
-  _SettingsDialogState createState() => _SettingsDialogState();
-}
-
-class _SettingsDialogState extends State<SettingsDialog> {
-  bool _isDarkTheme = false;
-  bool _isBackupEnabled = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Settings'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SwitchListTile(
-            title: Text('Switch Theme'),
-            value: _isDarkTheme,
-            onChanged: (bool value) {
-              setState(() {
-                NotifyHelper()
-                    .displayNotification(title: "Theme", body: 'Theme Changed');
-                _isDarkTheme = value;
-              });
-            },
-          ),
-          SwitchListTile(
-            title: Text('Firebase Backup'),
-            value: _isBackupEnabled,
-            onChanged: (bool value) {
-              setState(() {
-                value
-                    ? NotifyHelper().displayNotification(
-                        title: "Firebase Backup", body: 'Backup is  Enable')
-                    : NotifyHelper().displayNotification(
-                        title: "Firebase Backup", body: 'Backup is disable');
-                _isBackupEnabled = value;
-              });
-            },
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('Close'),
-        ),
-      ],
-    );
-  }
-}
-
-// class MySlider extends StatefulWidget {
-//   const MySlider({Key? key}) : super(key: key);
-//
-//   @override
-//   State<MySlider> createState() => _MySliderState();
-// }
-//
-// class _MySliderState extends State<MySlider> {
-//   /// Icons
-//
-//   List<IconData> icons = [
-//     CupertinoIcons.person_fill,
-//     CupertinoIcons.doc_richtext,
-//     CupertinoIcons.calendar_circle_fill,
-//     CupertinoIcons.rectangle_fill_on_rectangle_angled_fill,
-//     CupertinoIcons.settings,
-//     CupertinoIcons.info_circle_fill,
-//   ];
-//
-//   /// Texts
-//   List<String> texts = [
-//     "Profile",
-//     "All Task",
-//     "Task Calender",
-//     "Task Report",
-//     "Settings",
-//     "Details",
-//   ];
-//
-//   // User data
-//   String? _userName;
-//   String? _userProfession;
-//   String? _userImageUrl;
-//   File? _cachedProfileImage; // Store cached profile image
-//
-//   // Firebase instance
-//   final _auth = FirebaseAuth.instance;
-//   final _storage = FirebaseStorage.instance;
-//
-//   // Image picker
-//   final ImagePicker _picker = ImagePicker();
-//
-//   // Function to pick image from gallery
-//   Future<void> _pickImage() async {
-//     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-//     if (image != null) {
-//       // Upload image to Firebase storage
-//       final ref = _storage.ref().child('user_images/${_auth.currentUser!.uid}');
-//       try {
-//         final uploadTask =
-//             ref.putFile(File(image.path)); // Correct way to put File
-//         final downloadUrl = await (await uploadTask).ref.getDownloadURL();
-//
-//         // Update user data
-//         await _updateUserData(imageUrl: downloadUrl);
-//
-//         // Cache the image locally
-//         _cacheImage(downloadUrl);
-//       } catch (e) {
-//         print("Error uploading image: $e");
-//         // Show an error message to the user
-//       }
-//     }
-//   }
-//
-// // Function to cache the image locally
-//   Future<void> _cacheImage(String imageUrl) async {
-//     try {
-//       final response = await http.get(Uri.parse(imageUrl));
-//       if (response.statusCode == 200) {
-//         final bytes = response.bodyBytes; // Get the image bytes directly
-//         final tempDir = await getTemporaryDirectory();
-//         final file = File('${tempDir.path}/profile_image.png');
-//         await file.writeAsBytes(bytes);
-//         setState(() {
-//           _cachedProfileImage = file;
-//         });
-//       } else {
-//         print('Error downloading image: ${response.statusCode}');
-//       }
-//     } catch (e) {
-//       print("Error caching image: $e");
-//     }
-//   }
-//   // Future<void> _cacheImage(String imageUrl) async {
-//   //   try {
-//   //     final bytes = await NetworkImage(imageUrl).bytes;
-//   //     final tempDir = await getTemporaryDirectory();
-//   //     final file = File('${tempDir.path}/profile_image.png');
-//   //     await file.writeAsBytes(bytes);
-//   //     setState(() {
-//   //       _cachedProfileImage = file;
-//   //     });
-//   //   } catch (e) {
-//   //     print("Error caching image: $e");
-//   //   }
-//   // }
-//
-//   // Function to update user data on Firebase
-//   Future<void> _updateUserData(
-//       {String? userName, String? userProfession, String? imageUrl}) async {
-//     final user = _auth.currentUser;
-//     if (user != null) {
-//       await user.updateProfile(displayName: userName, photoURL: imageUrl);
-//       setState(() {
-//         _userName = userName;
-//         _userProfession = userProfession;
-//         _userImageUrl = imageUrl;
-//       });
-//     }
-//   }
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _fetchUserData();
-//   }
-//
-//   // Function to fetch user data from Firebase
-//   Future<void> _fetchUserData() async {
-//     final user = _auth.currentUser;
-//     if (user != null) {
-//       setState(() {
-//         _userName = user.displayName;
-//         _userProfession = user.displayName;
-//         _userImageUrl = user.photoURL;
-//       });
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       padding: const EdgeInsets.symmetric(vertical: 90),
-//       decoration: const BoxDecoration(gradient: LightColors.brownGradient),
-//       child: Column(
-//         children: [
-//           GestureDetector(
-//             onTap: () {
-//               // Show image picker dialog
-//               showDialog(
-//                 context: context,
-//                 builder: (BuildContext context) {
-//                   return AlertDialog(
-//                     title: const Text('Update Profile Image'),
-//                     content: const Text('Choose an image from your gallery.'),
-//                     actions: [
-//                       TextButton(
-//                         onPressed: () {
-//                           Navigator.of(context).pop();
-//                         },
-//                         child: const Text('Cancel'),
-//                       ),
-//                       TextButton(
-//                         onPressed: () {
-//                           _pickImage();
-//                           Navigator.of(context).pop();
-//                         },
-//                         child: const Text('Pick Image'),
-//                       ),
-//                     ],
-//                   );
-//                 },
-//               );
-//             },
-//             child: CircleAvatar(
-//               radius: 50,
-//               backgroundImage: _cachedProfileImage != null
-//                   ? FileImage(_cachedProfileImage!) // Use cached image
-//                   : _userImageUrl != null
-//                       ? NetworkImage(_userImageUrl!) as ImageProvider
-//                       : const AssetImage('assets/default_profile.png')
-//                           as ImageProvider,
-//             ),
-//           ),
-//           const SizedBox(height: 20),
-//           Text(
-//             _userName ?? 'User  Name',
-//             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-//           ),
-//           Text(
-//             _userProfession ?? 'User  Profession',
-//             style: const TextStyle(fontSize: 16, color: Colors.grey),
-//           ),
-//           const SizedBox(height: 30),
-//           Expanded(
-//             child: ListView.builder(
-//               itemCount: icons.length,
-//               itemBuilder: (context, index) {
-//                 return ListTile(
-//                   leading: Icon(icons[index]),
-//                   title: Text(texts[index]),
-//                   onTap: () {
-//                     // Navigate to corresponding pages
-//                     switch (index) {
-//                       case 0:
-//                         // Get.to(ProfilePage());
-//                         break;
-//                       case 1:
-//                         Get.to(AllTaskPage());
-//                         break;
-//                       case 2:
-//                         Get.to(CalendarPage());
-//                         break;
-//                       case 3:
-//                         Get.to(ReportPage());
-//                         break;
-//                       case 4:
-//                         // Get.to(SettingsPage());
-//                         break;
-//                       case 5:
-//                         // Get.to(DetailsPage());
-//                         break;
-//                     }
-//                   },
-//                 );
-//               },
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }

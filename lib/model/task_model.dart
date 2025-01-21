@@ -4,54 +4,62 @@ class Task {
   String? description;
   String? date;
   String? startTime;
-  String? endTime;
-  int? isCompleted;
-  int? color;
   int? remind;
   String? repeat;
+  String? endTime;
+  int? color;
+  int? isCompleted;
   int? isStar;
+  int? categoryId; // Add this line
+
   Task({
     this.id,
     this.title,
     this.description,
     this.date,
     this.startTime,
-    this.endTime,
-    this.isCompleted,
-    this.color,
     this.remind,
     this.repeat,
+    this.endTime,
+    this.color,
+    this.isCompleted,
     this.isStar,
+    this.categoryId, // Add this line to the constructor
   });
 
-  Task.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    title = json['title'];
-    repeat = json['repeat'];
-    remind = json['remind'];
-    startTime = json['startTime'];
-    date = json['date'];
-    color = json['color'];
-    description = json['description'];
-    endTime = json['endTime'];
-    isCompleted = json['isCompleted'];
-    isStar = json['isStar'];
+  // Update fromJson method
+  factory Task.fromJson(Map<String, dynamic> json) {
+    return Task(
+      id: json['id'],
+      title: json['title'],
+      description: json['description'],
+      date: json['date'],
+      startTime: json['startTime'],
+      remind: json['remind'],
+      repeat: json['repeat'],
+      endTime: json['endTime'],
+      color: json['color'],
+      isCompleted: json['isCompleted'],
+      isStar: json['isStar'],
+      categoryId: json['categoryId'], // Add this line
+    );
   }
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['title'] = this.title;
-    data['color'] = this.color;
-    data['date'] = this.date;
-    data['repeat'] = this.repeat;
-    data['endTime'] = this.endTime;
-    data['startTime'] = this.startTime;
-    data['description'] = this.description;
-    data['startTime'] = this.startTime;
-    data['isCompleted'] = this.isCompleted;
-    data['isStar'] = isStar;
-    data['remind'] = this.remind;
 
-    return data;
+  // Update toJson method
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'date': date,
+      'startTime': startTime,
+      'remind': remind,
+      'repeat': repeat,
+      'endTime': endTime,
+      'color': color,
+      'isCompleted': isCompleted,
+      'isStar': isStar,
+      'categoryId': categoryId, // Add this line
+    };
   }
 }

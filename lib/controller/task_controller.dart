@@ -3,9 +3,11 @@ import 'package:intl/intl.dart';
 
 import '../db/database_helper.dart';
 import '../model/task_model.dart';
+import '../model/category_model.dart';
 
 class TaskController extends GetxController {
   var taskList = <Task>[].obs;
+  var categoryList = <CategoryModel>[].obs;
 
   @override
   void onInit() {
@@ -15,14 +17,90 @@ class TaskController extends GetxController {
 
   Future<void> _initializeDatabase() async {
     try {
-      // Ensure the database is initialized
-      await DatabaseHelper.instance.database; // Access the singleton instance
+      await DatabaseHelper.instance.database;
       await getTasks();
+      await getCategories();
+      await _addDefaultCategoriesIfEmpty();
     } catch (e) {
       print('Error initializing database: $e');
     }
   }
 
+  Future<int> addCategory({
+    required String name,
+    required String icon,
+    required String color,
+  }) async {
+    try {
+      final newCategory = CategoryModel(
+        id: DateTime.now().millisecondsSinceEpoch,
+        // Temporary ID
+        name: name,
+        icon: icon,
+        color: color,
+        remainingTasks: 0,
+        completedTasks: 0,
+      );
+
+      // Insert the category into the database
+      final id = await DatabaseHelper.instance.insertCategory(newCategory);
+      return id;
+    } catch (e) {
+      print('Error adding category: $e');
+      return -1; // Indicate failure
+    }
+  }
+
+  // Method to fetch categories
+  Future<List<CategoryModel>> getCategories() async {
+    try {
+      final categoriesMap = await DatabaseHelper.instance.queryCategories();
+      return categoriesMap.map((map) => CategoryModel.fromJson(map)).toList();
+    } catch (e) {
+      print('Error fetching categories: $e');
+      return [];
+    }
+  }
+
+// In task_controller.dart
+//   Future<int> addCategory({
+//     required String name,
+//     required String icon,
+//     required String color,
+//   }) async {
+//     try {
+//       // Create a new CategoryModel
+//       final newCategory = CategoryModel(
+//         id: DateTime.now().millisecondsSinceEpoch, // Temporary ID generation
+//         name: name,
+//         icon: icon,
+//         color: color,
+//         remainingTasks: 0,
+//         completedTasks: 0,
+//       );
+//
+//       // Insert the category into the database
+//       final id = await DatabaseHelper.instance.insertCategory(newCategory);
+//
+//       return id;
+//     } catch (e) {
+//       print('Error adding category in controller: $e');
+//       return -1;
+//     }
+//   }
+
+  // Future<List<CategoryModel>> getCategories() async {
+  //   try {
+  //     // Fetch categories from the database
+  //     final categoriesMap = await DatabaseHelper.instance.queryCategories();
+  //     return categoriesMap.map((map) => CategoryModel.fromJson(map)).toList();
+  //   } catch (e) {
+  //     print('Error getting categories: $e');
+  //     return [];
+  //   }
+  // }
+
+  // Task Management Methods
   Future<void> getTasks() async {
     try {
       List<Map<String, dynamic>> tasks = await DatabaseHelper.instance.query();
@@ -52,6 +130,36 @@ class TaskController extends GetxController {
     }
   }
 
+  Future<void> _addDefaultCategoriesIfEmpty() async {
+    if (categoryList.isEmpty) {
+      List<Map<String, dynamic>> defaultCategories = [
+        {
+          'name': 'Personal',
+          'icon': 'person_outline',
+          'color': '#FF7B86',
+        },
+        {
+          'name': 'Work',
+          'icon': 'work_outline',
+          'color': '#4ECDC4',
+        },
+        {
+          'name': 'Important',
+          'icon': 'priority_high',
+          'color': '#FFB900',
+        }
+      ];
+
+      for (var category in defaultCategories) {
+        await addCategory(
+            name: category['name']!,
+            icon: category['icon']!,
+            color: category['color']!);
+      }
+    }
+  }
+
+  // Task Statistics Methods
   Future<double> getTotalTask() async {
     try {
       await getTasks();
@@ -83,30 +191,13 @@ class TaskController extends GetxController {
     }
   }
 
+  // Other existing methods (undoTaskCompleted, markTaskCompleted, etc.)
   void undoTaskCompleted(int id) async {
     try {
       await DatabaseHelper.instance.undoCompleted(id);
       await getTasks();
     } catch (e) {
       print('Error undoing task completion: $e');
-    }
-  }
-
-  void undoTaskStar(int id) async {
-    try {
-      await DatabaseHelper.instance.undoStar(id);
-      await getTasks();
-    } catch (e) {
-      print('Error undoing task star: $e');
-    }
-  }
-
-  void delete(Task task) async {
-    try {
-      await DatabaseHelper.instance.delete(task);
-      await getTasks();
-    } catch (e) {
-      print('Error deleting task: $e');
     }
   }
 
@@ -119,109 +210,7 @@ class TaskController extends GetxController {
     }
   }
 
-  void markTaskStar(int id) async {
-    try {
-      await DatabaseHelper.instance.markStar(id);
-      await getTasks();
-    } catch (e) {
-      print('Error marking task as star: $e');
-    }
-  }
-
-  Future<double> getOneDayTask() async {
-    try {
-      DateTime today = DateTime.now();
-      await getTasks();
-      return taskList
-          .where((task) => task.date == DateFormat.yMd().format(today))
-          .length
-          .toDouble();
-    } catch (e) {
-      print('Error getting one-day tasks: $e');
-      return 0.0;
-    }
-  }
-
-  Future<double> getOneDayCompletedTask() async {
-    try {
-      DateTime today = DateTime.now();
-      await getTasks();
-      return taskList
-          .where((task) =>
-              task.date == DateFormat.yMd().format(today) &&
-              task.isCompleted == 1)
-          .length
-          .toDouble();
-    } catch (e) {
-      print('Error getting one-day completed tasks: $e');
-      return 0.0;
-    }
-  }
-
-  Future<double> getSevenDaysTasks() async {
-    try {
-      DateTime today = DateTime.now();
-      await getTasks();
-      return taskList
-          .where((task) =>
-              isWithinSevenDays(DateFormat.yMd().parse(task.date!), today) &&
-              isWithinSameMonth(DateFormat.yMd().parse(task.date!), today))
-          .length
-          .toDouble();
-    } catch (e) {
-      print('Error getting seven-day tasks: $e');
-      return 0.0;
-    }
-  }
-
-  Future<double> getSevenDaysCompletedTasks() async {
-    try {
-      DateTime today = DateTime.now();
-      await getTasks();
-      return taskList
-          .where((task) =>
-              task.isCompleted == 1 &&
-              isWithinSevenDays(DateFormat.yMd().parse(task.date!), today) &&
-              isWithinSameMonth(DateFormat.yMd().parse(task.date!), today))
-          .length
-          .toDouble();
-    } catch (e) {
-      print('Error getting seven-day completed tasks: $e');
-      return 0.0;
-    }
-  }
-
-  Future<double> getThisMonthTasks() async {
-    try {
-      DateTime today = DateTime.now();
-      await getTasks();
-      return taskList
-          .where((task) =>
-              isWithinSameMonth(DateFormat.yMd().parse(task.date!), today))
-          .length
-          .toDouble();
-    } catch (e) {
-      print('Error getting this month tasks: $e');
-      return 0.0;
-    }
-  }
-
-  Future<double> getMonthCompletedTasks() async {
-    try {
-      DateTime today = DateTime.now();
-      await getTasks();
-      return taskList
-          .where((task) =>
-              task.isCompleted == 1 &&
-              isWithinSameMonth(DateFormat.yMd().parse(task.date!), today))
-          .length
-          .toDouble();
-    } catch (e) {
-      print('Error getting month completed tasks: $e');
-      return 0.0;
-    }
-  }
-
+  // Existing date-related methods
   bool isWithinSameMonth(DateTime taskDate, DateTime today) {
     return taskDate.month == today.month && taskDate.year == today.year;
   }
@@ -230,4 +219,18 @@ class TaskController extends GetxController {
     Duration difference = today.difference(taskDate);
     return difference.inDays <= 6;
   }
+
+  // Method to get tasks by category
+  Future<List<Task>> getTasksByCategory(int categoryId) async {
+    try {
+      await getTasks();
+      return taskList.where((task) => task.categoryId == categoryId).toList();
+    } catch (e) {
+      getCategories() {}
+      ('Error getting tasks by category: $e');
+      return [];
+    }
+  }
+
+  void delete(Task task) {}
 }

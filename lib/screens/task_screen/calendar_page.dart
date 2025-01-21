@@ -2,6 +2,7 @@ import 'package:date_picker_timeline/date_picker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_task_planner_app/Db/database_helper.dart';
+import 'package:flutter_task_planner_app/controller/task_controller.dart';
 import 'package:flutter_task_planner_app/dates_list.dart';
 import 'package:flutter_task_planner_app/screens/task_screen/all_task_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
@@ -11,7 +12,7 @@ import 'package:flutter_task_planner_app/widgets/task_widget/back_button.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-import '../../Controller/task_controller.dart';
+
 import '../../model/task_model.dart';
 import '../../service/notification_services.dart';
 import '../../widgets/task_widget/ButtonItem.dart';

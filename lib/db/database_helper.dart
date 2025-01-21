@@ -1,178 +1,18 @@
-// import 'dart:async';
-//
-// import 'package:flutter_task_planner_app/model/task_model.dart';
-// import 'package:sqflite/sqflite.dart';
-//
-// class DatabaseHelper {
-//   static Database? _database;
-//   static const _dbName = "Taskmate.db";
-//   static const _dbVersion = 1;
-//   static const _tableName = "task";
-//
-//   // Future<Database> get database async {
-//   //   _database = await initiateDatabase();
-//   //   return _database;
-//   // }
-//   // static final DatabaseHelper instance = DatabaseHelper._private();
-//
-//   // DatabaseHelper._private();
-//   static Future<void> initDb() async {
-//     if (_database != null) {
-//       return;
-//     }
-//     try {
-//       String _path = await getDatabasesPath() + _dbName;
-//       _database = await openDatabase(
-//         _path,
-//         version: _dbVersion,
-//         onCreate: (db, version) {
-//           return db.execute(''' CREATE TABLE $_tableName(
-//        id INTEGER PRIMARY KEY AUTOINCREMENT,
-//         title STRING,
-//         description TEXT ,
-//         date TEXT ,
-//         startTime STRING ,
-//          remind INTEGER,
-//         repeat STRING ,
-//         endTime STRING,
-//        color  INTEGER ,
-//      isCompleted INTEGER,
-//      isStar INTEGER
-//           )''');
-//         },
-//       );
-//     } catch (e) {
-//       print(e);
-//     }
-//   }
-// //
-//   // static Future<void> listenForChanges(
-//   //     void Function(int) onCountChanged) async {
-//   //   final db = await _database;
-//   //   // Replace with your actual table and column names
-//   //   await db?.query(_tableName, columns: ['COUNT(*) AS count']).then((rows) {
-//   //     final count = Sqflite.firstIntValue(rows);
-//   //     onCountChanged(count ?? 0);
-//   //   });
-//   // }
-//
-//   static Future<int> updateTaskDetail(Task task) async {
-//     print("update task detail function called");
-//     return await _database!.update(_tableName, task.toJson(),
-//         where: 'id = ?', whereArgs: [task.id]);
-//   }
-//
-//   static Future<int> undoCompleted(int id) async {
-//     print("undoCompleted function called");
-//     return await _database!.update(
-//       _tableName,
-//       {'isCompleted': 0},
-//       where: 'id = ?',
-//       whereArgs: [id],
-//     );
-//   }
-//
-//   static Future<int> undoStar(int id) async {
-//     print("undoStar function called");
-//     return await _database!.update(
-//       _tableName,
-//       {'isStar': 0},
-//       where: 'id = ?',
-//       whereArgs: [id],
-//     );
-//   }
-//
-//   // Add Task
-//   static Future<int> insertTask(Task? task) async {
-//     return await _database?.insert(_tableName, task!.toJson()) ?? 1;
-//   }
-//
-//   static Future<List<Map<String, dynamic>>> query() async {
-//     return await _database!.query(_tableName);
-//   }
-//
-//   static update(int id) async {
-//     await _database?.rawUpdate('''
-//     UPDATE $_tableName
-//     SET  isCompleted =?
-//         WHERE Id=?
-//         ''', [1, id]);
-//   }
-//
-//   static delete(Task task) async {
-//     return await _database!.delete(
-//       _tableName,
-//       where: "id=?",
-//       whereArgs: [task.id],
-//     );
-//   }
-//
-//   static Future<int> markStar(int id) async {
-//     print("markStar function called");
-//     return await _database!.update(
-//       _tableName,
-//       {'isStar': 1},
-//       where: 'id = ?',
-//       whereArgs: [id],
-//     );
-//   }
-//
-//   // Delete Task
-//   // Future<int> deleteTask(Task task) async {
-//   //   Database db = await instance.database;
-//   //   return await db.delete(
-//   //     _tableName,
-//   //     where: "id = ?",
-//   //
-//   //   );
-//   // }
-//
-//   // Delete All Tasks
-//   // Future<int> deleteAllTasks() async {
-//   //   Database db = await instance.database;
-//   //   return await db.delete(_tableName);
-//   // }
-//
-//   // Update Task
-//   // Future<int> updateTask(Task task) async {
-//   //   Database db = await instance.database;
-//   //   return await db.update(
-//   //     _tableName,
-//   //     task.toJson(),
-//   //     where: "id = ?",
-//   //     whereArgs: [task.id],
-//   //   );
-//   // }
-//
-//   // Future<List<Task>> getTaskList() async {
-//   //   Database db = await instance.database;
-//   //   final List<Map<String, dynamic>> maps =
-//   //       await db.query(_tableName, orderBy: 'dateTimeCreated DESC');
-//   //   return List.generate(
-//   //     maps.length,
-//   //     (index) {
-//   //       return Task(
-//   //         id: maps[index]["id"],
-//   //         title: maps[index]["title"],
-//   //         description: maps[index]["description"],
-//   //         startTime: maps[index]["dateTimeEdited"],
-//   //         endTime: maps[index]["dateTimeCreated"],
-//   //         isCompletedd: maps[index]["isCompleate"],
-//   //       );
-//   //     },
-//   //   );
-//   // }
-// }
 import 'dart:async';
-
-import 'package:flutter_task_planner_app/model/task_model.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+
+import '../model/task_model.dart';
+import '../model/category_model.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
-  static const _tableName = "task";
+
+  // Table names
+  static const String _taskTable = "tasks";
+  static const String _categoryTable = "categories";
+
   DatabaseHelper._init();
 
   Future<Database> get database async {
@@ -188,14 +28,16 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
   Future<void> _createDB(Database db, int version) async {
+    // Create Tasks Table
     await db.execute('''
-      CREATE TABLE task(
+      CREATE TABLE $_taskTable(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title STRING,
         description TEXT,
@@ -206,32 +48,84 @@ class DatabaseHelper {
         endTime STRING,
         color INTEGER,
         isCompleted INTEGER,
-        isStar INTEGER
+        isStar INTEGER,
+        categoryId INTEGER
+      )
+    ''');
+
+    // Create Categories Table
+    await db.execute('''
+      CREATE TABLE $_categoryTable(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        icon TEXT,
+        color TEXT,
+        remainingTasks INTEGER,
+        completedTasks INTEGER
       )
     ''');
   }
 
-  // Your existing database methods
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    // Handle database schema migrations if needed
+    if (oldVersion < 2) {
+      await db.execute('''
+        ALTER TABLE $_taskTable ADD COLUMN categoryId INTEGER
+      ''');
+    }
+  }
+
+// In database_helper.dart
+  Future<int> insertCategory(CategoryModel category) async {
+    final db = await database;
+    return await db.insert(_categoryTable, category.toJson());
+  }
+
+  Future<List<Map<String, dynamic>>> queryCategories() async {
+    final db = await database;
+    return await db.query(_categoryTable);
+  }
+
+  Future<int> updateCategory(CategoryModel category) async {
+    final db = await database;
+    return await db.update(
+      _categoryTable,
+      category.toJson(),
+      where: 'id = ?',
+      whereArgs: [category.id],
+    );
+  }
+
+  Future<int> deleteCategory(int id) async {
+    final db = await database;
+    return await db.delete(
+      _categoryTable,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // Task-related methods
   Future<List<Map<String, dynamic>>> query() async {
     final db = await database;
-    return await db.query('task');
+    return await db.query(_taskTable);
   }
 
   Future<int> insertTask(Task? task) async {
     final db = await database;
-    return await db.insert('task', task!.toJson());
+    return await db.insert(_taskTable, task!.toJson());
   }
 
   Future<int> updateTaskDetail(Task task) async {
     final db = await database;
-    return await db
-        .update('task', task.toJson(), where: 'id = ?', whereArgs: [task.id]);
+    return await db.update(_taskTable, task.toJson(),
+        where: 'id = ?', whereArgs: [task.id]);
   }
 
   Future<int> update(int id) async {
     final db = await database;
     return await db.rawUpdate('''
-      UPDATE $_tableName
+      UPDATE $_taskTable
       SET isCompleted = ?
       WHERE Id = ?
     ''', [1, id]);
@@ -240,7 +134,7 @@ class DatabaseHelper {
   Future<int> delete(Task task) async {
     final db = await database;
     return await db.delete(
-      _tableName,
+      _taskTable,
       where: "id = ?",
       whereArgs: [task.id],
     );
@@ -249,7 +143,7 @@ class DatabaseHelper {
   Future<int> markStar(int id) async {
     final db = await database;
     return await db.update(
-      _tableName,
+      _taskTable,
       {'isStar': 1},
       where: 'id = ?',
       whereArgs: [id],
@@ -259,7 +153,7 @@ class DatabaseHelper {
   Future<int> undoCompleted(int id) async {
     final db = await database;
     return await db.update(
-      _tableName,
+      _taskTable,
       {'isCompleted': 0},
       where: 'id = ?',
       whereArgs: [id],
@@ -269,10 +163,42 @@ class DatabaseHelper {
   Future<int> undoStar(int id) async {
     final db = await database;
     return await db.update(
-      _tableName,
+      _taskTable,
       {'isStar': 0},
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+
+  // Additional utility methods
+  Future<List<Map<String, dynamic>>> getTasksByCategory(int categoryId) async {
+    final db = await database;
+    return await db.query(
+      _taskTable,
+      where: 'categoryId = ?',
+      whereArgs: [categoryId],
+    );
+  }
+
+  Future<void> updateCategoryTaskCounts(int categoryId) async {
+    final db = await database;
+
+    // Get tasks for the category
+    List<Map<String, dynamic>> tasks = await getTasksByCategory(categoryId);
+
+    // Calculate remaining and completed tasks
+    int remainingTasks = tasks.where((task) => task['isCompleted'] == 0).length;
+    int completedTasks = tasks.where((task) => task['isCompleted'] == 1).length;
+
+    // Update category
+    await db.update(
+      _categoryTable,
+      {
+        'remainingTasks': remainingTasks,
+        'completedTasks': completedTasks,
+      },
+      where: 'id = ?',
+      whereArgs: [categoryId],
     );
   }
 }

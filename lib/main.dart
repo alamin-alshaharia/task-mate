@@ -85,7 +85,9 @@ class MyApp extends StatelessWidget {
             fontFamily: 'Poppins'),
       ),
       // home: CalendarTimelinePage(),
-      home: WelcomeScreen(),
+      // home: HomePage(),
+      home: HomePage(),
+      // home: WelcomeScreen(),
       // home: TaskTimelineScreen(),
       debugShowCheckedModeBanner: false,
     );

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_task_planner_app/controller/task_controller.dart';
 import 'package:flutter_task_planner_app/screens/task_screen/create_new_task_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
-
-import '../../Controller/task_controller.dart';
 
 class ReportPage extends StatefulWidget {
   const ReportPage({Key? key}) : super(key: key);
