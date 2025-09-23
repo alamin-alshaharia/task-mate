@@ -72,10 +72,13 @@
 //   }
 // }
 import 'dart:io';
+
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+
 import '../db/profile_database_helper.dart';
 import '../model/profile_model.dart';
+import '../utils/logger.dart';
 
 class ProfileController extends GetxController {
   final Rx<ProfileModel> profile = ProfileModel().obs;
@@ -97,7 +100,7 @@ class ProfileController extends GetxController {
         profile.value = fetchedProfile;
       }
     } catch (e) {
-      print('Error fetching profile: $e');
+      AppLogger.e('Error fetching profile: $e');
     } finally {
       isLoading.value = false;
     }
@@ -121,7 +124,7 @@ class ProfileController extends GetxController {
         });
       }
     } catch (e) {
-      print('Error picking image: $e');
+      AppLogger.e('Error picking image: $e');
     }
   }
 
@@ -134,7 +137,7 @@ class ProfileController extends GetxController {
       fetchProfile(); // Refresh profile after saving
     } catch (e) {
       Get.snackbar('Error', 'Failed to update profile');
-      print('Error saving profile: $e');
+      AppLogger.e('Error saving profile: $e');
     } finally {
       isLoading.value = false;
     }

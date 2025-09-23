@@ -3,7 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class ButtonItem extends StatelessWidget {
   const ButtonItem(
-      {this.imagePath,
+      {super.key,
+      this.imagePath,
       required this.onClick,
       required this.text,
       this.iconData,
@@ -23,7 +24,7 @@ class ButtonItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onClick,
-      child: Container(
+      child: SizedBox(
         height: 60,
         width: MediaQuery.of(context).size.width - 60,
         child: Card(

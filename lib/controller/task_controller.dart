@@ -1,9 +1,10 @@
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 
 import '../db/database_helper.dart';
-import '../model/task_model.dart';
 import '../model/category_model.dart';
+import '../model/task_model.dart';
+import '../utils/app_preferences.dart';
+import '../utils/logger.dart';
 
 class TaskController extends GetxController {
   var taskList = <Task>[].obs;
@@ -17,12 +18,26 @@ class TaskController extends GetxController {
 
   Future<void> _initializeDatabase() async {
     try {
+      AppLogger.d('Starting database initialization');
       await DatabaseHelper.instance.database;
       await getTasks();
       await getCategories();
+      AppLogger.d('Categories loaded: ${categoryList.length}');
+
+      // Only add default categories if it's the first launch or no categories exist
       await _addDefaultCategoriesIfEmpty();
+
+      // Mark first launch as completed if it's the first time
+      final isFirstLaunch = await AppPreferences.isFirstLaunch();
+      if (isFirstLaunch) {
+        await AppPreferences.setFirstLaunchCompleted();
+        AppLogger.d('First app launch completed');
+      }
+
+      AppLogger.d(
+          'Database initialization completed. Final categories: ${categoryList.length}');
     } catch (e) {
-      print('Error initializing database: $e');
+      AppLogger.e('Error initializing database: $e');
     }
   }
 
@@ -32,6 +47,16 @@ class TaskController extends GetxController {
     required String color,
   }) async {
     try {
+      // Check if category with the same name already exists
+      final existingCategories = await getCategories();
+      bool categoryExists = existingCategories
+          .any((category) => category.name.toLowerCase() == name.toLowerCase());
+
+      if (categoryExists) {
+        AppLogger.w('Category with name "$name" already exists');
+        return -1; // Indicate that category already exists
+      }
+
       final newCategory = CategoryModel(
         id: DateTime.now().millisecondsSinceEpoch,
         // Temporary ID
@@ -44,9 +69,15 @@ class TaskController extends GetxController {
 
       // Insert the category into the database
       final id = await DatabaseHelper.instance.insertCategory(newCategory);
+
+      // Refresh categories list after successful insertion
+      if (id != -1) {
+        await getTasks();
+      }
+
       return id;
     } catch (e) {
-      print('Error adding category: $e');
+      AppLogger.e('Error adding category: $e');
       return -1; // Indicate failure
     }
   }
@@ -54,11 +85,43 @@ class TaskController extends GetxController {
   // Method to fetch categories
   Future<List<CategoryModel>> getCategories() async {
     try {
+      AppLogger.d('Fetching categories from database');
       final categoriesMap = await DatabaseHelper.instance.queryCategories();
-      return categoriesMap.map((map) => CategoryModel.fromJson(map)).toList();
+      final categories =
+          categoriesMap.map((map) => CategoryModel.fromJson(map)).toList();
+      categoryList.assignAll(categories); // Update the observable list
+      AppLogger.d('Categories fetched: ${categories.length}');
+      return categories;
     } catch (e) {
-      print('Error fetching categories: $e');
+      AppLogger.e('Error fetching categories: $e');
       return [];
+    }
+  }
+
+  // Method to delete a category
+  Future<bool> deleteCategory(int categoryId) async {
+    try {
+      // Check if there are any tasks associated with this category
+      final tasksWithCategory =
+          taskList.where((task) => task.categoryId == categoryId).toList();
+
+      if (tasksWithCategory.isNotEmpty) {
+        AppLogger.w(
+            'Cannot delete category: ${tasksWithCategory.length} tasks are associated with this category');
+        return false; // Cannot delete category with associated tasks
+      }
+
+      final result = await DatabaseHelper.instance.deleteCategory(categoryId);
+      if (result > 0) {
+        // Remove from the observable list
+        categoryList.removeWhere((category) => category.id == categoryId);
+        AppLogger.d('Category deleted successfully');
+        return true;
+      }
+      return false;
+    } catch (e) {
+      AppLogger.e('Error deleting category: $e');
+      return false;
     }
   }
 
@@ -106,7 +169,7 @@ class TaskController extends GetxController {
       List<Map<String, dynamic>> tasks = await DatabaseHelper.instance.query();
       taskList.assignAll(tasks.map((data) => Task.fromJson(data)).toList());
     } catch (e) {
-      print('Error fetching tasks: $e');
+      AppLogger.e('Error fetching tasks: $e');
     }
   }
 
@@ -116,7 +179,7 @@ class TaskController extends GetxController {
       await getTasks();
       return result;
     } catch (e) {
-      print('Error adding task: $e');
+      AppLogger.e('Error adding task: $e');
       return -1;
     }
   }
@@ -126,12 +189,30 @@ class TaskController extends GetxController {
       await DatabaseHelper.instance.updateTaskDetail(task!);
       await getTasks();
     } catch (e) {
-      print('Error updating task: $e');
+      AppLogger.e('Error updating task: $e');
     }
   }
 
   Future<void> _addDefaultCategoriesIfEmpty() async {
-    if (categoryList.isEmpty) {
+    try {
+      // Check if default categories have already been added using SharedPreferences
+      final categoriesAlreadyAdded =
+          await AppPreferences.areDefaultCategoriesAdded();
+      if (categoriesAlreadyAdded) {
+        AppLogger.d('Default categories already added previously');
+        return;
+      }
+
+      // Double check by looking at database
+      final categoriesFromDb = await DatabaseHelper.instance.queryCategories();
+      if (categoriesFromDb.isNotEmpty) {
+        AppLogger.d('Categories exist in database: ${categoriesFromDb.length}');
+        // Mark as added in preferences to avoid future checks
+        await AppPreferences.setDefaultCategoriesAdded();
+        return;
+      }
+
+      AppLogger.d('No categories found in database. Adding default categories');
       List<Map<String, dynamic>> defaultCategories = [
         {
           'name': 'Personal',
@@ -151,11 +232,28 @@ class TaskController extends GetxController {
       ];
 
       for (var category in defaultCategories) {
-        await addCategory(
-            name: category['name']!,
-            icon: category['icon']!,
-            color: category['color']!);
+        // Create CategoryModel and insert directly to avoid duplicate checking in addCategory
+        final newCategory = CategoryModel(
+          id: DateTime.now().millisecondsSinceEpoch +
+              defaultCategories.indexOf(category),
+          name: category['name']!,
+          icon: category['icon']!,
+          color: category['color']!,
+          remainingTasks: 0,
+          completedTasks: 0,
+        );
+        await DatabaseHelper.instance.insertCategory(newCategory);
       }
+
+      // Mark default categories as added in SharedPreferences
+      await AppPreferences.setDefaultCategoriesAdded();
+
+      // Refresh the category list after adding defaults
+      await getCategories();
+      AppLogger.d(
+          'Default categories added successfully. Total: ${categoryList.length}');
+    } catch (e) {
+      AppLogger.e('Error in _addDefaultCategoriesIfEmpty: $e');
     }
   }
 
@@ -165,7 +263,7 @@ class TaskController extends GetxController {
       await getTasks();
       return taskList.length.toDouble();
     } catch (e) {
-      print('Error getting total tasks: $e');
+      AppLogger.e('Error getting total tasks: $e');
       return 0.0;
     }
   }
@@ -175,7 +273,7 @@ class TaskController extends GetxController {
       await getTasks();
       return taskList.where((task) => task.isCompleted == 1).length.toDouble();
     } catch (e) {
-      print('Error getting completed tasks: $e');
+      AppLogger.e('Error getting completed tasks: $e');
       return 0.0;
     }
   }
@@ -186,7 +284,7 @@ class TaskController extends GetxController {
       double total = await getTotalTask();
       return total > 0 ? ((comp / total) * 100).toInt() : 0;
     } catch (e) {
-      print('Error calculating completion progress: $e');
+      AppLogger.e('Error calculating completion progress: $e');
       return 0;
     }
   }
@@ -197,7 +295,7 @@ class TaskController extends GetxController {
       await DatabaseHelper.instance.undoCompleted(id);
       await getTasks();
     } catch (e) {
-      print('Error undoing task completion: $e');
+      AppLogger.e('Error undoing task completion: $e');
     }
   }
 
@@ -206,7 +304,7 @@ class TaskController extends GetxController {
       await DatabaseHelper.instance.update(id);
       await getTasks();
     } catch (e) {
-      print('Error marking task as completed: $e');
+      AppLogger.e('Error marking task as completed: $e');
     }
   }
 
@@ -226,11 +324,144 @@ class TaskController extends GetxController {
       await getTasks();
       return taskList.where((task) => task.categoryId == categoryId).toList();
     } catch (e) {
-      getCategories() {}
-      ('Error getting tasks by category: $e');
+      AppLogger.e('Error getting tasks by category: $e');
       return [];
     }
   }
 
-  void delete(Task task) {}
+  // Method to mark task as starred
+  void markTaskStar(int id) async {
+    try {
+      await DatabaseHelper.instance.markStar(id);
+      await getTasks();
+    } catch (e) {
+      AppLogger.e('Error marking task as starred: $e');
+    }
+  }
+
+  // Method to undo task star
+  void undoTaskStar(int id) async {
+    try {
+      await DatabaseHelper.instance.undoStar(id);
+      await getTasks();
+    } catch (e) {
+      AppLogger.e('Error unmarking task star: $e');
+    }
+  }
+
+  void delete(Task task) async {
+    try {
+      if (task.id != null) {
+        await DatabaseHelper.instance.delete(task);
+        await getTasks();
+      }
+    } catch (e) {
+      AppLogger.e('Error deleting task: $e');
+    }
+  }
+
+  // Method to delete all tasks
+  Future<void> deleteAllTasks() async {
+    try {
+      await DatabaseHelper.instance.deleteAllTasks();
+      await getTasks();
+      await getCategories(); // Refresh categories to update task counts
+      AppLogger.d('All tasks deleted successfully');
+    } catch (e) {
+      AppLogger.e('Error deleting all tasks: $e');
+      rethrow;
+    }
+  }
+
+  // Statistics methods for report_page.dart
+  Future<double> getOneDayTask() async {
+    await getTasks();
+    DateTime today = DateTime.now();
+    return taskList
+        .where((task) {
+          final date = _parseDate(task.date);
+          return date != null && _isSameDay(date, today);
+        })
+        .length
+        .toDouble();
+  }
+
+  Future<double> getOneDayCompletedTask() async {
+    await getTasks();
+    DateTime today = DateTime.now();
+    return taskList
+        .where((task) {
+          final date = _parseDate(task.date);
+          return date != null &&
+              _isSameDay(date, today) &&
+              task.isCompleted == 1;
+        })
+        .length
+        .toDouble();
+  }
+
+  Future<double> getSevenDaysTasks() async {
+    await getTasks();
+    DateTime today = DateTime.now();
+    return taskList
+        .where((task) {
+          final date = _parseDate(task.date);
+          return date != null && isWithinSevenDays(date, today);
+        })
+        .length
+        .toDouble();
+  }
+
+  Future<double> getSevenDaysCompletedTasks() async {
+    await getTasks();
+    DateTime today = DateTime.now();
+    return taskList
+        .where((task) {
+          final date = _parseDate(task.date);
+          return date != null &&
+              isWithinSevenDays(date, today) &&
+              task.isCompleted == 1;
+        })
+        .length
+        .toDouble();
+  }
+
+  Future<double> getThisMonthTasks() async {
+    await getTasks();
+    DateTime today = DateTime.now();
+    return taskList
+        .where((task) {
+          final date = _parseDate(task.date);
+          return date != null && isWithinSameMonth(date, today);
+        })
+        .length
+        .toDouble();
+  }
+
+  Future<double> getMonthCompletedTasks() async {
+    await getTasks();
+    DateTime today = DateTime.now();
+    return taskList
+        .where((task) {
+          final date = _parseDate(task.date);
+          return date != null &&
+              isWithinSameMonth(date, today) &&
+              task.isCompleted == 1;
+        })
+        .length
+        .toDouble();
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  DateTime? _parseDate(String? dateStr) {
+    if (dateStr == null) return null;
+    try {
+      return DateTime.parse(dateStr);
+    } catch (e) {
+      return null;
+    }
+  }
 }

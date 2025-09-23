@@ -10,7 +10,7 @@ class ActiveProjectsCard extends StatelessWidget {
   // final String? subtitle;
   final Task? task;
 
-  ActiveProjectsCard({this.task});
+  const ActiveProjectsCard({super.key, this.task});
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +72,7 @@ class ActiveProjectsCard extends StatelessWidget {
     );
   }
 
-  _getBGClr(int no) {
+  ColorSwatch<int> _getBGClr(int no) {
     switch (no) {
       case 0:
         return Colors.red;

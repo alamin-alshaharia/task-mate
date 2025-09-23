@@ -172,6 +172,8 @@ import '../../controller/note_controller.dart';
 class NoteDetailPage extends StatelessWidget {
   final NoteController controller = Get.find();
 
+  NoteDetailPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     // Retrieve the arguments safely

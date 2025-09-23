@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_slider_drawer/flutter_slider_drawer.dart';
 import 'package:flutter_task_planner_app/controller/task_controller.dart';
 import 'package:flutter_task_planner_app/latest_calender_screen.dart';
 import 'package:flutter_task_planner_app/screens/task_screen/category_details.dart';
+import 'package:flutter_task_planner_app/service/speech_service.dart';
+import 'package:flutter_task_planner_app/widgets/custom_slider_drawer/custom_slider_drawer.dart';
+import 'package:flutter_task_planner_app/widgets/voice/voice_input_widget.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
 import '../../controller/profile_controller.dart';
+import '../../mixins/data_sync_mixin.dart';
 import '../../model/category_model.dart';
+import '../../model/task_model.dart';
 import '../../theme/colors/light_colors.dart';
-import '../../widgets/task_widget/home_page/top_container.dart';
-import '../../widgets/task_widget/home_page/homepage_button.dart';
-import '../../widgets/task_widget/task_column.dart';
+import '../../utils/logger.dart';
 import '../../widgets/task_widget/home_page/drawer.dart';
-
+import '../../widgets/task_widget/home_page/homepage_button.dart';
+import '../../widgets/task_widget/home_page/top_container.dart';
+import '../../widgets/task_widget/task_column.dart';
 import '../note_screens/home_page.dart';
 import '../task_screen/all_task_page.dart';
 import '../task_screen/create_new_task_page.dart';
@@ -21,6 +25,8 @@ import '../task_screen/report_page.dart';
 import '../task_screen/search_page.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   static CircleAvatar calendarIcon() {
     return const CircleAvatar(
       radius: 25.0,
@@ -37,8 +43,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  GlobalKey<SliderDrawerState> dKey = GlobalKey<SliderDrawerState>();
+class _HomePageState extends State<HomePage> with DataSyncMixin {
+  GlobalKey<CustomSliderDrawerState> dKey = GlobalKey<CustomSliderDrawerState>();
   final TaskController _taskController = Get.put(TaskController());
   final ProfileController _profileController = Get.put(ProfileController());
 
@@ -52,37 +58,25 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _fetchAllTaskStats();
-    _setDefaultCategories();
     _fetchCategories();
+
+    // Register for automatic refresh when data changes
+    dataSyncManager.registerHomePageRefreshCallback(_refreshHomePageData);
   }
 
-  void _setDefaultCategories() {
-    _categories = [
-      CategoryModel(
-        id: 1,
-        name: 'Personal',
-        icon: 'person_outline',
-        color: '#FF7B86',
-        remainingTasks: 0,
-        completedTasks: 0,
-      ),
-      CategoryModel(
-        name: 'Work',
-        icon: 'work_outline',
-        color: '#4ECDC4',
-        remainingTasks: 0,
-        completedTasks: 0,
-        id: 2,
-      ),
-      CategoryModel(
-        id: 3,
-        name: 'Important',
-        icon: 'priority_high',
-        color: '#FFB900',
-        remainingTasks: 0,
-        completedTasks: 0,
-      ),
-    ];
+  @override
+  void dispose() {
+    // Unregister callbacks to prevent memory leaks
+    dataSyncManager.unregisterHomePageRefreshCallback(_refreshHomePageData);
+    super.dispose();
+  }
+
+  /// Refresh home page data when called by DataSyncManager
+  void _refreshHomePageData() {
+    if (mounted) {
+      _fetchAllTaskStats();
+      _fetchCategories();
+    }
   }
 
   Future<void> _fetchAllTaskStats() async {
@@ -93,96 +87,25 @@ class _HomePageState extends State<HomePage> {
       totalProgress = (await _taskController.getTotalCompletedProgress()) / 100;
       setState(() {});
     } catch (error) {
-      print('Error: $error');
+      AppLogger.e('Error: $error');
     }
   }
 
   Future<void> _fetchCategories() async {
     try {
-      // Fetch categories from the task controller
+      // Fetch categories from the task controller (includes default categories)
       List<CategoryModel> fetchedCategories =
           await _taskController.getCategories();
 
-      // Create a new list to store updated categories
-      List<CategoryModel> updatedCategories = List.from(_categories);
-
-      // Merge fetched categories with existing ones
-      for (var fetchedCategory in fetchedCategories) {
-        // Check if the category already exists
-        int existingIndex = updatedCategories.indexWhere((cat) =>
-            cat.name.toLowerCase() == fetchedCategory.name.toLowerCase());
-
-        if (existingIndex == -1) {
-          // Add new category if it doesn't exist
-          updatedCategories.add(fetchedCategory);
-        } else {
-          // Update existing category
-          updatedCategories[existingIndex] = CategoryModel(
-            id: updatedCategories[existingIndex].id,
-            name: fetchedCategory.name,
-            icon: fetchedCategory.icon ?? updatedCategories[existingIndex].icon,
-            color:
-                fetchedCategory.color ?? updatedCategories[existingIndex].color,
-            remainingTasks: fetchedCategory.remainingTasks ??
-                updatedCategories[existingIndex].remainingTasks,
-            completedTasks: fetchedCategory.completedTasks ??
-                updatedCategories[existingIndex].completedTasks,
-          );
-        }
-      }
-
-      // Ensure default categories are always present
-      _ensureDefaultCategories(updatedCategories);
-
-      // Update the categories list
       setState(() {
-        _categories = updatedCategories;
+        _categories = fetchedCategories;
       });
     } catch (error) {
-      print('Error fetching categories: $error');
-
-      // Fallback to default categories if fetching fails
-      _ensureDefaultCategories(_categories);
-    }
-  }
-
-  void _ensureDefaultCategories(List<CategoryModel> categories) {
-    // List of default categories to always include
-    final defaultCategories = [
-      CategoryModel(
-        id: 1,
-        name: 'Personal',
-        icon: 'person_outline',
-        color: '#FF7B86',
-        remainingTasks: 0,
-        completedTasks: 0,
-      ),
-      CategoryModel(
-        id: 2,
-        name: 'Work',
-        icon: 'work_outline',
-        color: '#4ECDC4',
-        remainingTasks: 0,
-        completedTasks: 0,
-      ),
-      CategoryModel(
-        id: 3,
-        name: 'Important',
-        icon: 'priority_high',
-        color: '#FFB900',
-        remainingTasks: 0,
-        completedTasks: 0,
-      ),
-    ];
-
-    // Add default categories if they don't exist
-    for (var defaultCategory in defaultCategories) {
-      bool exists = categories.any((cat) =>
-          cat.name.toLowerCase() == defaultCategory.name.toLowerCase());
-
-      if (!exists) {
-        categories.add(defaultCategory);
-      }
+      AppLogger.e('Error fetching categories: $error');
+      // Keep empty list if fetching fails
+      setState(() {
+        _categories = [];
+      });
     }
   }
 
@@ -201,28 +124,46 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       floatingActionButton: todoTask != 0
-          ? FloatingActionButton(
-              onPressed: () => Get.to(CreateNewTaskPage()),
-              child: Icon(Icons.add),
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Voice input button
+                FloatingActionButton(
+                  onPressed: () => _showVoiceInput(context),
+                  heroTag: "voice",
+                  backgroundColor: Colors.red[400],
+                  mini: true,
+                  child: const Icon(Icons.mic, color: Colors.white),
+                ),
+                const SizedBox(height: 10),
+                // Regular add button
+                FloatingActionButton(
+                  onPressed: () => Get.to(CreateNewTaskPage()),
+                  heroTag: "add",
+                  child: const Icon(Icons.add),
+                ),
+              ],
             )
-          : Container(),
+          : SizedBox(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: SliderDrawer(
+      body: CustomSliderDrawer(
         key: dKey,
         animationDuration: 200,
         slider: MySlider(),
-        appBar: SliderAppBar(
-          appBarPadding: EdgeInsets.fromLTRB(20, 35, 22, 0),
-          appBarColor: LightColors.kDarkYellow,
-          title: Container(),
-          trailing: IconButton(
-            icon: Icon(Icons.search),
-            iconSize: 31,
-            onPressed: () {
-              Get.to(SearchPage());
-            },
+        appBar: CustomSliderAppBar(
+          config: CustomSliderDrawerConfig(
+            backgroundColor: LightColors.kDarkYellow,
+            title: SizedBox(),
+            trailing: IconButton(
+              icon: Icon(Icons.search),
+              iconSize: 31,
+              onPressed: () {
+                Get.to(SearchPage());
+              },
+            ),
           ),
         ),
         child: Container(
@@ -334,7 +275,6 @@ class _HomePageState extends State<HomePage> {
                                 GestureDetector(
                                   onTap: () async {
                                     Get.to(CalendarTimelinePage());
-                                    await _taskController.getTasks();
                                   },
                                   child: HomePage.calendarIcon(),
                                 ),
@@ -374,7 +314,21 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       Container(
-                        child: subheading('Categories'),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            subheading('Categories'),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Tap to view • Long press to delete',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 15.0),
                       Container(
@@ -463,108 +417,334 @@ class _HomePageState extends State<HomePage> {
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Add New Category'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  hintText: 'Category Name',
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              elevation: 16,
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white,
+                      Colors.grey.shade50,
+                    ],
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: LightColors.kBlue.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.add_box,
+                              color: LightColors.kBlue,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Add New Category',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey.shade800,
+                                  ),
+                                ),
+                                Text(
+                                  'Create a custom category for your tasks',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Category Name Input
+                      Text(
+                        'Category Name',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300),
+                          color: Colors.grey.shade50,
+                        ),
+                        child: TextField(
+                          controller: nameController,
+                          decoration: const InputDecoration(
+                            hintText: 'Enter category name',
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Icon Selection
+                      Text(
+                        'Choose Icon',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 60,
+                        child: Row(
+                          children: [
+                            'person_outline',
+                            'work_outline',
+                            'favorite_border',
+                            'priority_high',
+                            'calendar_today',
+                          ].map((icon) {
+                            bool isSelected = selectedIcon == icon;
+                            return Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedIcon = icon;
+                                  });
+                                },
+                                child: Container(
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? LightColors.kBlue
+                                            .withValues(alpha: 0.1)
+                                        : Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? LightColors.kBlue
+                                          : Colors.grey.shade300,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      _getIconData(icon),
+                                      color: isSelected
+                                          ? LightColors.kBlue
+                                          : Colors.grey.shade600,
+                                      size: 24,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Color Selection
+                      Text(
+                        'Choose Color',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 50,
+                        child: Row(
+                          children: [
+                            '#FF7B86', // Red-ish
+                            '#4ECDC4', // Teal
+                            '#FFB900', // Yellow
+                            '#A569BD', // Purple
+                            '#2ECC71', // Green
+                          ].map((color) {
+                            bool isSelected = selectedColor == color;
+                            return Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedColor = color;
+                                  });
+                                },
+                                child: Container(
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  decoration: BoxDecoration(
+                                    color: Color(int.parse(
+                                        color.replaceAll('#', '0xff'))),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? Colors.black
+                                          : Colors.transparent,
+                                      width: 3,
+                                    ),
+                                    boxShadow: isSelected
+                                        ? [
+                                            BoxShadow(
+                                              color: Color(int.parse(color
+                                                      .replaceAll('#', '0xff')))
+                                                  .withValues(alpha: 0.4),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            )
+                                          ]
+                                        : null,
+                                  ),
+                                  child: isSelected
+                                      ? Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 20,
+                                        )
+                                      : null,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Action Buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              style: TextButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(color: Colors.grey.shade300),
+                                ),
+                              ),
+                              child: Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                if (nameController.text.trim().isNotEmpty &&
+                                    selectedIcon != null &&
+                                    selectedColor != null) {
+                                  // Check if category name already exists
+                                  bool categoryExists = _categories.any(
+                                      (category) =>
+                                          category.name.toLowerCase() ==
+                                          nameController.text
+                                              .trim()
+                                              .toLowerCase());
+
+                                  if (categoryExists) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Category with this name already exists'),
+                                        backgroundColor: Colors.red.shade400,
+                                      ),
+                                    );
+                                  } else {
+                                    _addCategory(
+                                      nameController.text.trim(),
+                                      selectedIcon!,
+                                      selectedColor!,
+                                    );
+                                    Navigator.of(context).pop();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Category added successfully!'),
+                                        backgroundColor: Colors.green.shade400,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Please fill all fields'),
+                                      backgroundColor: Colors.orange.shade400,
+                                    ),
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: LightColors.kBlue,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 2,
+                              ),
+                              child: const Text(
+                                'Add Category',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              DropdownButton<String>(
-                value: selectedIcon,
-                hint: const Text('Select Icon'),
-                onChanged: (value) {
-                  setState(() {
-                    selectedIcon = value;
-                  });
-                },
-                items: [
-                  'person_outline',
-                  'work_outline',
-                  'favorite_border',
-                  'priority_high',
-                  'calendar_today',
-                ].map((icon) {
-                  return DropdownMenuItem<String>(
-                    value: icon,
-                    child: Icon(_getIconData(icon)),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-              DropdownButton<String>(
-                value: selectedColor,
-                hint: const Text('Select Color'),
-                onChanged: (value) {
-                  setState(() {
-                    selectedColor = value;
-                  });
-                },
-                items: [
-                  '#FF7B86', // Red-ish
-                  '#4ECDC4', // Teal
-                  '#FFB900', // Yellow
-                  '#A569BD', // Purple
-                  '#2ECC71', // Green
-                ].map((color) {
-                  return DropdownMenuItem<String>(
-                    value: color,
-                    child: Container(
-                      width: 100,
-                      height: 30,
-                      color: Color(int.parse(color.replaceAll('#', '0xff'))),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (nameController.text.trim().isNotEmpty &&
-                    selectedIcon != null &&
-                    selectedColor != null) {
-                  // Check if category name already exists
-                  bool categoryExists = _categories.any((category) =>
-                      category.name.toLowerCase() ==
-                      nameController.text.trim().toLowerCase());
-
-                  if (categoryExists) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content:
-                              Text('Category with this name already exists')),
-                    );
-                  } else {
-                    _addCategory(
-                      nameController.text.trim(),
-                      selectedIcon!,
-                      selectedColor!,
-                    );
-                    Navigator.of(context).pop();
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Please fill all fields')),
-                  );
-                }
-              },
-              child: const Text('Add'),
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -575,43 +755,24 @@ class _HomePageState extends State<HomePage> {
     String icon,
     String color,
   ) async {
-    try {
-      // Call the addCategory method and get the new category ID
-      final newCategoryId = await _taskController.addCategory(
+    await withLoading(() async {
+      await dataSyncManager.createCategory(
         name: name,
         icon: icon,
         color: color,
       );
 
-      if (newCategoryId != -1) {
-        // Create a new CategoryModel using the new category ID
-        final newCategory = CategoryModel(
-          id: newCategoryId,
-          name: name,
-          icon: icon,
-          color: color,
-          remainingTasks: 0,
-          completedTasks: 0,
-        );
+      // Note: UI refresh is handled automatically by DataSyncManager callbacks
 
-        // Update the local categories list
-        setState(() {
-          _categories.add(newCategory);
-        });
-
-        // Optionally refresh categories if needed
-        await _fetchCategories();
-      } else {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add category')),
+          SnackBar(
+            content: Text('Category "$name" added successfully!'),
+            backgroundColor: Colors.green.shade400,
+          ),
         );
       }
-    } catch (e) {
-      print('Error adding category: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error adding category')),
-      );
-    }
+    });
   }
 
   Widget _buildCategoryCard(
@@ -623,20 +784,26 @@ class _HomePageState extends State<HomePage> {
   ) {
     final iconData = _getIconData(icon);
     final remainingTasks = totalTasks - completedTasks;
+    final category = _categories.firstWhere((cat) => cat.name == title);
 
     return GestureDetector(
       onTap: () {
         // Navigate to CategoryDetailPage with the selected category
         Get.to(CategoryDetailPage(
           category: CategoryModel(
-            id: _categories.firstWhere((cat) => cat.name == title).id,
+            id: category.id,
             name: title,
             icon: icon,
-            color: color.toString(),
+            color:
+                '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
             remainingTasks: remainingTasks,
             completedTasks: completedTasks,
           ),
         ));
+      },
+      onLongPress: () {
+        // Show delete category dialog on long press
+        _showDeleteCategoryDialog(category);
       },
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -648,34 +815,49 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(
-              iconData,
-              color: Colors.grey[600],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(
+                  iconData,
+                  color: Colors.grey[700],
+                  size: 28,
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '$totalTasks',
+                    style: TextStyle(
+                      color: Colors.grey[700],
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
+            const SizedBox(height: 8),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
               ),
             ),
+            const SizedBox(height: 12),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '$remainingTasks left',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '$completedTasks done',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
+                _buildStatChip('$remainingTasks left', Icons.pending_actions,
+                    Colors.orange[700]!),
+                _buildStatChip('$completedTasks done', Icons.check_circle,
+                    Colors.green[700]!),
               ],
             ),
           ],
@@ -684,8 +866,34 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showTasksForCategory(String categoryName) {
-    Get.to(AllTaskPage());
+  Widget _buildStatChip(String text, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 12,
+            color: color,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   IconData _getIconData(String iconName) {
@@ -704,9 +912,140 @@ class _HomePageState extends State<HomePage> {
         return Icons.search;
     }
   }
-}
 
-extension on TaskController {
-  addCategory(
-      {required String name, required String icon, required String color}) {}
+  // Voice input method for quick task creation
+  void _showVoiceInput(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: VoiceInputWidget(
+          onSpeechResult: (TaskSpeechData speechData) {
+            // Create task directly from voice input
+            _createTaskFromVoice(speechData);
+            Navigator.of(context).pop();
+          },
+          onCancel: () {
+            Navigator.of(context).pop();
+          },
+          onError: (String error) {
+            Navigator.of(context).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(error),
+                backgroundColor: Colors.orange.shade400,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // Create task directly from voice input
+  Future<void> _createTaskFromVoice(TaskSpeechData speechData) async {
+    try {
+      final newTask = Task(
+        title: speechData.title,
+        description: speechData.description,
+        date: speechData.dueDate != null
+            ? "${speechData.dueDate!.day}/${speechData.dueDate!.month}/${speechData.dueDate!.year}"
+            : "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
+        startTime: "9:00 AM",
+        endTime: "10:00 AM",
+        remind: 10,
+        repeat: "None",
+        color: speechData.priority == 'high'
+            ? 0
+            : (speechData.priority == 'low' ? 2 : 1),
+        isCompleted: 0,
+        isStar: 0,
+      );
+
+      // Use DataSyncMixin to create task with sync
+      await createTaskWithSync(newTask);
+
+      // Refresh UI data
+      _fetchAllTaskStats();
+      _fetchCategories();
+
+      Get.snackbar(
+        'Success',
+        'Task created from voice input successfully!',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (error) {
+      AppLogger.e('Error creating task from voice: $error');
+      Get.snackbar(
+        'Error',
+        'Failed to create task: $error',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  Future<void> _showDeleteCategoryDialog(CategoryModel category) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap button to dismiss
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Category'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Are you sure you want to delete "${category.name}"?'),
+                const SizedBox(height: 8),
+                const Text(
+                  'This action cannot be undone. Tasks associated with this category will prevent deletion.',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _deleteCategory(category.id);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteCategory(int categoryId) async {
+    await withLoading(() async {
+      await dataSyncManager.deleteCategory(categoryId);
+
+      // Note: UI refresh is handled automatically by DataSyncManager callbacks
+
+      Get.snackbar(
+        'Success',
+        'Category deleted successfully',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    });
+  }
 }

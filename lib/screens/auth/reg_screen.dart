@@ -1,23 +1,22 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/screens/auth/auth_service.dart';
-import 'package:flutter_task_planner_app/screens/auth/loginScreen.dart';
 import 'package:flutter_task_planner_app/screens/task_screen/home_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:get/get.dart';
-import '../../widgets/task_widget/ButtonItem.dart';
+
+import '../../widgets/task_widget/button_item.dart';
 import 'component/radiobutton.dart';
 import 'constant.dart';
 
 class RegScreen extends StatefulWidget {
-  const RegScreen({Key? key}) : super(key: key);
+  const RegScreen({super.key});
 
   @override
   State<RegScreen> createState() => _RegScreenState();
 }
 
 class _RegScreenState extends State<RegScreen> {
-  @override
   final GlobalKey<FormState> _signinKey = GlobalKey<FormState>();
   AuthClass authClass = AuthClass();
   final RegExp emailValidate = RegExp(
@@ -26,6 +25,7 @@ class _RegScreenState extends State<RegScreen> {
   bool showSpinner = false;
   late String email;
   late String password;
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: Stack(
@@ -130,12 +130,9 @@ class _RegScreenState extends State<RegScreen> {
                                   showSpinner = true;
                                 });
                                 try {
-                                  final newUser = await _auth
-                                      .createUserWithEmailAndPassword(
-                                          email: email, password: password);
-                                  if (newUser != null) {
-                                    Get.to(HomePage());
-                                  }
+                                  await _auth.createUserWithEmailAndPassword(
+                                      email: email, password: password);
+                                  Get.to(HomePage());
 
                                   setState(() {
                                     showSpinner = false;

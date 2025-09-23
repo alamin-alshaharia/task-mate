@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 class MyTextField extends StatelessWidget {
@@ -10,8 +8,9 @@ class MyTextField extends StatelessWidget {
 
   final TextEditingController? textController;
   final void Function()? ontap;
-  MyTextField(
-      {this.label,
+  const MyTextField(
+      {super.key,
+      this.label,
       this.maxLines = 1,
       this.minLines = 1,
       this.icon,
@@ -29,7 +28,7 @@ class MyTextField extends StatelessWidget {
         minLines: minLines,
         maxLines: maxLines,
         decoration: InputDecoration(
-          suffixIcon: icon == null ? null : icon,
+          suffixIcon: icon,
           labelText: label,
           labelStyle:
               TextStyle(color: Colors.black54, fontWeight: FontWeight.w500),
@@ -44,11 +43,11 @@ class MyTextField extends StatelessWidget {
   }
 }
 
-_getDate(context) async {
-  DateTime? pickDate = await showDatePicker(
-      context: context,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2125),
-      initialDate: DateTime.now());
-  if (pickDate != null) {}
-}
+// Unused date picker method - commented out
+// Future<void> _getDate(context) async {
+//   DateTime? pickDate = await showDatePicker(
+//       context: context,
+//       firstDate: DateTime(2020),
+//       lastDate: DateTime(2125),
+//       initialDate: DateTime.now());
+// }

@@ -3,16 +3,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_task_planner_app/screens/note_screens/note_detail_page.dart';
 import 'package:flutter_task_planner_app/screens/note_screens/search_screen.dart';
 import 'package:flutter_task_planner_app/widgets/note_widgets/alert_dialog.dart';
-
 import 'package:get/get.dart';
 
-import '../../theme/colors/colors.dart';
 import '../../controller/note_controller.dart';
-
+import '../../theme/colors/colors.dart';
 import 'add_new_note_page.dart';
 
 class Homenote extends StatelessWidget {
   final controller = Get.put(NoteController());
+
+  Homenote({super.key});
 
   @override
   Widget build(BuildContext context) {

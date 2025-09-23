@@ -67,10 +67,10 @@
 // }
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import '../../Controller/task_controller.dart';
-import '../../model/task_model.dart';
 
+import '../../controller/task_controller.dart';
+import '../../model/task_model.dart';
+import '../../utils/logger.dart';
 import '../../widgets/task_widget/home_page/active_project_card.dart'; // Update with your actual import
 
 class Active extends StatefulWidget {
@@ -87,7 +87,7 @@ class _ActiveState extends State<Active> {
   Widget build(BuildContext context) {
     setState(() {
       _taskController.getTasks();
-      print("Initialize");
+      AppLogger.d("Initializing Active projects page");
     });
     return Scaffold(
       appBar: AppBar(
@@ -111,6 +111,7 @@ class _ActiveState extends State<Active> {
               ),
             );
           }
+          return null;
         },
         gridDelegate:
             SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),

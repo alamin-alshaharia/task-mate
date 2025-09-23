@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class TaskColumn extends StatelessWidget {
   final IconData? icon;
   final Color? iconBackgroundColor;
   final String? title;
   final String? subtitle;
-  TaskColumn({
+  const TaskColumn({
+    super.key,
     this.icon,
     this.iconBackgroundColor,
     this.title,

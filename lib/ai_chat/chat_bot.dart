@@ -1,11 +1,13 @@
 import 'package:dialog_flowtter/dialog_flowtter.dart';
 // import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import '../utils/logger.dart';
 // import 'package:flutter_dialogflow/Messages.dart';
-import 'Messages.dart';
+import 'messages.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  const Home({super.key});
 
   @override
   _HomeState createState() => _HomeState();
@@ -58,9 +60,9 @@ class _HomeState extends State<Home> {
     );
   }
 
-  sendMessage(String text) async {
+  Future<void> sendMessage(String text) async {
     if (text.isEmpty) {
-      print('Message is empty');
+      AppLogger.w('Attempted to send empty message');
     } else {
       setState(() {
         addMessage(Message(text: DialogText(text: [text])), true);
@@ -75,7 +77,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  addMessage(Message message, [bool isUserMessage = false]) {
+  void addMessage(Message message, [bool isUserMessage = false]) {
     messages.add({'message': message, 'isUserMessage': isUserMessage});
   }
 }

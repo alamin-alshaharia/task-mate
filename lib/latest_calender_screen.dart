@@ -336,26 +336,22 @@
 //   }
 import 'package:date_picker_timeline/date_picker_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:flutter_task_planner_app/Db/database_helper.dart';
-import 'package:flutter_task_planner_app/dates_list.dart';
-import 'package:flutter_task_planner_app/screens/task_screen/all_task_page.dart';
+import 'package:flutter_task_planner_app/screens/task_screen/create_new_task_page.dart';
 import 'package:flutter_task_planner_app/screens/task_screen/home_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
-import 'package:flutter_task_planner_app/widgets/task_widget/task_container.dart';
-import 'package:flutter_task_planner_app/screens/task_screen/create_new_task_page.dart';
-import 'package:flutter_task_planner_app/widgets/task_widget/back_button.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-import '../../Controller/task_controller.dart';
 import '../../model/task_model.dart';
 import '../../service/notification_services.dart';
-import '../../widgets/task_widget/ButtonItem.dart';
-import '../../widgets/task_widget/tasktile_calender_page.dart';
+import '../../widgets/task_widget/task_bottom_sheet.dart';
+import '../utils/logger.dart';
+import 'controller/task_controller.dart';
 
 class CalendarTimelinePage extends StatefulWidget {
+  const CalendarTimelinePage({super.key});
+
   @override
   State<CalendarTimelinePage> createState() => _CalendarPageState();
 }
@@ -369,8 +365,11 @@ class _CalendarPageState extends State<CalendarTimelinePage> {
   void initState() {
     super.initState();
     notifyHelper = NotifyHelper();
-    notifyHelper.initializeNotification();
-    _taskController.getTasks();
+    _initializeNotifications();
+  }
+
+  Future<void> _initializeNotifications() async {
+    await notifyHelper.ensureInitialized();
   }
 
   @override
@@ -421,7 +420,7 @@ class _CalendarPageState extends State<CalendarTimelinePage> {
     );
   }
 
-  _appBar() {
+  AppBar _appBar() {
     return AppBar(
       elevation: 0,
       leading: IconButton(
@@ -433,15 +432,12 @@ class _CalendarPageState extends State<CalendarTimelinePage> {
         IconButton(
             onPressed: () {
               Task task = _taskController.taskList[4];
-              print(task.title);
+              AppLogger.d("Testing notification with task: ${task.title}");
               notifyHelper.displayNotification(
-                  title: "Theme", body: 'Theme Changed');
+                  id: 999, title: "Theme", body: 'Theme Changed');
               notifyHelper.createDailyReminder(8, 15, task);
-              // Logic for theme change
-              // ThemeServices().switchTheme();
               notifyHelper.scheduledNotification(8, 20, task);
-              // notifyHelper.flutterLocalNotificationsPlugin;
-              print("tapped");
+              AppLogger.d("Theme toggle button tapped");
             },
             icon: Icon(
               // Day and moon icon should change according to the Theme Mode
@@ -539,94 +535,6 @@ class _CalendarPageState extends State<CalendarTimelinePage> {
     var weeklyTime = DateFormat("EEEE").format(weeklyDate);
     return task.repeat == 'Weekly' &&
         weeklyTime == DateFormat.EEEE().format(_selectedDate);
-  }
-
-  void _scheduleNotifications(Task task) {
-    try {
-      DateTime date = DateFormat.jm().parse(task.startTime.toString());
-      var myTime = DateFormat("HH:mm").format(date);
-      int hours = int.parse(myTime.split(":")[0]);
-      int minutes = int.parse(myTime.split(":")[1]);
-
-      if (task.repeat == "Once") {
-        notifyHelper.scheduledNotification(hours, minutes, task);
-      } else if (task.repeat == "Daily") {
-        notifyHelper.createDailyReminder(hours, minutes, task);
-      } else if (task.repeat == 'Weekly') {
-        notifyHelper.scheduledWeeklyNotification(hours, minutes, task);
-      }
-    } catch (e) {
-      print("Error parsing time for task ${task.id}: ${task.startTime} - $e");
-    }
-  }
-  // void _scheduleNotifications(Task task) {
-  //   DateTime date = DateFormat.jm().parse(task.startTime.toString());
-  //   var myTime = DateFormat("HH:mm").format(date);
-  //   int hours = int.parse(myTime.split(":")[0]);
-  //   int minutes = int.parse(myTime.split(":")[1]);
-  //
-  //   if (task.repeat == "Once") {
-  //     notifyHelper.scheduledNotification(hours, minutes, task);
-  //   } else if (task.repeat == "Daily") {
-  //     notifyHelper.createDailyReminder(hours, minutes, task);
-  //   } else if (task.repeat == 'Weekly') {
-  //     // notifyHelper.repeatWeeklyNotification(hours, minutes, task);
-  //   }
-  // }
-
-  void _showBottomSheet(BuildContext context, Task task) {
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.only(top: 4),
-        height: task.isCompleted == 1
-            ? MediaQuery.of(context).size.height * 0.24
-            : MediaQuery.of(context).size.height * 0.32,
-        child: Column(
-          children: [
-            Container(
-              height: 6,
-              width: 120,
-              decoration:
-                  BoxDecoration(borderRadius: BorderRadius.circular(10)),
-            ),
-            if (task.isCompleted != 1)
-              ButtonItem(
-                textColor: Colors.black54,
-                buttonColor: Colors.greenAccent,
-                onClick: () {
-                  _taskController.markTaskCompleted(task.id!);
-
-                  Get.back();
-                },
-                text: "Task Completed",
-                imagePath: 'assets/done.svg',
-                size: 25,
-              ),
-            ButtonItem(
-              text: "Delete Task",
-              imagePath: "assets/delete.svg",
-              size: 25,
-              buttonColor: Colors.red.shade300,
-              onClick: () {
-                _taskController.delete(task);
-                Get.back();
-              },
-            ),
-            const SizedBox(height: 10),
-            ButtonItem(
-              imagePath: "assets/close.svg",
-              text: "Close",
-              size: 25,
-              textColor: Colors.black,
-              buttonColor: Colors.white,
-              onClick: () {
-                Get.back();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   // Widget _buildTimeline() {
@@ -1306,7 +1214,7 @@ class _CalendarPageState extends State<CalendarTimelinePage> {
   Widget _buildTimeline() {
     return Obx(() {
       // Sort and filter tasks
-      final activeTasks = _taskController.taskList.value.toList()
+      final activeTasks = _taskController.taskList.toList()
         ..sort((a, b) {
           final aStartTime = a.startTime;
           final bStartTime = b.startTime;
@@ -1441,7 +1349,7 @@ class _CalendarPageState extends State<CalendarTimelinePage> {
 // Separate method for task item
   Widget _buildTaskItem(BuildContext context, Map<String, dynamic> item) {
     return GestureDetector(
-      onTap: () => _showBottomSheet(context, item['task']),
+      onTap: () => TaskBottomSheet.show(context, item['task'], showStar: true),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
@@ -1521,7 +1429,7 @@ class _CalendarPageState extends State<CalendarTimelinePage> {
     );
   }
 
-  _getBGClr(int no) {
+  ColorSwatch<int> _getBGClr(int no) {
     switch (no) {
       case 0:
         return Colors.red;

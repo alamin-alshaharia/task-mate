@@ -5,7 +5,7 @@ import '../../model/task_model.dart';
 
 class TaskTile extends StatelessWidget {
   final Task? task;
-  TaskTile(this.task);
+  const TaskTile(this.task, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +89,7 @@ class TaskTile extends StatelessWidget {
     );
   }
 
-  _getBGClr(int no) {
+  ColorSwatch<int> _getBGClr(int no) {
     switch (no) {
       case 0:
         return Colors.red;

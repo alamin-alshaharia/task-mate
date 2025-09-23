@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 
 class HomepageButton extends StatelessWidget {
   const HomepageButton(
@@ -9,7 +8,7 @@ class HomepageButton extends StatelessWidget {
   final Function() onpress;
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 150,
       height: 43,
       child: ElevatedButton(

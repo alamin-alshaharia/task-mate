@@ -215,13 +215,15 @@
 //     );
 //   }
 // }
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../../controller/profile_controller.dart';
 
 class ProfilePage extends StatelessWidget {
   final ProfileController _controller = Get.put(ProfileController());
+
+  ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {

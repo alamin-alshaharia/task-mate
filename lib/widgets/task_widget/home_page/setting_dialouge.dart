@@ -11,6 +11,8 @@ void showSettingsDialog(BuildContext context) {
 }
 
 class SettingsDialog extends StatefulWidget {
+  const SettingsDialog({super.key});
+
   @override
   _SettingsDialogState createState() => _SettingsDialogState();
 }
@@ -31,8 +33,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
             value: _isDarkTheme,
             onChanged: (bool value) {
               setState(() {
-                NotifyHelper()
-                    .displayNotification(title: "Theme", body: 'Theme Changed');
+                NotifyHelper().displayNotification(
+                    id: 100, title: "Theme", body: 'Theme Changed');
                 _isDarkTheme = value;
               });
             },
@@ -44,9 +46,13 @@ class _SettingsDialogState extends State<SettingsDialog> {
               setState(() {
                 value
                     ? NotifyHelper().displayNotification(
-                        title: "Firebase Backup", body: 'Backup is  Enable')
+                        id: 101,
+                        title: "Firebase Backup",
+                        body: 'Backup is Enable')
                     : NotifyHelper().displayNotification(
-                        title: "Firebase Backup", body: 'Backup is disable');
+                        id: 102,
+                        title: "Firebase Backup",
+                        body: 'Backup is Disable');
                 _isBackupEnabled = value;
               });
             },

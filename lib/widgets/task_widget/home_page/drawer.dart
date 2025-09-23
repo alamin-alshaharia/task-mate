@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_task_planner_app/screens/settings/settings_screen.dart';
 import 'package:flutter_task_planner_app/widgets/task_widget/home_page/setting_dialouge.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 
 import '../../../controller/profile_controller.dart';
 import '../../../screens/task_screen/all_task_page.dart';
@@ -13,12 +13,12 @@ import '../../../theme/colors/light_colors.dart';
 
 class MySlider extends StatelessWidget {
   MySlider({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
   final ProfileController _profileController = Get.put(ProfileController());
 
   /// Icons
-  List<IconData> icons = [
+  final List<IconData> icons = [
     // CupertinoIcons.home,
     CupertinoIcons.person_fill,
     CupertinoIcons.doc_richtext,
@@ -29,7 +29,7 @@ class MySlider extends StatelessWidget {
   ];
 
   /// Texts
-  List<String> texts = [
+  final List<String> texts = [
     // "Home",
     "Profile",
     "All Task",
@@ -99,6 +99,10 @@ class MySlider extends StatelessWidget {
                           Get.to(() => ReportPage());
                           break;
                         case 4:
+                          // Navigate to Settings Screen
+                          Get.to(() => const SettingsScreen());
+                          break;
+                        case 5:
                           showSettingsDialog(context);
                           break;
                       }

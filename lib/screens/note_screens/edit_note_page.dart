@@ -232,6 +232,8 @@ import 'package:flutter_task_planner_app/theme/colors/colors.dart';
 import '../../controller/note_controller.dart';
 
 class EditNotePage extends StatefulWidget {
+  const EditNotePage({super.key});
+
   @override
   _EditNotePageState createState() => _EditNotePageState();
 }

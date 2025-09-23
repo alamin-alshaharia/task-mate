@@ -1,9 +1,10 @@
 import 'dart:async';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../model/task_model.dart';
 import '../model/category_model.dart';
+import '../model/task_model.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -200,5 +201,27 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [categoryId],
     );
+  }
+
+  // Method to clear all tasks
+  Future<int> deleteAllTasks() async {
+    final db = await database;
+    // First, reset all category task counts
+    await db.update(
+      _categoryTable,
+      {
+        'remainingTasks': 0,
+        'completedTasks': 0,
+      },
+    );
+    // Then delete all tasks
+    return await db.delete(_taskTable);
+  }
+
+  // Method to clear all data (tasks and categories)
+  Future<void> clearAllData() async {
+    final db = await database;
+    await db.delete(_taskTable);
+    await db.delete(_categoryTable);
   }
 }

@@ -5,7 +5,7 @@ import 'db/latest_db_helper.dart';
 // import 'database_helper.dart';
 
 class TaskManagementScreen extends StatefulWidget {
-  const TaskManagementScreen({Key? key}) : super(key: key);
+  const TaskManagementScreen({super.key});
 
   @override
   _TaskManagementScreenState createState() => _TaskManagementScreenState();

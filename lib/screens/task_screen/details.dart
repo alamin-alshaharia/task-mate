@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+
 // import 'package:todo_app_new_edition/controllers/task_controller.dart';
 // import 'package:todo_app_new_edition/models/task.dart';
 // import 'package:todo_app_new_edition/ui/widgets/button.dart';
 // import 'package:todo_app_new_edition/ui/widgets/input_field.dart';
 // import 'package:todo_app_new_edition/utils/theme.dart';
 
-import '../../Controller/task_controller.dart';
+import '../../controller/task_controller.dart';
 import '../../model/task_model.dart';
-import '../../widgets/task_widget/input_field_with_widget.dart';
 import '../../widgets/task_widget/my_text_field.dart';
 
 // Details page
@@ -18,7 +17,7 @@ import '../../widgets/task_widget/my_text_field.dart';
 class TaskDetailPage extends StatefulWidget {
   final Task task;
 
-  const TaskDetailPage({Key? key, required this.task}) : super(key: key);
+  const TaskDetailPage({super.key, required this.task});
 
   @override
   State<TaskDetailPage> createState() => _TaskDetailsPageState();
@@ -28,17 +27,13 @@ class _TaskDetailsPageState extends State<TaskDetailPage> {
   late Task? task = widget.task; // todo how to get the task?
   final TaskController _taskController = Get.put(TaskController());
   final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _noteController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
-  String _startTime = DateFormat("hh:mm a").format(DateTime.now()).toString();
-  int _selectedRemind = 5; // initial value
+  // final TextEditingController _noteController = TextEditingController();
   List<int> reminderList = [
     5,
     10,
     15,
     20,
   ];
-  String _selectedRepeat = "None";
   List<String> repeatList = ["None", "Once", "Daily", "Weekly"];
   int _selectedColor = 0;
 
@@ -216,33 +211,7 @@ class _TaskDetailsPageState extends State<TaskDetailPage> {
   //   }
   // }
 
-  _validateDate() {
-    _updateTaskToDb();
-    _taskController.getTasks();
-    Get.back();
-  }
-
-  /* Update task to database */
-  _updateTaskToDb() {
-    _taskController.updateTask(
-        task: Task(
-      id: task?.id,
-      title:
-          _titleController.text.isEmpty ? task?.title : _titleController.text,
-      description: _noteController.text.isEmpty
-          ? task?.description
-          : _noteController.text,
-      date: task?.date,
-      startTime: task?.startTime,
-      // remind: task?.remind,
-      repeat: task?.repeat,
-      color: task?.color,
-      isCompleted: task?.isCompleted,
-      isStar: task?.isStar,
-    ));
-  }
-
-  _colorPalette() {
+  Column _colorPalette() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -297,7 +266,7 @@ class _TaskDetailsPageState extends State<TaskDetailPage> {
     );
   }
 
-  _appBar(BuildContext context) {
+  AppBar _appBar(BuildContext context) {
     return AppBar(
       elevation: 0,
       // eliminate the shadow of header banner
@@ -319,46 +288,5 @@ class _TaskDetailsPageState extends State<TaskDetailPage> {
       ),
       centerTitle: true,
     );
-  }
-
-  _getDateFromUser() async {
-    DateTime? _pickerDate = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2020),
-        lastDate: DateTime(2050));
-
-    if (_pickerDate != null) {
-      setState(() {
-        _selectedDate = _pickerDate;
-        task?.date = DateFormat.yMd().format(_pickerDate);
-        // print(_selectedDate);
-      });
-    } else {
-      print("it is null or something went wrong");
-    }
-  }
-
-  _getTimeFromUser({required bool isStartTime}) async {
-    var pickedTime = await _showTimepicker();
-    String formattedTime = pickedTime.format(context);
-    if (pickedTime == null) {
-      print("Time canceled");
-    } else if (isStartTime == true) {
-      setState(() {
-        _startTime = formattedTime;
-        task?.startTime = _startTime;
-      });
-    }
-  }
-
-  _showTimepicker() {
-    return showTimePicker(
-        initialEntryMode: TimePickerEntryMode.input,
-        context: context,
-        initialTime: TimeOfDay(
-          hour: int.parse(_startTime.split(":")[0]),
-          minute: int.parse(_startTime.split(":")[1].split(" ")[0]),
-        ));
   }
 }

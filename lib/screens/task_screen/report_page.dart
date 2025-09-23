@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/controller/task_controller.dart';
 import 'package:flutter_task_planner_app/screens/task_screen/create_new_task_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
+import 'package:flutter_task_planner_app/utils/logger.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 
 class ReportPage extends StatefulWidget {
-  const ReportPage({Key? key}) : super(key: key);
+  const ReportPage({super.key});
 
   // @override
+  @override
   State<ReportPage> createState() => _ReportPageState();
 }
 
@@ -42,7 +44,7 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
         completedTask = completedResult.toInt();
       });
     } catch (error) {
-      print('Error: $error');
+      AppLogger.e('Error loading total tasks: $error');
     }
   }
 
@@ -56,7 +58,7 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
         completedTask = completedResult.toInt();
       });
     } catch (error) {
-      print('Error: $error');
+      AppLogger.e('Error loading one day tasks: $error');
     }
   }
 
@@ -71,7 +73,7 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
         completedTask = completedResult.toInt();
       });
     } catch (error) {
-      print('Error: $error');
+      AppLogger.e('Error loading seven days tasks: $error');
     }
   }
 
@@ -85,7 +87,7 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
         completedTask = completedResult.toInt();
       });
     } catch (error) {
-      print('Error: $error');
+      AppLogger.e('Error loading month tasks: $error');
     }
   }
 
@@ -99,7 +101,7 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
     } else if (selectedIndex == 3) {
       _fetchOneMonthTaskStats();
     } else {
-      print("error");
+      AppLogger.e("Invalid selectedIndex in switchFunc: $selectedIndex");
     }
   }
 
@@ -123,12 +125,11 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    print("Report Task Page");
+    AppLogger.d("Building Report Task Page");
 
-    var todoTasks = totalTask - completedTask;
-    // print(todoTasks);
-    var percent = (completedTask / totalTask * 100).toStringAsFixed(0);
-    // print(percent);
+    // Calculate remaining tasks and completion percentage
+    // var todoTasks = totalTask - completedTask;
+    // var percent = (completedTask / totalTask * 100).toStringAsFixed(0);
 
     return Scaffold(
       appBar: _appBar(),
@@ -165,7 +166,7 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
                       const EdgeInsets.symmetric(horizontal: kDefaultPadding),
                   decoration: BoxDecoration(
                     color: index == selectedIndex
-                        ? LightColors.kBlue.withOpacity(0.95)
+                        ? LightColors.kBlue.withValues(alpha: 0.95)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(6),
                   ),
@@ -191,93 +192,21 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // Padding(
-                  //   padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 4.0),
-                  //   child: const Divider(thickness: 2),
-                  // ),
-                  SizedBox(
-                    width: 180.0,
-                    height: 180.0,
-                    child: isCircular
-                        ? CircularStepProgressIndicator(
-                            selectedColor: bluishClr,
-                            totalSteps: totalTask == 0 ? 1 : totalTask,
-                            currentStep: completedTask,
-                            width: 150,
-                            stepSize: 9,
-                            roundedCap: (_, isSelected) => isSelected,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '${totalTask == 0 ? 0 : percent} %',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 24.0,
-                                  ),
-                                ),
-                                const SizedBox(height: 1.0),
-                                const Text(
-                                  "Efficiency",
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16.0,
-                                  ),
-                                )
-                              ],
-                            ),
-                          )
-                        : CircularStepProgressIndicator(
-                            totalSteps: totalTask == 0 ? 1 : totalTask,
-                            currentStep: completedTask,
-                            stepSize: 20,
-                            selectedColor: Colors.green,
-                            unselectedColor: Colors.grey[200],
-                            padding: 0,
-                            selectedStepSize: 22,
-                            roundedCap: (_, __) => true,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '${totalTask == 0 ? 0 : percent} %',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20.0,
-                                  ),
-                                ),
-                                const SizedBox(height: 1.0),
-                                const Text(
-                                  "Efficiency",
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12.0,
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                  ),
-                  SizedBox(height: 20.0),
-                  Padding(
-                    // padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
-                    padding: EdgeInsets.only(
-                        top: 10, left: 35, right: 45, bottom: 10),
-                    child: Column(
-                      children: [
-                        _buildStatus(
-                            isCircular ? bluishClr : LightColors.kGreen,
-                            completedTask,
-                            'Completed Tasks'),
-                        _buildStatus(
-                            LightColors.kLightBlue, todoTasks, 'Todo Tasks'),
-                        _buildStatus(
-                            LightColors.kDarkYellow, totalTask, 'Total Tasks'),
-                      ],
-                    ),
-                  ),
+                  // Enhanced Statistics Section
+                  _buildStatsOverview(),
+                  const SizedBox(height: 20),
+
+                  // Progress Circle
+                  _buildProgressCircle(),
+                  const SizedBox(height: 20),
+
+                  // Detailed Statistics Cards
+                  _buildDetailedStats(),
+                  const SizedBox(height: 20),
+
+                  // Category Breakdown
+                  _buildCategoryBreakdown(),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -289,7 +218,6 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
         backgroundColor: bluishClr,
         onPressed: () async {
           await Get.to(() => CreateNewTaskPage());
-          _taskController.getTasks();
         },
         child: const Icon(Icons.update_sharp, size: 35),
         // child: const Icon(Icons.add_circle_rounded, size: 50),
@@ -299,79 +227,307 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildStatus(Color color, int number, String text) {
-    IconData? iconData;
+  Widget _buildStatsOverview() {
+    // var todoTasks = totalTask - completedTask;
+    var percent =
+        totalTask == 0 ? 0 : (completedTask / totalTask * 100).round();
 
-    if (text.contains('Completed Tasks')) {
-      iconData = Icons.check_circle;
-    } else if (text.contains('Todo Tasks')) {
-      iconData = Icons.list_alt;
-    } else if (text.contains('Total Tasks')) {
-      iconData = Icons.assignment;
-    }
-
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.0),
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [bluishClr.withValues(alpha: 0.8), bluishClr],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        color: color,
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: bluishClr.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Productivity Score',
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '$percent%',
+                  style: GoogleFonts.lato(
+                    fontSize: 36,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Efficiency Rating',
+                  style: GoogleFonts.lato(
+                    fontSize: 14,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Icon(
+              Icons.trending_up,
+              size: 40,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressCircle() {
+    var percent =
+        totalTask == 0 ? 0 : (completedTask / totalTask * 100).round();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      child: SizedBox(
+        width: 200.0,
+        height: 200.0,
+        child: CircularStepProgressIndicator(
+          selectedColor: bluishClr,
+          unselectedColor: Colors.grey[200]!,
+          totalSteps: totalTask == 0 ? 1 : totalTask,
+          currentStep: completedTask,
+          width: 200,
+          stepSize: 12,
+          roundedCap: (_, isSelected) => isSelected,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        iconData,
-                        color: Colors.white,
-                        size: 20.0,
-                      ),
-                      SizedBox(width: 8.0),
-                      Text(
-                        // first line text
-                        text.split(' ')[0], // first line text
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18.0,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8.0),
-                  Container(),
-                ],
+              Icon(
+                Icons.assignment_turned_in,
+                size: 40,
+                color: bluishClr,
               ),
-              Row(
-                children: [
-                  Text(
-                    '$number', // second line text
-                    style: TextStyle(
-                      fontSize: 25.0,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    text.split(' ')[1], // second line text
-                    style: TextStyle(
-                      fontSize: 15.0,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 8),
+              Text(
+                '$percent%',
+                style: GoogleFonts.lato(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 28.0,
+                  color: Colors.grey[800],
+                ),
+              ),
+              Text(
+                'Complete',
+                style: GoogleFonts.lato(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16.0,
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDetailedStats() {
+    var todoTasks = totalTask - completedTask;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                  child: _buildStatCard('Total Tasks', totalTask.toString(),
+                      Icons.assignment, LightColors.kDarkYellow)),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: _buildStatCard('Completed', completedTask.toString(),
+                      Icons.check_circle, Colors.green)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                  child: _buildStatCard('Remaining', todoTasks.toString(),
+                      Icons.pending_actions, Colors.orange)),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: _buildStatCard(
+                      'Success Rate',
+                      '${totalTask == 0 ? 0 : (completedTask / totalTask * 100).round()}%',
+                      Icons.trending_up,
+                      bluishClr)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: GoogleFonts.lato(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: GoogleFonts.lato(
+              fontSize: 12,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryBreakdown() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.category,
+                color: bluishClr,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Performance Insights',
+                style: GoogleFonts.lato(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _buildInsightRow(
+              'Task Completion Rate',
+              '${totalTask == 0 ? 0 : (completedTask / totalTask * 100).round()}%',
+              Colors.green),
+          _buildInsightRow(
+              'Tasks Remaining', '${totalTask - completedTask}', Colors.orange),
+          _buildInsightRow(
+              'Total Productivity',
+              totalTask > 5
+                  ? 'High'
+                  : totalTask > 2
+                      ? 'Medium'
+                      : 'Low',
+              bluishClr),
+          _buildInsightRow('Period', categories[selectedIndex], Colors.purple),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInsightRow(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.lato(
+              fontSize: 14,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: color.withOpacity(0.3)),
+            ),
+            child: Text(
+              value,
+              style: GoogleFonts.lato(
+                fontSize: 12,
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -382,7 +538,7 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
     });
   }
 
-  _addTaskBar() {
+  Container _addTaskBar() {
     return Container(
       margin: const EdgeInsets.only(left: 20, right: 20, top: 10),
       child: Row(
@@ -451,7 +607,7 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
     );
   }
 
-  _appBar() {
+  AppBar _appBar() {
     return AppBar(
       elevation: 0,
       // eliminate the shadow of header banner

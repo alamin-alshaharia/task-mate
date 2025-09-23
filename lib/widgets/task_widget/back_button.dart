@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 
 class MyBackButton extends StatelessWidget {
-  MyBackButton({this.leftPdding = 25});
+  const MyBackButton({super.key, this.leftPdding = 25});
   final double leftPdding;
   @override
   Widget build(BuildContext context) {

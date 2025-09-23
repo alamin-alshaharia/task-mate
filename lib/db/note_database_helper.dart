@@ -20,7 +20,7 @@ class DatabaseHelper {
     return _database;
   }
 
-  initiateDatabase() async {
+  Future<Database> initiateDatabase() async {
     Directory directory = await getApplicationDocumentsDirectory();
     String path = join(directory.path, _dbName);
     return await openDatabase(path, version: _dbVersion, onCreate: _onCreate);

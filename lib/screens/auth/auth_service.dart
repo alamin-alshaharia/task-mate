@@ -1,62 +1,46 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../task_screen/home_page.dart';
+import '../../utils/logger.dart';
 
 class AuthClass {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: [
-      'email',
-      'https://www.googleapis.com/auth/contacts.readonly',
-    ],
-  );
-  final storage = new FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
+
   Future<void> googleSignIn(BuildContext context) async {
     try {
-      GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
-      GoogleSignInAuthentication googleSignInAuthentication =
-          await googleSignInAccount!.authentication;
-      AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleSignInAuthentication.accessToken,
-        idToken: googleSignInAuthentication.idToken,
-      );
-      if (googleSignInAccount != null) {
-        UserCredential userCredential =
-            await _auth.signInWithCredential(credential);
-        storeTokenAndData(userCredential);
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (builder) => HomePage()),
-            (route) => false);
-
-        // final snackBar =
-        //     SnackBar(content: Text((userCredential.user.displayName).toString()));
-        // ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      // TODO: Update Google Sign-In to work with latest version 7.2.0
+      // For now, disabled due to breaking changes in API
+      AppLogger.w('Google Sign-In temporarily disabled - needs API update');
+      if (context.mounted) {
+        final snackBar =
+            SnackBar(content: Text('Google Sign-In temporarily unavailable'));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     } catch (e) {
-      print("here---->");
-      final snackBar = SnackBar(content: Text(e.toString()));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      AppLogger.e('Google Sign-In error: $e');
+      if (context.mounted) {
+        final snackBar = SnackBar(content: Text(e.toString()));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
   }
 
   Future<void> signOut({required BuildContext context}) async {
     try {
-      await _googleSignIn.signOut();
       await _auth.signOut();
       await storage.delete(key: "token");
     } catch (e) {
-      final snackBar = SnackBar(content: Text(e.toString()));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      if (context.mounted) {
+        final snackBar = SnackBar(content: Text(e.toString()));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
   }
 
   void storeTokenAndData(UserCredential userCredential) async {
-    print("storing token and data");
+    AppLogger.d("Storing token and data");
     await storage.write(
         key: "token", value: userCredential.credential?.token.toString());
     await storage.write(
@@ -64,6 +48,6 @@ class AuthClass {
   }
 
   Future<String> getToken() async {
-    return await storage.read(key: "token").toString();
+    return storage.read(key: "token").toString();
   }
 }

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-
 class CalendarDates extends StatelessWidget {
   final String? day;
   final String? date;
   final Color? dayColor;
   final Color? dateColor;
 
-  CalendarDates({this.day, this.date, this.dayColor, this.dateColor});
+  const CalendarDates(
+      {super.key, this.day, this.date, this.dayColor, this.dateColor});
 
   @override
   Widget build(BuildContext context) {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_task_planner_app/screens/auth/regScreen.dart';
+import 'package:flutter_task_planner_app/screens/auth/reg_screen.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:simple_gradient_text/simple_gradient_text.dart';
 
-import 'loginScreen.dart';
+import 'login_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({Key? key}) : super(key: key);
+  const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

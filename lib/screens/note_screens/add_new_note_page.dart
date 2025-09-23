@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_task_planner_app/theme/colors/colors.dart';
 import 'package:flutter_task_planner_app/widgets/note_widgets/toast.dart';
 import 'package:get/get.dart';
-import 'package:flutter_task_planner_app/theme/colors/colors.dart';
 
 import '../../controller/note_controller.dart';
 
 class AddNewNotePage extends StatelessWidget {
   final NoteController controller = Get.find();
+
+  AddNewNotePage({super.key});
 
   @override
   Widget build(BuildContext context) {

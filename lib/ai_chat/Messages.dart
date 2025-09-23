@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class MessagesScreen extends StatefulWidget {
   final List messages;
-  const MessagesScreen({Key? key, required this.messages}) : super(key: key);
+  const MessagesScreen({super.key, required this.messages});
 
   @override
   _MessagesScreenState createState() => _MessagesScreenState();
@@ -36,7 +36,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         ),
                         color: widget.messages[index]['isUserMessage']
                             ? Colors.grey.shade800
-                            : Colors.grey.shade900.withOpacity(0.8)),
+                            : Colors.grey.shade900.withValues(alpha: 0.8)),
                     constraints: BoxConstraints(maxWidth: w * 2 / 3),
                     child:
                         Text(widget.messages[index]['message'].text.text[0])),

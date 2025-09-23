@@ -1,860 +1,60 @@
-// // import 'package:flutter/cupertino.dart';
-// // import 'package:flutter/material.dart';
-// // import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-// // // import 'package:flutter_native_timezone/flutter_native_timezone.dart';
-// // import 'package:flutter_task_planner_app/screens/calendar_page.dart';
-// // import 'package:get/get.dart';
-// // import 'package:timezone/data/latest.dart' as tz;
-// // import 'package:timezone/timezone.dart' as tz;
-// // import 'package:flutter_task_planner_app/model/task_model.dart';
-// //
-// // class NotifyHelper {
-// //   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-// //       FlutterLocalNotificationsPlugin();
-// //   static Future<void> onDidReceiveBackgroundNotificationResponse(
-// //       NotificationResponse notificationResponce) async {}
-// //   get selectNotificationSubject => null;
-// //   Set<int> notifiedTasks = {};
-// //
-// //   initializeNotification() async {
-// //     _configureLocalTimeZone();
-// //     tz.initializeTimeZones();
-// //     final DarwinInitializationSettings initializationSettingsIOS =
-// //         DarwinInitializationSettings(
-// //       requestSoundPermission: false,
-// //       requestBadgePermission: false,
-// //       requestAlertPermission: false,
-// //       // onDidReceiveLocalNotification: _onDidReceiveLocalNotification,
-// //     );
-// //     Future<void> _onDidReceiveLocalNotification(
-// //         int id, String? title, String? body, String? payload) async {
-// //       // Handle the notification here
-// //     }
-// //     const AndroidInitializationSettings initializationSettingsAndroid =
-// //         AndroidInitializationSettings('@mipmap/ic_launcher');
-// //
-// //     //initialize the ios settings
-// //     const DarwinInitializationSettings initializationSettingsIos =
-// //         DarwinInitializationSettings();
-// //     //combine the android and ios settings
-// //     const InitializationSettings initializationSettings =
-// //         InitializationSettings(
-// //       android: initializationSettingsAndroid,
-// //       iOS: initializationSettingsIos,
-// //     );
-// //     //initialize the plugin
-// //     await flutterLocalNotificationsPlugin.initialize(
-// //       initializationSettings,
-// //       onDidReceiveBackgroundNotificationResponse:
-// //           onDidReceiveBackgroundNotificationResponse,
-// //       onDidReceiveNotificationResponse:
-// //           onDidReceiveBackgroundNotificationResponse,
-// //     );
-// //
-// //     // Handle local notification received while the app is in the foreground
-// //
-// //     //request permission to show notifications andriod
-// //     await flutterLocalNotificationsPlugin
-// //         .resolvePlatformSpecificImplementation<
-// //             AndroidFlutterLocalNotificationsPlugin>()
-// //         ?.requestNotificationsPermission();
-// //     //   await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-// //     //       onSelectNotification: selectNotification);
-// //   }
-// //
-// //   // Just show the source code of onSelectNotification(flutter_local_notifications: ^9.9.0 )
-// //   // Future onSelectNotification (String? payload) async {
-// //   //   if (payload != null) {
-// //   //     debugPrint('notification payload: $payload');
-// //   //   }
-// //   //   selectNotificationSubject.add(payload);
-// //   // }
-// //
-// //   Future<void> displayNotification(
-// //       {required String title, required String body}) async {
-// //     print("doing test");
-// //     var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
-// //       'your channel id',
-// //       'your channel name',
-// //       channelDescription: 'your channel description',
-// //       importance: Importance.max,
-// //       priority: Priority.high,
-// //     );
-// //     var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
-// //     var platformChannelSpecifics = NotificationDetails(
-// //         android: androidPlatformChannelSpecifics,
-// //         iOS: iOSPlatformChannelSpecifics);
-// //     // var platformChannelSpecifics = NotificationDetails(
-// //     //     android: androidPlatformChannelSpecifics);
-// //     await flutterLocalNotificationsPlugin.show(
-// //       0,
-// //       title,
-// //       body,
-// //       platformChannelSpecifics,
-// //       payload: title,
-// //     );
-// //   }
-// //
-// //   // single reminder
-// //   scheduledNotification(int hour, int minute, Task task) async {
-// //     await flutterLocalNotificationsPlugin.zonedSchedule(
-// //       task.id!.toInt(),
-// //       task.title,
-// //       task.description,
-// //       _convertTime(hour, minute),
-// //       // tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5)),
-// //       const NotificationDetails(
-// //           android: AndroidNotificationDetails(
-// //               'your channel id', 'your channel name')),
-// //       androidAllowWhileIdle: true,
-// //       uiLocalNotificationDateInterpretation:
-// //           UILocalNotificationDateInterpretation.absoluteTime,
-// //       matchDateTimeComponents: DateTimeComponents.time,
-// //       payload: "Task: ${task.title}\nNote: ${task.description}",
-// //     );
-// //   }
-// //
-// //   Future<void> createDailyReminder(int hour, int minute, Task task) async {
-// //     var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
-// //         'your channel id', 'your channel name',
-// //         channelDescription: 'your channel description',
-// //         importance: Importance.max,
-// //         priority: Priority.high);
-// //     var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
-// //     var platformChannelSpecifics = NotificationDetails(
-// //         android: androidPlatformChannelSpecifics,
-// //         iOS: iOSPlatformChannelSpecifics);
-// //
-// //     var now = tz.TZDateTime.now(tz.local);
-// //
-// //     var scheduledDate =
-// //         tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-// //     if (scheduledDate.isBefore(now)) {
-// //       // if the time is after today 7pm, then pass to next day 7pm
-// //       scheduledDate = scheduledDate.add(const Duration(days: 1));
-// //     }
-// //
-// //     await flutterLocalNotificationsPlugin.zonedSchedule(
-// //       task.id!.toInt(),
-// //       task.title,
-// //       task.description,
-// //       scheduledDate,
-// //       platformChannelSpecifics,
-// //       payload: "Task: ${task.title}\nNote: ${task.description}",
-// //       uiLocalNotificationDateInterpretation:
-// //           UILocalNotificationDateInterpretation.absoluteTime,
-// //       matchDateTimeComponents: DateTimeComponents.time,
-// //       androidAllowWhileIdle: true,
-// //     );
-// //   }
-// //
-// //   void showCustomNotificationDialog(String? title, String? note, Task task) {
-// //     showDialog(
-// //       context: Get.overlayContext!,
-// //       builder: (BuildContext context) {
-// //         return Dialog(
-// //           shape: RoundedRectangleBorder(
-// //             borderRadius: BorderRadius.circular(16),
-// //           ),
-// //           backgroundColor: Colors.transparent,
-// //           child: Container(
-// //             margin: EdgeInsets.only(top: 24),
-// //             decoration: BoxDecoration(
-// //               color: Colors.white,
-// //               borderRadius: BorderRadius.circular(16),
-// //               boxShadow: [
-// //                 BoxShadow(
-// //                   color: Colors.grey.withOpacity(0.3),
-// //                   spreadRadius: 4,
-// //                   blurRadius: 10,
-// //                   offset: Offset(0, 4),
-// //                 ),
-// //               ],
-// //             ),
-// //             child: Column(
-// //               mainAxisSize: MainAxisSize.min,
-// //               children: [
-// //                 Container(
-// //                   padding: EdgeInsets.all(16),
-// //                   decoration: BoxDecoration(
-// //                     color: Colors.blue,
-// //                     borderRadius: BorderRadius.only(
-// //                       topLeft: Radius.circular(16),
-// //                       topRight: Radius.circular(16),
-// //                     ),
-// //                   ),
-// //                   child: Row(
-// //                     children: [
-// //                       Icon(Icons.notification_important, color: Colors.white),
-// //                       SizedBox(width: 8),
-// //                       Text(
-// //                         title!,
-// //                         style: TextStyle(
-// //                           fontSize: 18,
-// //                           fontWeight: FontWeight.bold,
-// //                           color: Colors.white,
-// //                         ),
-// //                       ),
-// //                     ],
-// //                   ),
-// //                 ),
-// //                 Container(
-// //                   padding: EdgeInsets.all(16),
-// //                   child: Column(
-// //                     children: [
-// //                       Text(
-// //                         'Note:',
-// //                         style: TextStyle(
-// //                           fontSize: 16,
-// //                           fontWeight: FontWeight.bold,
-// //                         ),
-// //                       ),
-// //                       SizedBox(height: 8),
-// //                       Text(note!),
-// //                       SizedBox(height: 16),
-// //                       ElevatedButton(
-// //                         child: Text('OK'),
-// //                         onPressed: () {
-// //                           Get.back();
-// //                         },
-// //                       ),
-// //                     ],
-// //                   ),
-// //                 ),
-// //               ],
-// //             ),
-// //           ),
-// //         );
-// //       },
-// //     );
-// //   }
-// //
-// //   tz.TZDateTime _convertTime(int hour, int minutes) {
-// //     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-// //     tz.TZDateTime scheduleDate =
-// //         tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minutes);
-// //     if (scheduleDate.isBefore(now)) {
-// //       scheduleDate = scheduleDate.add(const Duration(days: 1));
-// //     }
-// //     return scheduleDate;
-// //   }
-// //
-// //   // TODO ---- Something wrong in this function(?Phone timezone setting?)
-// //   /* get local timezone */
-// //   // Future<void> _configureLocalTimeZone() async {
-// //   //   tz.initializeTimeZones();
-// //   //   final String timeZone = await FlutterNativeTimezone.getLocalTimezone();
-// //   //   tz.setLocalLocation(tz.getLocation(timeZone));
-// //   // }
-// //   Future<void> _configureLocalTimeZone() async {
-// //     tz.initializeTimeZones();
-// //     // todo - change to local timezone?
-// //     final String timeZone = 'Asia/Shanghai';
-// //     tz.setLocalLocation(tz.getLocation(timeZone));
-// //   }
-// //
-// //   void requestIOSPermissions() {
-// //     flutterLocalNotificationsPlugin
-// //         .resolvePlatformSpecificImplementation<
-// //             IOSFlutterLocalNotificationsPlugin>()
-// //         ?.requestPermissions(
-// //           alert: true,
-// //           badge: true,
-// //           sound: true,
-// //         );
-// //   }
-// //
-// //   Future selectNotification(String? payload) async {
-// //     if (payload != null) {
-// //       print('notification payload: $payload');
-// //     } else {
-// //       print("Notification Done");
-// //     }
-// //     if (payload == "Theme Changed") {
-// //       print("Nothing navigate to");
-// //     } else {
-// //       // SENT TO A Calendar PAGE
-// //       print('notification payload: $payload');
-// //       Get.to(CalendarPage());
-// //       // Get.to(() => NotifiedPage(label:payload));
-// //     }
-// //   }
-// //
-// //   Future onDidReceiveLocalNotification(
-// //       int id, String? title, String? body, String? payload) async {
-// //     // showDialog(
-// //     //   context: Get.overlayContext!,
-// //     //   builder: (BuildContext context) => AlertDialog(
-// //     //     title: Image.asset('assets/svg/icon_clipboard.svg', width: 64, height: 64), // Add your app logo here
-// //     //     content: Column(
-// //     //       children: [
-// //     //         Text(title!, style: TextStyle(fontWeight: FontWeight.bold)),
-// //     //         SizedBox(height: 8),
-// //     //         Text(body!),
-// //     //       ],
-// //     //     ),
-// //     //     actions: [
-// //     //       TextButton(
-// //     //         child: Text('OK'),
-// //     //         onPressed: () {
-// //     //           Get.back();
-// //     //         },
-// //     //       ),
-// //     //     ],
-// //     //   ),
-// //     // );
-// //   }
-// //
-// //   Future<void> _cancelAllNotifications() async {
-// //     await flutterLocalNotificationsPlugin.cancelAll();
-// //   }
-// //
-// //   scheduledWeeklyNotification(int hour, int minute, Task task) async {
-// //     await flutterLocalNotificationsPlugin.zonedSchedule(
-// //       task.id!.toInt(),
-// //       task.title,
-// //       task.description,
-// //       _convertTime(hour, minute),
-// //       // tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5)),
-// //       const NotificationDetails(
-// //           android: AndroidNotificationDetails(
-// //               'your channel id', 'your channel name')),
-// //       androidAllowWhileIdle: true,
-// //       uiLocalNotificationDateInterpretation:
-// //           UILocalNotificationDateInterpretation.absoluteTime,
-// //       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime, // edit this
-// //       // payload: "${task.title}|"+"${task.note}|"
-// //       payload: "Task: ${task.title}\nNote: ${task.description}",
-// //     );
-// //   }
-// //
-// //   Future<void> repeatWeeklyNotification(int hour, int minute, Task task) async {
-// //     const AndroidNotificationDetails androidNotificationDetails =
-// //         AndroidNotificationDetails(
-// //             'repeating channel id', 'repeating channel name',
-// //             channelDescription: 'repeating description');
-// //     const NotificationDetails notificationDetails =
-// //         NotificationDetails(android: androidNotificationDetails);
-// //     await flutterLocalNotificationsPlugin.periodicallyShow(
-// //         task.id!.toInt(),
-// //         task.title,
-// //         task.description,
-// //         RepeatInterval.weekly,
-// //         notificationDetails,
-// //         androidAllowWhileIdle: true);
-// //   }
-// //
-// //   Future<void> _scheduleWeeklyTenAMNotification() async {
-// //     await flutterLocalNotificationsPlugin.zonedSchedule(
-// //         0,
-// //         'weekly scheduled notification title',
-// //         'weekly scheduled notification body',
-// //         _nextInstanceOfTenAM(),
-// //         const NotificationDetails(
-// //           android: AndroidNotificationDetails('weekly notification channel id',
-// //               'weekly notification channel name',
-// //               channelDescription: 'weekly notificationdescription'),
-// //         ),
-// //         androidAllowWhileIdle: true,
-// //         uiLocalNotificationDateInterpretation:
-// //             UILocalNotificationDateInterpretation.absoluteTime,
-// //         matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime);
-// //   }
-// //
-// //   tz.TZDateTime _nextInstanceOfTenAM() {
-// //     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-// //     tz.TZDateTime scheduledDate =
-// //         tz.TZDateTime(tz.local, now.year, now.month, now.day, 10);
-// //     if (scheduledDate.isBefore(now)) {
-// //       scheduledDate = scheduledDate.add(const Duration(days: 1));
-// //     }
-// //     return scheduledDate;
-// //   }
-// //
-// //   tz.TZDateTime _nextInstanceOfTenAMLastYear() {
-// //     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-// //     return tz.TZDateTime(tz.local, now.year - 1, now.month, now.day, 10);
-// //   }
-// // }
-// // import 'package:flutter/cupertino.dart';
-// // import 'package:flutter/material.dart';
-// // import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-// // import 'package:flutter_task_planner_app/screens/calendar_page.dart';
-// // import 'package:get/get.dart';
-// // import 'package:timezone/data/latest.dart' as tz;
-// // import 'package:timezone/timezone.dart' as tz;
-// // import 'package:flutter_task_planner_app/model/task_model.dart';
-// //
-// // class NotifyHelper {
-// //   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-// //       FlutterLocalNotificationsPlugin();
-// //
-// //   Set<int> notifiedTasks = {};
-// //
-// //   NotifyHelper() {
-// //     initializeNotification();
-// //   }
-// //
-// //   Future<void> initializeNotification() async {
-// //     try {
-// //       // Configure timezone
-// //       _configureLocalTimeZone();
-// //
-// //       // iOS Initialization Settings
-// //       final DarwinInitializationSettings initializationSettingsIOS =
-// //           DarwinInitializationSettings(
-// //         requestSoundPermission: false,
-// //         requestBadgePermission: false,
-// //         requestAlertPermission: false,
-// //         onDidReceiveLocalNotification: _onDidReceiveLocalNotification,
-// //       );
-// //
-// //       // Android Initialization Settings
-// //       const AndroidInitializationSettings initializationSettingsAndroid =
-// //           AndroidInitializationSettings('@mipmap/ic_launcher');
-// //
-// //       // Combined Initialization Settings
-// //       final InitializationSettings initializationSettings =
-// //           InitializationSettings(
-// //         android: initializationSettingsAndroid,
-// //         iOS: initializationSettingsIOS,
-// //       );
-// //
-// //       // Initialize the plugin
-// //       await flutterLocalNotificationsPlugin.initialize(
-// //         initializationSettings,
-// //         onDidReceiveNotificationResponse: _handleNotificationResponse,
-// //       );
-// //
-// //       // Request notification permissions for Android
-// //       await _requestNotificationPermissions();
-// //     } catch (e) {
-// //       print('Error initializing notifications: $e');
-// //     }
-// //   }
-// //
-// //   Future<void> _requestNotificationPermissions() async {
-// //     if (GetPlatform.isAndroid) {
-// //       await flutterLocalNotificationsPlugin
-// //           .resolvePlatformSpecificImplementation<
-// //               AndroidFlutterLocalNotificationsPlugin>()
-// //           ?.requestNotificationsPermission();
-// //     }
-// //
-// //     if (GetPlatform.isIOS) {
-// //       await flutterLocalNotificationsPlugin
-// //           .resolvePlatformSpecificImplementation<
-// //               IOSFlutterLocalNotificationsPlugin>()
-// //           ?.requestPermissions(
-// //             alert: true,
-// //             badge: true,
-// //             sound: true,
-// //           );
-// //     }
-// //   }
-// //
-// //   Future<void> _onDidReceiveLocalNotification(
-// //       int id, String? title, String? body, String? payload) async {
-// //     // Handle received notification on iOS
-// //     if (Get.context != null) {
-// //       showDialog(
-// //         context: Get.context!,
-// //         builder: (context) => AlertDialog(
-// //           title: Text(title ?? 'Notification'),
-// //           content: Text(body ?? ''),
-// //           actions: [
-// //             TextButton(
-// //               onPressed: () => Get.back(),
-// //               child: Text('OK'),
-// //             ),
-// //           ],
-// //         ),
-// //       );
-// //     }
-// //   }
-// //
-// //   void _handleNotificationResponse(NotificationResponse notificationResponse) {
-// //     if (notificationResponse.payload != null) {
-// //       selectNotification(notificationResponse.payload);
-// //     }
-// //   }
-// //
-// //   Future<void> displayNotification(
-// //       {required String title, required String body}) async {
-// //     try {
-// //       var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
-// //         'your channel id',
-// //         'your channel name',
-// //         importance: Importance.max,
-// //         priority: Priority.high,
-// //       );
-// //
-// //       var iOSPlatformChannelSpecifics = const DarwinNotificationDetails();
-// //
-// //       var platformChannelSpecifics = NotificationDetails(
-// //         android: androidPlatformChannelSpecifics,
-// //         iOS: iOSPlatformChannelSpecifics,
-// //       );
-// //
-// //       await flutterLocalNotificationsPlugin.show(
-// //         0,
-// //         title,
-// //         body,
-// //         platformChannelSpecifics,
-// //         payload: title,
-// //       );
-// //     } catch (e) {
-// //       print('Error displaying notification: $e');
-// //     }
-// //   }
-// //
-// //   Future<void> scheduledNotification(int hour, int minute, Task task) async {
-// //     try {
-// //       await flutterLocalNotificationsPlugin.zonedSchedule(
-// //         task.id!.toInt(),
-// //         task.title,
-// //         task.description,
-// //         _convertTime(hour, minute),
-// //         NotificationDetails(
-// //           android: AndroidNotificationDetails(
-// //             'task_channel_id',
-// //             'Task Notifications',
-// //             importance: Importance.max,
-// //             priority: Priority.high,
-// //           ),
-// //         ),
-// //         androidAllowWhileIdle: true,
-// //         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-// //         uiLocalNotificationDateInterpretation:
-// //             UILocalNotificationDateInterpretation.absoluteTime,
-// //         matchDateTimeComponents: DateTimeComponents.time,
-// //         payload: "Task: ${task.title}\nNote: ${task.description}",
-// //       );
-// //     } catch (e) {
-// //       print('Error scheduling notification: $e');
-// //     }
-// //   }
-// //
-// //   Future<void> selectNotification(String? payload) async {
-// //     if (payload != null) {
-// //       debugPrint('Notification payload: $payload');
-// //       Get.to(() => CalendarPage());
-// //     }
-// //   }
-// //
-// //   tz.TZDateTime _convertTime(int hour, int minutes) {
-// //     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-// //     tz.TZDateTime scheduleDate =
-// //         tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minutes);
-// //
-// //     return scheduleDate.isBefore(now)
-// //         ? scheduleDate.add(const Duration(seconds: 10))
-// //         : scheduleDate;
-// //   }
-// //
-// //   Future<void> _configureLocalTimeZone() async {
-// //     tz.initializeTimeZones();
-// //     final String timeZone = tz.local.name;
-// //     tz.setLocalLocation(tz.getLocation(timeZone));
-// //   }
-// //
-// //   Future<void> cancelAllNotifications() async {
-// //     await flutterLocalNotificationsPlugin.cancelAll();
-// //   }
-// // }
-// import 'package:flutter/cupertino.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-// import 'package:get/get.dart';
-// import 'package:timezone/data/latest.dart' as tz;
-// import 'package:timezone/timezone.dart' as tz;
-// import 'package:flutter_task_planner_app/model/task_model.dart';
-//
-// class NotifyHelper {
-//   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-//       FlutterLocalNotificationsPlugin();
-//
-//   NotifyHelper() {
-//     initializeNotification();
-//   }
-//
-//   Future<void> initializeNotification() async {
-//     try {
-//       // Configure timezone
-//       await _configureLocalTimeZone();
-//
-//       // iOS Initialization Settings
-//       final DarwinInitializationSettings initializationSettingsIOS =
-//           DarwinInitializationSettings(
-//         requestSoundPermission: false,
-//         requestBadgePermission: false,
-//         requestAlertPermission: false,
-//         // onDidReceiveLocalNotification: _onDidReceiveLocalNotification,
-//       );
-//
-//       // Android Initialization Settings
-//       const AndroidInitializationSettings initializationSettingsAndroid =
-//           AndroidInitializationSettings('@mipmap/ic_launcher');
-//
-//       // Combined Initialization Settings
-//       final InitializationSettings initializationSettings =
-//           InitializationSettings(
-//         android: initializationSettingsAndroid,
-//         iOS: initializationSettingsIOS,
-//       );
-//
-//       // Initialize the plugin
-//       await flutterLocalNotificationsPlugin.initialize(
-//         initializationSettings,
-//         onDidReceiveNotificationResponse: _handleNotificationResponse,
-//       );
-//
-//       // Request notification permissions for Android and iOS
-//       await _requestNotificationPermissions();
-//     } catch (e) {
-//       debugPrint('Error initializing notifications: $e');
-//     }
-//   }
-//
-//   Future<void> _requestNotificationPermissions() async {
-//     if (GetPlatform.isAndroid) {
-//       await flutterLocalNotificationsPlugin
-//           .resolvePlatformSpecificImplementation<
-//               AndroidFlutterLocalNotificationsPlugin>()
-//           ?.requestNotificationsPermission();
-//     }
-//
-//     if (GetPlatform.isIOS) {
-//       await flutterLocalNotificationsPlugin
-//           .resolvePlatformSpecificImplementation<
-//               IOSFlutterLocalNotificationsPlugin>()
-//           ?.requestPermissions(
-//             alert: true,
-//             badge: true,
-//             sound: true,
-//           );
-//     }
-//   }
-//
-//   Future<void> _onDidReceiveLocalNotification(
-//       int id, String? title, String? body, String? payload) async {
-//     if (Get.context != null) {
-//       showDialog(
-//         context: Get.context!,
-//         builder: (context) => AlertDialog(
-//           title: Text(title ?? 'Notification'),
-//           content: Text(body ?? ''),
-//           actions: [
-//             TextButton(
-//               onPressed: () => Get.back(),
-//               child: Text('OK'),
-//             ),
-//           ],
-//         ),
-//       );
-//     }
-//   }
-//
-//   void _handleNotificationResponse(NotificationResponse notificationResponse) {
-//     if (notificationResponse.payload != null) {
-//       selectNotification(notificationResponse.payload);
-//     }
-//   }
-//
-//   Future<void> displayNotification({
-//     required String title,
-//     required String body,
-//   }) async {
-//     try {
-//       var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
-//         'your_channel_id',
-//         'your_channel_name',
-//         importance: Importance.max,
-//         priority: Priority.high,
-//       );
-//
-//       var iOSPlatformChannelSpecifics = const DarwinNotificationDetails();
-//
-//       var platformChannelSpecifics = NotificationDetails(
-//         android: androidPlatformChannelSpecifics,
-//         iOS: iOSPlatformChannelSpecifics,
-//       );
-//
-//       await flutterLocalNotificationsPlugin.show(
-//         0,
-//         title,
-//         body,
-//         platformChannelSpecifics,
-//         payload: title,
-//       );
-//     } catch (e) {
-//       debugPrint('Error displaying notification: $e');
-//     }
-//   }
-//
-//   Future<void> scheduledNotification(int hour, int minute, Task task) async {
-//     try {
-//       await flutterLocalNotificationsPlugin.zonedSchedule(
-//         task.id!.toInt(),
-//         task.title,
-//         task.description,
-//         _convertTime(hour, minute),
-//         NotificationDetails(
-//           android: AndroidNotificationDetails(
-//             'task_channel_id',
-//             'Task Notifications',
-//             importance: Importance.max,
-//             priority: Priority.high,
-//           ),
-//         ),
-//         // androidAllowWhileIdle: true,
-//         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-//         uiLocalNotificationDateInterpretation:
-//             UILocalNotificationDateInterpretation.absoluteTime,
-//         matchDateTimeComponents: DateTimeComponents.time,
-//         payload: "Task: ${task.title}\nNote: ${task.description}",
-//       );
-//     } catch (e) {
-//       debugPrint('Error scheduling notification: $e');
-//     }
-//   }
-//
-//   Future<void> createDailyReminder(int hour, int minute, Task task) async {
-//     try {
-//       await flutterLocalNotificationsPlugin.zonedSchedule(
-//         task.id!.toInt(),
-//         task.title,
-//         task.description,
-//         _getNextInstanceOfTime(hour, minute),
-//         NotificationDetails(
-//           android: AndroidNotificationDetails(
-//             'daily_reminder_channel',
-//             'Daily Notifications',
-//             importance: Importance.max,
-//             priority: Priority.high,
-//           ),
-//         ),
-//         // androidAllowWhileIdle: true,
-//         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-//         uiLocalNotificationDateInterpretation:
-//             UILocalNotificationDateInterpretation.absoluteTime,
-//         matchDateTimeComponents: DateTimeComponents.time,
-//         payload: "Daily Reminder: ${task.title}\nNote: ${task.description}",
-//       );
-//     } catch (e) {
-//       debugPrint('Error creating daily reminder: $e');
-//     }
-//   }
-//
-//   Future<void> scheduledWeeklyNotification(
-//       int hour, int minute, Task task) async {
-//     try {
-//       await flutterLocalNotificationsPlugin.zonedSchedule(
-//         task.id!.toInt(),
-//         task.title,
-//         task.description,
-//         _getNextInstanceOfWeek(hour, minute),
-//         NotificationDetails(
-//           android: AndroidNotificationDetails(
-//             'weekly_reminder_channel',
-//             'Weekly Notifications',
-//             importance: Importance.max,
-//             priority: Priority.high,
-//           ),
-//         ),
-//         // androidAllowWhileIdle: true,
-//
-//         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-//         uiLocalNotificationDateInterpretation:
-//             UILocalNotificationDateInterpretation.absoluteTime,
-//         matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-//         payload: "Weekly Reminder: ${task.title}\nNote: ${task.description}",
-//       );
-//     } catch (e) {
-//       debugPrint('Error scheduling weekly notification: $e');
-//     }
-//   }
-//
-//   Future<void> selectNotification(String? payload) async {
-//     if (payload != null) {
-//       debugPrint('Notification payload: $payload');
-//       // Navigate to the desired page based on the payload
-//       // Example: Get.to(() => TaskDetailPage(payload: payload));
-//     }
-//   }
-//
-//   tz.TZDateTime _convertTime(int hour, int minutes) {
-//     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-//     tz.TZDateTime scheduleDate =
-//         tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minutes);
-//
-//     return scheduleDate.isBefore(now)
-//         ? scheduleDate.add(const Duration(days: 1))
-//         : scheduleDate;
-//   }
-//
-//   tz.TZDateTime _getNextInstanceOfTime(int hour, int minute) {
-//     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-//     tz.TZDateTime scheduleDate =
-//         tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-//
-//     return scheduleDate.isBefore(now)
-//         ? scheduleDate.add(const Duration(days: 1))
-//         : scheduleDate;
-//   }
-//
-//   tz.TZDateTime _getNextInstanceOfWeek(int hour, int minute) {
-//     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-//     tz.TZDateTime scheduleDate =
-//         tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-//
-//     // Adjust to the next week on the same day
-//     return scheduleDate.isBefore(now)
-//         ? scheduleDate.add(const Duration(days: 7))
-//         : scheduleDate;
-//   }
-//
-//   Future<void> _configureLocalTimeZone() async {
-//     tz.initializeTimeZones();
-//     final String timeZone = tz.local.name;
-//     tz.setLocalLocation(tz.getLocation(timeZone));
-//   }
-//
-//   Future<void> cancelAllNotifications() async {
-//     await flutterLocalNotificationsPlugin.cancelAll();
-//   }
-// }
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_task_planner_app/model/task_model.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter_task_planner_app/model/task_model.dart';
 
 class NotifyHelper {
+  static final NotifyHelper _instance = NotifyHelper._internal();
+  factory NotifyHelper() => _instance;
+  NotifyHelper._internal();
+
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  NotifyHelper() {
-    initializeNotification();
+  // Notification channels
+  static const String taskChannelId = 'task_notifications';
+  static const String taskChannelName = 'Task Reminders';
+  static const String dailyChannelId = 'daily_notifications';
+  static const String dailyChannelName = 'Daily Reminders';
+  static const String weeklyChannelId = 'weekly_notifications';
+  static const String weeklyChannelName = 'Weekly Reminders';
+
+  // Preferences keys
+  static const String notificationsEnabledKey = 'notifications_enabled';
+  static const String soundEnabledKey = 'notification_sound_enabled';
+  static const String vibrationEnabledKey = 'notification_vibration_enabled';
+
+  bool _isInitialized = false;
+
+  Future<void> ensureInitialized() async {
+    if (!_isInitialized) {
+      await initializeNotification();
+    }
   }
 
   Future<void> initializeNotification() async {
+    if (_isInitialized) return;
+
     try {
       await _configureLocalTimeZone();
 
-      final DarwinInitializationSettings initializationSettingsIOS =
+      // Enhanced iOS settings with proper permissions
+      const DarwinInitializationSettings initializationSettingsIOS =
           DarwinInitializationSettings(
-        requestSoundPermission: false,
-        requestBadgePermission: false,
-        requestAlertPermission: false,
+        requestSoundPermission: true,
+        requestBadgePermission: true,
+        requestAlertPermission: true,
+        requestCriticalPermission: false,
+        requestProvisionalPermission: false,
       );
 
       const AndroidInitializationSettings initializationSettingsAndroid =
           AndroidInitializationSettings('@mipmap/ic_launcher');
 
-      final InitializationSettings initializationSettings =
+      const InitializationSettings initializationSettings =
           InitializationSettings(
         android: initializationSettingsAndroid,
         iOS: initializationSettingsIOS,
@@ -863,198 +63,578 @@ class NotifyHelper {
       await flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
         onDidReceiveNotificationResponse: _handleNotificationResponse,
+        onDidReceiveBackgroundNotificationResponse:
+            _handleBackgroundNotificationResponse,
       );
 
       await _requestNotificationPermissions();
+      await _createNotificationChannels();
+
+      _isInitialized = true;
+      debugPrint('✅ Notification system initialized successfully');
     } catch (e) {
-      debugPrint('Error initializing notifications: $e');
+      debugPrint('❌ Error initializing notifications: $e');
+      rethrow;
     }
   }
 
-  Future<void> _requestNotificationPermissions() async {
+  @pragma('vm:entry-point')
+  static void _handleBackgroundNotificationResponse(
+      NotificationResponse response) {
+    debugPrint('Background notification received: ${response.payload}');
+  }
+
+  Future<void> _createNotificationChannels() async {
+    // Create notification channels for Android
+    const AndroidNotificationChannel taskChannel = AndroidNotificationChannel(
+      taskChannelId,
+      taskChannelName,
+      description: 'Notifications for individual task reminders',
+      importance: Importance.high,
+      playSound: true,
+      enableVibration: true,
+      showBadge: true,
+    );
+
+    const AndroidNotificationChannel dailyChannel = AndroidNotificationChannel(
+      dailyChannelId,
+      dailyChannelName,
+      description: 'Notifications for daily recurring tasks',
+      importance: Importance.high,
+      playSound: true,
+      enableVibration: true,
+      showBadge: true,
+    );
+
+    const AndroidNotificationChannel weeklyChannel = AndroidNotificationChannel(
+      weeklyChannelId,
+      weeklyChannelName,
+      description: 'Notifications for weekly recurring tasks',
+      importance: Importance.high,
+      playSound: true,
+      enableVibration: true,
+      showBadge: true,
+    );
+
+    final plugin =
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    if (plugin != null) {
+      await plugin.createNotificationChannel(taskChannel);
+      await plugin.createNotificationChannel(dailyChannel);
+      await plugin.createNotificationChannel(weeklyChannel);
+    }
+  }
+
+  Future<bool> _requestNotificationPermissions() async {
+    bool granted = false;
+
     if (GetPlatform.isAndroid) {
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestNotificationsPermission();
+      final androidPlugin =
+          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+
+      if (androidPlugin != null) {
+        granted = await androidPlugin.requestNotificationsPermission() ?? false;
+
+        // Request exact alarm permission for Android 12+
+        await androidPlugin.requestExactAlarmsPermission();
+      }
     }
 
     if (GetPlatform.isIOS) {
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
+      final iosPlugin =
+          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
+
+      if (iosPlugin != null) {
+        granted = await iosPlugin.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+              critical: false,
+              provisional: false,
+            ) ??
+            false;
+      }
     }
+
+    debugPrint('Notification permissions granted: $granted');
+    return granted;
+  }
+
+  Future<bool> areNotificationsEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(notificationsEnabledKey) ?? true;
+  }
+
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(notificationsEnabledKey, enabled);
+  }
+
+  Future<bool> isSoundEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(soundEnabledKey) ?? true;
+  }
+
+  Future<void> setSoundEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(soundEnabledKey, enabled);
+  }
+
+  Future<bool> isVibrationEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(vibrationEnabledKey) ?? true;
+  }
+
+  Future<void> setVibrationEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(vibrationEnabledKey, enabled);
   }
 
   void _handleNotificationResponse(NotificationResponse notificationResponse) {
+    debugPrint('📱 Notification tapped: ${notificationResponse.payload}');
+
     if (notificationResponse.payload != null) {
-      selectNotification(notificationResponse.payload);
+      try {
+        // Parse the payload to extract task information
+        final payload = notificationResponse.payload!;
+
+        if (payload.startsWith('task_')) {
+          final taskId = payload.replaceFirst('task_', '');
+          _navigateToTaskDetails(taskId);
+        } else {
+          // General navigation
+          _navigateToCalendar();
+        }
+      } catch (e) {
+        debugPrint('Error handling notification response: $e');
+        _navigateToCalendar();
+      }
+    }
+  }
+
+  void _navigateToTaskDetails(String taskId) {
+    // Navigate to home or calendar based on app state
+    try {
+      // Since we can't import specific pages here to avoid circular imports,
+      // we'll use a more generic approach
+      debugPrint('📍 Should navigate to task: $taskId');
+      // The actual navigation will be handled by the app's routing system
+    } catch (e) {
+      debugPrint('Error handling task navigation: $e');
+    }
+  }
+
+  void _navigateToCalendar() {
+    try {
+      debugPrint('📍 Should navigate to calendar page');
+      // The actual navigation will be handled by the app's routing system
+    } catch (e) {
+      debugPrint('Error handling calendar navigation: $e');
     }
   }
 
   Future<void> displayNotification({
+    required int id,
     required String title,
     required String body,
+    String? payload,
+    String? icon,
+    Color? color,
   }) async {
+    await ensureInitialized();
+
+    if (!await areNotificationsEnabled()) {
+      debugPrint('⚠️ Notifications are disabled by user');
+      return;
+    }
+
     try {
-      var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
-        'your_channel_id',
-        'your_channel_name',
-        importance: Importance.max,
+      final soundEnabled = await isSoundEnabled();
+      final vibrationEnabled = await isVibrationEnabled();
+
+      final androidDetails = AndroidNotificationDetails(
+        taskChannelId,
+        taskChannelName,
+        channelDescription: 'Task reminder notifications',
+        importance: Importance.high,
         priority: Priority.high,
+        showWhen: true,
+        enableVibration: vibrationEnabled,
+        playSound: soundEnabled,
+        icon: icon ?? '@mipmap/ic_launcher',
+        color: color,
+        ticker: 'TaskMate: $title',
+        styleInformation: BigTextStyleInformation(
+          body,
+          htmlFormatBigText: false,
+          contentTitle: title,
+          htmlFormatContentTitle: false,
+        ),
       );
 
-      var iOSPlatformChannelSpecifics = const DarwinNotificationDetails();
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        subtitle: 'TaskMate Reminder',
+      );
 
-      var platformChannelSpecifics = NotificationDetails(
-        android: androidPlatformChannelSpecifics,
-        iOS: iOSPlatformChannelSpecifics,
+      final platformDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
       );
 
       await flutterLocalNotificationsPlugin.show(
-        0,
+        id,
         title,
         body,
-        platformChannelSpecifics,
-        payload: title,
+        platformDetails,
+        payload: payload ?? 'general_notification',
       );
+
+      debugPrint('✅ Notification displayed: $title');
     } catch (e) {
-      debugPrint('Error displaying notification: $e');
+      debugPrint('❌ Error displaying notification: $e');
     }
   }
 
   Future<void> scheduledNotification(int hour, int minute, Task task) async {
-    try {
-      await flutterLocalNotificationsPlugin.zonedSchedule(
-        task.id!.toInt(),
-        task.title,
-        task.description,
-        _convertTime(hour, minute),
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            'task_channel_id',
-            'Task Notifications',
-            importance: Importance.max,
-            priority: Priority.high,
-          ),
-        ),
-        // androidAllowWhileIdle: true,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: DateTimeComponents.time,
-        payload: "Task: ${task.title}\nNote: ${task.description}",
-      );
-    } catch (e) {
-      debugPrint('Error scheduling notification: $e');
-    }
-  }
+    debugPrint(
+        '🔔 Scheduling notification for task: ${task.title} at $hour:$minute');
 
-  Future<void> createDailyReminder(int hour, int minute, Task task) async {
-    try {
-      await flutterLocalNotificationsPlugin.zonedSchedule(
-        task.id!.toInt(),
-        task.title,
-        task.description,
-        _getNextInstanceOfTime(hour, minute),
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            'daily_reminder_channel',
-            'Daily Notifications',
-            importance: Importance.max,
-            priority: Priority.high,
-          ),
-        ),
-        // androidAllowWhileIdle: true,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: DateTimeComponents.time,
-        payload: "Daily Reminder: ${task.title}\nNote: ${task.description}",
-      );
-    } catch (e) {
-      debugPrint('Error creating daily reminder: $e');
+    // Validate task data
+    if (task.id == null) {
+      debugPrint('❌ Cannot schedule notification: Task ID is null');
+      return;
     }
-  }
 
-  Future<void> scheduledWeeklyNotification(
-      int hour, int minute, Task task) async {
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      debugPrint('❌ Invalid time format: $hour:$minute');
+      return;
+    }
+
+    await ensureInitialized();
+
+    if (!await areNotificationsEnabled()) {
+      debugPrint('⚠️ Notifications disabled, skipping task: ${task.title}');
+      return;
+    }
+
     try {
+      final soundEnabled = await isSoundEnabled();
+      final vibrationEnabled = await isVibrationEnabled();
+      final scheduleTime = _convertTime(hour, minute);
+
+      debugPrint(
+          '📅 Schedule time calculated: $scheduleTime (now: ${tz.TZDateTime.now(tz.local)})');
+
+      final androidDetails = AndroidNotificationDetails(
+        taskChannelId,
+        taskChannelName,
+        channelDescription: 'Individual task reminders',
+        importance: Importance.high,
+        priority: Priority.high,
+        enableVibration: vibrationEnabled,
+        playSound: soundEnabled,
+        icon: '@mipmap/ic_launcher',
+        ticker: 'TaskMate: ${task.title}',
+        styleInformation: BigTextStyleInformation(
+          '⏰ ${task.description ?? "Task reminder"}',
+          htmlFormatBigText: false,
+          contentTitle: '📋 ${task.title ?? "Task Reminder"}',
+          htmlFormatContentTitle: false,
+        ),
+        actions: [
+          const AndroidNotificationAction(
+            'mark_done',
+            'Mark Done ✅',
+            showsUserInterface: false,
+          ),
+          const AndroidNotificationAction(
+            'snooze',
+            'Snooze 10min ⏰',
+            showsUserInterface: false,
+          ),
+        ],
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        subtitle: 'Task Reminder',
+        categoryIdentifier: 'task_reminder',
+      );
+
+      final platformDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
       await flutterLocalNotificationsPlugin.zonedSchedule(
         task.id!.toInt(),
-        task.title,
-        task.description,
-        _getNextInstanceOfWeek(hour, minute),
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            'weekly_reminder_channel',
-            'Weekly Notifications',
-            importance: Importance.max,
-            priority: Priority.high,
-          ),
-        ),
-        // androidAllowWhileIdle: true,
+        '📋 ${task.title ?? "Task Reminder"}',
+        '⏰ ${task.description ?? "Task reminder"}',
+        scheduleTime,
+        platformDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-        payload: "Weekly Reminder: ${task.title}\nNote: ${task.description}",
+        matchDateTimeComponents: DateTimeComponents.time,
+        payload: 'task_${task.id}',
       );
+
+      debugPrint(
+          '✅ Scheduled notification for "${task.title ?? "Task"}" at ${scheduleTime.toString().split(' ')[1]}');
     } catch (e) {
-      debugPrint('Error scheduling weekly notification: $e');
+      debugPrint('❌ Error scheduling notification for task ${task.id}: $e');
     }
   }
 
   Future<void> selectNotification(String? payload) async {
-    if (payload != null) {
-      debugPrint('Notification payload: $payload');
-      // Navigate to the desired page based on the payload
-      // Example: Get.to(() => TaskDetailPage(payload: payload));
+    debugPrint('notification payload: $payload');
+  }
+
+  tz.TZDateTime _convertTime(int hour, int minute) {
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+    tz.TZDateTime scheduleDate =
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    if (scheduleDate.isBefore(now)) {
+      scheduleDate = scheduleDate.add(const Duration(days: 1));
     }
-  }
-
-  tz.TZDateTime _convertTime(int hour, int minutes) {
-    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduleDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minutes);
-
-    return scheduleDate.isBefore(now)
-        ? scheduleDate.add(const Duration(days: 1))
-        : scheduleDate;
-  }
-
-  tz.TZDateTime _getNextInstanceOfTime(int hour, int minute) {
-    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduleDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-
-    return scheduleDate.isBefore(now)
-        ? scheduleDate.add(const Duration(days: 1))
-        : scheduleDate;
-  }
-
-  tz.TZDateTime _getNextInstanceOfWeek(int hour, int minute) {
-    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduleDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-
-    return scheduleDate.isBefore(now)
-        ? scheduleDate.add(const Duration(days: 7))
-        : scheduleDate;
+    return scheduleDate;
   }
 
   Future<void> _configureLocalTimeZone() async {
     tz.initializeTimeZones();
-    final String timeZone = tz.local.name;
-    tz.setLocalLocation(tz.getLocation(timeZone));
+    // You might need to configure the local timezone based on the device
   }
 
+  /// Schedule a daily recurring notification
+  Future<void> scheduleDailyNotification({
+    required int id,
+    required String title,
+    required String body,
+    required int hour,
+    required int minute,
+    String? payload,
+  }) async {
+    await ensureInitialized();
+
+    if (!await areNotificationsEnabled()) {
+      debugPrint('⚠️ Daily notifications disabled');
+      return;
+    }
+
+    try {
+      final soundEnabled = await isSoundEnabled();
+      final vibrationEnabled = await isVibrationEnabled();
+
+      final androidDetails = AndroidNotificationDetails(
+        dailyChannelId,
+        dailyChannelName,
+        channelDescription: 'Daily reminders and motivational messages',
+        importance: Importance.high,
+        priority: Priority.high,
+        enableVibration: vibrationEnabled,
+        playSound: soundEnabled,
+        icon: '@mipmap/ic_launcher',
+        ticker: 'TaskMate: Daily Reminder',
+        styleInformation: BigTextStyleInformation(
+          body,
+          htmlFormatBigText: false,
+          contentTitle: '🌟 $title',
+          htmlFormatContentTitle: false,
+        ),
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        subtitle: 'Daily Reminder',
+        categoryIdentifier: 'daily_reminder',
+      );
+
+      final platformDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        id,
+        '🌟 $title',
+        body,
+        _convertTime(hour, minute),
+        platformDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+        payload: payload,
+      );
+
+      debugPrint('✅ Scheduled daily notification "$title" at $hour:$minute');
+    } catch (e) {
+      debugPrint('❌ Error scheduling daily notification: $e');
+    }
+  }
+
+  /// Schedule a weekly recurring notification
+  Future<void> scheduleWeeklyNotification({
+    required int id,
+    required String title,
+    required String body,
+    required int weekday, // 1-7 (Monday-Sunday)
+    required int hour,
+    required int minute,
+    String? payload,
+  }) async {
+    await ensureInitialized();
+
+    if (!await areNotificationsEnabled()) {
+      debugPrint('⚠️ Weekly notifications disabled');
+      return;
+    }
+
+    try {
+      final soundEnabled = await isSoundEnabled();
+      final vibrationEnabled = await isVibrationEnabled();
+
+      final androidDetails = AndroidNotificationDetails(
+        weeklyChannelId,
+        weeklyChannelName,
+        channelDescription: 'Weekly progress reports and summaries',
+        importance: Importance.high,
+        priority: Priority.high,
+        enableVibration: vibrationEnabled,
+        playSound: soundEnabled,
+        icon: '@mipmap/ic_launcher',
+        ticker: 'TaskMate: Weekly Report',
+        styleInformation: BigTextStyleInformation(
+          body,
+          htmlFormatBigText: false,
+          contentTitle: '📊 $title',
+          htmlFormatContentTitle: false,
+        ),
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        subtitle: 'Weekly Report',
+        categoryIdentifier: 'weekly_report',
+      );
+
+      final platformDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      final now = tz.TZDateTime.now(tz.local);
+      final daysUntilWeekday = (weekday - now.weekday) % 7;
+      final nextWeekday =
+          now.add(Duration(days: daysUntilWeekday == 0 ? 7 : daysUntilWeekday));
+      final scheduleTime = tz.TZDateTime(tz.local, nextWeekday.year,
+          nextWeekday.month, nextWeekday.day, hour, minute);
+
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        id,
+        '📊 $title',
+        body,
+        scheduleTime,
+        platformDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+        payload: payload,
+      );
+
+      debugPrint(
+          '✅ Scheduled weekly notification "$title" for weekday $weekday at $hour:$minute');
+    } catch (e) {
+      debugPrint('❌ Error scheduling weekly notification: $e');
+    }
+  }
+
+  /// Cancel a specific notification
+  Future<void> cancelNotification(int id) async {
+    try {
+      await flutterLocalNotificationsPlugin.cancel(id);
+      debugPrint('✅ Cancelled notification with ID: $id');
+    } catch (e) {
+      debugPrint('❌ Error cancelling notification $id: $e');
+    }
+  }
+
+  /// Cancel all notifications
   Future<void> cancelAllNotifications() async {
-    await flutterLocalNotificationsPlugin.cancelAll();
+    try {
+      await flutterLocalNotificationsPlugin.cancelAll();
+      debugPrint('✅ Cancelled all notifications');
+    } catch (e) {
+      debugPrint('❌ Error cancelling all notifications: $e');
+    }
+  }
+
+  /// Get pending notifications
+  Future<List<PendingNotificationRequest>> getPendingNotifications() async {
+    try {
+      return await flutterLocalNotificationsPlugin
+          .pendingNotificationRequests();
+    } catch (e) {
+      debugPrint('❌ Error getting pending notifications: $e');
+      return [];
+    }
+  }
+
+  /// Display motivational notification
+  Future<void> showMotivationalNotification() async {
+    final motivationalMessages = [
+      "🎯 You've got this! Time to tackle your tasks!",
+      "💪 Small steps lead to big achievements!",
+      "⭐ Your productivity journey starts now!",
+      "🚀 Ready to make today amazing?",
+      "🌟 Every task completed is progress made!",
+      "🎉 You're closer to your goals than yesterday!",
+    ];
+
+    final random =
+        DateTime.now().millisecondsSinceEpoch % motivationalMessages.length;
+    final message = motivationalMessages[random];
+
+    await displayNotification(
+      id: 999,
+      title: "TaskMate Motivation",
+      body: message,
+      payload: "motivation",
+    );
+  }
+
+  /// Legacy method - kept for backward compatibility
+  @Deprecated('Use scheduleDailyNotification instead')
+  Future<void> createDailyReminder(int hour, int minute, Task task) async {
+    await scheduleDailyNotification(
+      id: task.id!.toInt(),
+      title: task.title ?? 'Task Reminder',
+      body: task.description ?? 'Task reminder',
+      hour: hour,
+      minute: minute,
+      payload: 'task_${task.id}',
+    );
+  }
+
+  /// Legacy method - kept for backward compatibility
+  @Deprecated('Use scheduleWeeklyNotification instead')
+  Future<void> scheduledWeeklyNotification(
+      int hour, int minute, Task task) async {
+    await scheduleWeeklyNotification(
+      id: task.id!.toInt(),
+      title: task.title ?? 'Weekly Task Reminder',
+      body: task.description ?? 'Weekly task reminder',
+      weekday: DateTime.now().weekday,
+      hour: hour,
+      minute: minute,
+      payload: 'task_${task.id}',
+    );
   }
 }

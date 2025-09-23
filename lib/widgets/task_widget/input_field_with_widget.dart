@@ -10,13 +10,13 @@ class MyInputFieldWithWidget extends StatelessWidget {
   final double? width;
 
   const MyInputFieldWithWidget({
-    Key? key,
+    super.key,
     required this.title,
     required this.hint,
     this.controller,
     this.width,
     required this.widget,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

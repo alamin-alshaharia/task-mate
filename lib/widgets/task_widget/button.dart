@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 
@@ -6,8 +5,7 @@ class MyButton extends StatelessWidget {
   final String label;
   final Function()?
       onTap; // you are not sure whether get this function or not, if doesn't get just keep it null
-  const MyButton({Key? key, required this.label, required this.onTap})
-      : super(key: key);
+  const MyButton({super.key, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

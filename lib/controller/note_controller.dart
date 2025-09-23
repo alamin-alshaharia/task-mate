@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_task_planner_app/model/note_model.dart';
 import 'package:flutter_task_planner_app/screens/note_screens/home_page.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_task_planner_app/model/note_model.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../db/note_database_helper.dart';
 
