@@ -57,4 +57,98 @@ class LightColors {
   static const LinearGradient donkerGradient = LinearGradient(
     colors: [lightDonker, donker],
   );
+
+  // Enhanced App Theme Gradients
+  static const Color primaryBlue = Color(0xFF3B82F6);
+  static const Color primaryBlueDark = Color(0xFF1D4ED8);
+  static const Color secondaryIndigo = Color(0xFF6366F1);
+  static const Color secondaryIndigoDark = Color(0xFF4338CA);
+
+  static const LinearGradient primaryGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [primaryBlue, primaryBlueDark, secondaryIndigo],
+  );
+
+  static const LinearGradient blueGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF60A5FA), Color(0xFF3B82F6)],
+  );
+
+  static const LinearGradient greenGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF86EFAC), Color(0xFF22C55E)],
+  );
+
+  static const LinearGradient purpleGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFC084FC), Color(0xFF9333EA)],
+  );
+
+  static const LinearGradient pinkGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFF9A8D4), Color(0xFFEC4899)],
+  );
+
+  static const LinearGradient tealGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF5EEAD4), Color(0xFF14B8A6)],
+  );
+
+  static const LinearGradient indigoGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFA5B4FC), Color(0xFF6366F1)],
+  );
+
+  static const LinearGradient redGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFFCA5A5), Color(0xFFEF4444)],
+  );
+
+  // Card gradients for note cards
+  static const List<LinearGradient> cardGradients = [
+    blueGradient,
+    greenGradient,
+    purpleGradient,
+    pinkGradient,
+    orangeGradient,
+    tealGradient,
+    indigoGradient,
+    redGradient,
+  ];
+
+  // Accent colors for borders and icons
+  static const List<Color> cardAccentColors = [
+    Color(0xFF3B82F6), // Blue
+    Color(0xFF22C55E), // Green
+    Color(0xFF9333EA), // Purple
+    Color(0xFFEC4899), // Pink
+    Color(0xFFF97316), // Orange
+    Color(0xFF14B8A6), // Teal
+    Color(0xFF6366F1), // Indigo
+    Color(0xFFEF4444), // Red
+  ];
+
+  // Background colors
+  static const Color backgroundColor = Color(0xFFF8FAFC);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color textPrimary = Color(0xFF0F172A);
+  static const Color textSecondary = Color(0xFF475569);
+  static const Color textHint = Color(0xFF94A3B8);
+
+  // Helper methods
+  static LinearGradient getCardGradient(int index) {
+    return cardGradients[index % cardGradients.length];
+  }
+
+  static Color getCardAccentColor(int index) {
+    return cardAccentColors[index % cardAccentColors.length];
+  }
 }

@@ -26,14 +26,29 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final categoryColor =
+        Color(int.parse(widget.category.color.replaceAll('#', '0xff')));
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.category.name),
-        backgroundColor:
-            Color(int.parse(widget.category.color.replaceAll('#', '0xff'))),
+        title: Text(
+          widget.category.name,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: _getCategoryGradient(categoryColor),
+          ),
+        ),
+        iconTheme: IconThemeData(color: Colors.white),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(Icons.add, color: Colors.white),
             onPressed: _addNewTask,
           ),
         ],
@@ -59,19 +74,33 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
           categoryTasks.where((task) => task.isCompleted == 1).length;
       final remainingTasks = totalTasks - completedTasks;
 
+      final categoryColor =
+          Color(int.parse(widget.category.color.replaceAll('#', '0xff')));
+
       return Container(
         padding: const EdgeInsets.all(16.0),
         margin: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: Color(int.parse(widget.category.color.replaceAll('#', '0xff')))
-              .withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              categoryColor.withOpacity(0.1),
+              categoryColor.withOpacity(0.05),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color:
-                Color(int.parse(widget.category.color.replaceAll('#', '0xff')))
-                    .withOpacity(0.3),
+            color: categoryColor.withOpacity(0.3),
             width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: categoryColor.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -89,31 +118,64 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
 
   Widget _buildStatItem(String label, int count, IconData icon,
       [Color? color]) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: color ?? Colors.grey[600],
-          size: 24,
+    final categoryColor =
+        Color(int.parse(widget.category.color.replaceAll('#', '0xff')));
+    final statColor = color ?? categoryColor;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            statColor.withOpacity(0.1),
+            statColor.withOpacity(0.05),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          count.toString(),
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: color ?? Colors.grey[800],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: statColor.withOpacity(0.2)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  statColor.withOpacity(0.2),
+                  statColor.withOpacity(0.1),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: statColor,
+              size: 24,
+            ),
           ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
+          const SizedBox(height: 8),
+          Text(
+            count.toString(),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: statColor,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -125,27 +187,67 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
           .toList();
 
       if (categoryTasks.isEmpty) {
+        final categoryColor =
+            Color(int.parse(widget.category.color.replaceAll('#', '0xff')));
+
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.task_outlined,
-                size: 80,
-                color: Colors.grey[300],
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      categoryColor.withOpacity(0.1),
+                      categoryColor.withOpacity(0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: Icon(
+                  Icons.task_outlined,
+                  size: 60,
+                  color: categoryColor.withOpacity(0.6),
+                ),
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 20),
               Text(
                 'No tasks in this category',
                 style: TextStyle(
-                  color: Colors.grey[600],
+                  color: Colors.grey[700],
                   fontSize: 18,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               SizedBox(height: 8),
+              Text(
+                'Create your first task to get started',
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 14,
+                ),
+              ),
+              SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _addNewTask,
-                child: Text('Add First Task'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: categoryColor,
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add, size: 20),
+                    SizedBox(width: 8),
+                    Text('Add First Task'),
+                  ],
+                ),
               ),
             ],
           ),
@@ -172,6 +274,22 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
         ),
       );
     });
+  }
+
+  LinearGradient _getCategoryGradient(Color baseColor) {
+    // Create beautiful gradients based on the base color
+    final hsl = HSLColor.fromColor(baseColor);
+    final lightColor =
+        hsl.withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0)).toColor();
+    final darkColor =
+        hsl.withLightness((hsl.lightness - 0.15).clamp(0.0, 1.0)).toColor();
+
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [lightColor, baseColor, darkColor],
+      stops: const [0.0, 0.5, 1.0],
+    );
   }
 
   void _addNewTask() {

@@ -128,8 +128,6 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
     AppLogger.d("Building Report Task Page");
 
     // Calculate remaining tasks and completion percentage
-    // var todoTasks = totalTask - completedTask;
-    // var percent = (completedTask / totalTask * 100).toStringAsFixed(0);
 
     return Scaffold(
       appBar: _appBar(),
@@ -228,7 +226,6 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
   }
 
   Widget _buildStatsOverview() {
-    // var todoTasks = totalTask - completedTask;
     var percent =
         totalTask == 0 ? 0 : (completedTask / totalTask * 100).round();
 

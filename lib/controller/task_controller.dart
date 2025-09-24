@@ -125,44 +125,6 @@ class TaskController extends GetxController {
     }
   }
 
-// In task_controller.dart
-//   Future<int> addCategory({
-//     required String name,
-//     required String icon,
-//     required String color,
-//   }) async {
-//     try {
-//       // Create a new CategoryModel
-//       final newCategory = CategoryModel(
-//         id: DateTime.now().millisecondsSinceEpoch, // Temporary ID generation
-//         name: name,
-//         icon: icon,
-//         color: color,
-//         remainingTasks: 0,
-//         completedTasks: 0,
-//       );
-//
-//       // Insert the category into the database
-//       final id = await DatabaseHelper.instance.insertCategory(newCategory);
-//
-//       return id;
-//     } catch (e) {
-//       print('Error adding category in controller: $e');
-//       return -1;
-//     }
-//   }
-
-  // Future<List<CategoryModel>> getCategories() async {
-  //   try {
-  //     // Fetch categories from the database
-  //     final categoriesMap = await DatabaseHelper.instance.queryCategories();
-  //     return categoriesMap.map((map) => CategoryModel.fromJson(map)).toList();
-  //   } catch (e) {
-  //     print('Error getting categories: $e');
-  //     return [];
-  //   }
-  // }
-
   // Task Management Methods
   Future<void> getTasks() async {
     try {

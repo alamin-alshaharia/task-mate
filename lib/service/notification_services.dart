@@ -31,7 +31,7 @@ class NotifyHelper {
 
   Future<void> ensureInitialized() async {
     if (!_isInitialized) {
-      await initializeNotification();
+      await initializeNotificationWithoutPermissions();
     }
   }
 
@@ -76,6 +76,108 @@ class NotifyHelper {
       debugPrint('❌ Error initializing notifications: $e');
       rethrow;
     }
+  }
+
+  /// Initialize notification system without requesting permissions immediately
+  /// This avoids showing permission dialogs on app startup
+  Future<void> initializeNotificationWithoutPermissions() async {
+    if (_isInitialized) {
+      debugPrint('ℹ️ Notification system already initialized');
+      return;
+    }
+
+    try {
+      await _configureLocalTimeZone();
+
+      // Enhanced iOS settings with minimal permissions request
+      const DarwinInitializationSettings initializationSettingsIOS =
+          DarwinInitializationSettings(
+        requestSoundPermission: false,
+        requestBadgePermission: false,
+        requestAlertPermission: false,
+        requestCriticalPermission: false,
+        requestProvisionalPermission: false,
+      );
+
+      const AndroidInitializationSettings initializationSettingsAndroid =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+
+      const InitializationSettings initializationSettings =
+          InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsIOS,
+      );
+
+      await flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse: _handleNotificationResponse,
+        onDidReceiveBackgroundNotificationResponse:
+            _handleBackgroundNotificationResponse,
+      );
+
+      // Only create channels, don't request permissions
+      await _createNotificationChannels();
+
+      _isInitialized = true;
+      debugPrint('✅ Notification system initialized (without permissions)');
+    } catch (e) {
+      debugPrint('❌ Error initializing notifications: $e');
+      rethrow;
+    }
+  }
+
+  /// Request notification permissions when actually needed
+  Future<bool> requestNotificationPermissions() async {
+    return await _requestNotificationPermissions();
+  }
+
+  /// Check if notification permissions are already granted
+  Future<bool> hasNotificationPermissions() async {
+    bool hasPermissions = false;
+
+    if (GetPlatform.isAndroid) {
+      final androidPlugin =
+          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+
+      if (androidPlugin != null) {
+        hasPermissions = await androidPlugin.areNotificationsEnabled() ?? false;
+      }
+    }
+
+    if (GetPlatform.isIOS) {
+      final iosPlugin =
+          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
+
+      if (iosPlugin != null) {
+        final settings = await iosPlugin.checkPermissions();
+        hasPermissions = settings?.isEnabled ?? false;
+      }
+    }
+
+    return hasPermissions;
+  }
+
+  /// Request exact alarm permissions for scheduling notifications on Android 12+
+  Future<bool> requestExactAlarmPermissions() async {
+    if (GetPlatform.isAndroid) {
+      final androidPlugin =
+          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+
+      if (androidPlugin != null) {
+        try {
+          await androidPlugin.requestExactAlarmsPermission();
+          debugPrint('ℹ️ Exact alarm permission requested');
+          return true;
+        } catch (e) {
+          debugPrint('⚠️ Error requesting exact alarm permission: $e');
+          return false;
+        }
+      }
+    }
+    return true; // iOS doesn't need this permission
   }
 
   @pragma('vm:entry-point')
@@ -137,8 +239,11 @@ class NotifyHelper {
       if (androidPlugin != null) {
         granted = await androidPlugin.requestNotificationsPermission() ?? false;
 
-        // Request exact alarm permission for Android 12+
-        await androidPlugin.requestExactAlarmsPermission();
+        // Only request exact alarm permission if notifications are granted
+        // and when actually scheduling notifications
+        if (granted) {
+          debugPrint('ℹ️ Basic notification permission granted');
+        }
       }
     }
 
@@ -251,6 +356,13 @@ class NotifyHelper {
       return;
     }
 
+    // Request permissions when actually trying to show a notification
+    final hasPermissions = await _requestNotificationPermissions();
+    if (!hasPermissions) {
+      debugPrint('⚠️ Notification permissions not granted');
+      return;
+    }
+
     try {
       final soundEnabled = await isSoundEnabled();
       final vibrationEnabled = await isVibrationEnabled();
@@ -322,6 +434,17 @@ class NotifyHelper {
       debugPrint('⚠️ Notifications disabled, skipping task: ${task.title}');
       return;
     }
+
+    // Request permissions when actually trying to schedule a notification
+    final hasPermissions = await _requestNotificationPermissions();
+    if (!hasPermissions) {
+      debugPrint(
+          '⚠️ Notification permissions not granted, skipping task: ${task.title}');
+      return;
+    }
+
+    // Request exact alarm permissions for scheduling
+    await requestExactAlarmPermissions();
 
     try {
       final soundEnabled = await isSoundEnabled();

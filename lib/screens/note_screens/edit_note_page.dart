@@ -1,234 +1,8 @@
-// // import 'package:flutter/material.dart';
-// // import 'package:flutter/services.dart';
-// // import 'package:get/get.dart';
-// // import 'package:flutter_task_planner_app/theme/colors/colors.dart';
-// //
-// // import '../../controller/note_controller.dart';
-// //
-// // class EditNotePage extends StatelessWidget {
-// //   final NoteController controller = Get.find();
-// //
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     final int i = ModalRoute.of(context)?.settings.arguments as int;
-// //     controller.titleController.text = controller.notes[i].title!;
-// //     controller.contentController.text = controller.notes[i].content!;
-// //     return Scaffold(
-// //       appBar: AppBar(
-// //         backgroundColor: Colors.white,
-// //         iconTheme: const IconThemeData(
-// //           color: Colors.black,
-// //         ),
-// //         title: const Text(
-// //           "Edit Note",
-// //           style: TextStyle(
-// //             color: Colors.black,
-// //           ),
-// //         ),
-// //         systemOverlayStyle: SystemUiOverlayStyle.dark,
-// //       ),
-// //       body: SingleChildScrollView(
-// //         child: Container(
-// //           padding: const EdgeInsets.only(
-// //             top: 15,
-// //             left: 15,
-// //             right: 15,
-// //           ),
-// //           child: Column(
-// //             children: [
-// //               TextField(
-// //                 controller: controller.titleController,
-// //                 style: const TextStyle(
-// //                   fontSize: 27,
-// //                   fontWeight: FontWeight.bold,
-// //                 ),
-// //                 cursorColor: Colors.black,
-// //                 enableInteractiveSelection: false,
-// //                 decoration: InputDecoration(
-// //                   hintText: "Title",
-// //                   hintStyle: TextStyle(
-// //                     fontSize: 27,
-// //                     fontWeight: FontWeight.bold,
-// //                     color: Colors.grey[600],
-// //                     letterSpacing: 1,
-// //                   ),
-// //                   border: InputBorder.none,
-// //                 ),
-// //               ),
-// //               TextField(
-// //                 style: const TextStyle(
-// //                   fontSize: 22,
-// //                 ),
-// //                 cursorColor: Colors.black,
-// //                 enableInteractiveSelection: false,
-// //                 controller: controller.contentController,
-// //                 decoration: const InputDecoration(
-// //                   hintText: "Content",
-// //                   hintStyle: TextStyle(
-// //                     fontSize: 17,
-// //                   ),
-// //                   border: InputBorder.none,
-// //                 ),
-// //                 keyboardType: TextInputType.multiline,
-// //                 maxLines: null,
-// //                 autofocus: true,
-// //               ),
-// //             ],
-// //           ),
-// //         ),
-// //       ),
-// //       floatingActionButton: FloatingActionButton.extended(
-// //         onPressed: () {
-// //           controller.updateNote(
-// //               controller.notes[i].id!, controller.notes[i].dateTimeCreated!);
-// //         },
-// //         label: const Text(
-// //           "Save Note",
-// //           textAlign: TextAlign.center,
-// //           style: TextStyle(
-// //               fontSize: 16,
-// //               fontFamily: 'Poppins',
-// //               fontWeight: FontWeight.w500,
-// //               color: Colors.white),
-// //         ),
-// //         icon: const Icon(
-// //           Icons.save,
-// //         ),
-// //         backgroundColor: AppColor.buttonColor,
-// //       ),
-// //     );
-// //   }
-// // }
-// import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart';
-// import 'package:get/get.dart';
-// import 'package:flutter_task_planner_app/theme/colors/colors.dart';
-// import '../../controller/note_controller.dart';
-//
-// class EditNotePage extends StatelessWidget {
-//   final NoteController controller = Get.find();
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     // Retrieve the arguments safely
-//     final arguments = ModalRoute.of(context)?.settings.arguments;
-//
-//     // Check if arguments are provided and are of the expected type
-//     if (arguments is int) {
-//       final int i = arguments;
-//
-//       // Ensure the index is within bounds
-//       if (i < 0 || i >= controller.notes.length) {
-//         // Handle the error (e.g., show a message or navigate back)
-//         return Scaffold(
-//           body: Center(
-//             child: Text('Invalid note index.'),
-//           ),
-//         );
-//       }
-//
-//       // Initialize the text controllers with note data
-//       controller.titleController.text = controller.notes[i].title ?? '';
-//       controller.contentController.text = controller.notes[i].content ?? '';
-//
-//       return Scaffold(
-//         appBar: AppBar(
-//           backgroundColor: Colors.white,
-//           iconTheme: const IconThemeData(
-//             color: Colors.black,
-//           ),
-//           title: const Text(
-//             "Edit Note",
-//             style: TextStyle(
-//               color: Colors.black,
-//             ),
-//           ),
-//           systemOverlayStyle: SystemUiOverlayStyle.dark,
-//         ),
-//         body: SingleChildScrollView(
-//           child: Container(
-//             padding: const EdgeInsets.only(
-//               top: 15,
-//               left: 15,
-//               right: 15,
-//             ),
-//             child: Column(
-//               children: [
-//                 TextField(
-//                   controller: controller.titleController,
-//                   style: const TextStyle(
-//                     fontSize: 27,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                   cursorColor: Colors.black,
-//                   enableInteractiveSelection: false,
-//                   decoration: InputDecoration(
-//                     hintText: "Title",
-//                     hintStyle: TextStyle(
-//                       fontSize: 27,
-//                       fontWeight: FontWeight.bold,
-//                       color: Colors.grey[600],
-//                       letterSpacing: 1,
-//                     ),
-//                     border: InputBorder.none,
-//                   ),
-//                 ),
-//                 TextField(
-//                   style: const TextStyle(
-//                     fontSize: 22,
-//                   ),
-//                   cursorColor: Colors.black,
-//                   enableInteractiveSelection: false,
-//                   controller: controller.contentController,
-//                   decoration: const InputDecoration(
-//                     hintText: "Content",
-//                     hintStyle: TextStyle(
-//                       fontSize: 17,
-//                     ),
-//                     border: InputBorder.none,
-//                   ),
-//                   keyboardType: TextInputType.multiline,
-//                   maxLines: null,
-//                   autofocus: true,
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ),
-//         floatingActionButton: FloatingActionButton.extended(
-//           onPressed: () {
-//             controller.updateNote(
-//                 controller.notes[i].id!, controller.notes[i].dateTimeCreated!);
-//           },
-//           label: const Text(
-//             "Save Note",
-//             textAlign: TextAlign.center,
-//             style: TextStyle(
-//                 fontSize: 16,
-//                 fontFamily: 'Poppins',
-//                 fontWeight: FontWeight.w500,
-//                 color: Colors.white),
-//           ),
-//           icon: const Icon(
-//             Icons.save,
-//           ),
-//           backgroundColor: AppColor.buttonColor,
-//         ),
-//       );
-//     } else {
-//       // Handle the case where arguments are not an int
-//       return Scaffold(
-//         body: Center(
-//           child: Text('No note index provided.'),
-//         ),
-//       );
-//     }
-//   }
-// }
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
+import 'package:flutter_task_planner_app/widgets/modular/modular_widgets.dart';
 import 'package:get/get.dart';
-import 'package:flutter_task_planner_app/theme/colors/colors.dart';
+
 import '../../controller/note_controller.dart';
 
 class EditNotePage extends StatefulWidget {
@@ -275,88 +49,177 @@ class _EditNotePageState extends State<EditNotePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(
-          color: Colors.black,
-        ),
-        title: const Text(
-          "Edit Note",
-          style: TextStyle(
-            color: Colors.black,
-          ),
-        ),
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
+      backgroundColor: LightColors.backgroundColor,
+      appBar: ModularAppBar(
+        title: "Edit Note",
+        subtitle: "Modify your note content",
+        onBackPressed: () => Get.back(),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          padding: const EdgeInsets.only(
-            top: 15,
-            left: 15,
-            right: 15,
-          ),
-          child: Column(
-            children: [
-              TextField(
-                controller: controller.titleController,
-                style: const TextStyle(
-                  fontSize: 27,
-                  fontWeight: FontWeight.bold,
-                ),
-                cursorColor: Colors.black,
-                enableInteractiveSelection: false,
-                decoration: InputDecoration(
-                  hintText: "Title",
-                  hintStyle: TextStyle(
-                    fontSize: 27,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[600],
-                    letterSpacing: 1,
-                  ),
-                  border: InputBorder.none,
-                ),
-              ),
-              TextField(
-                style: const TextStyle(
-                  fontSize: 22,
-                ),
-                cursorColor: Colors.black,
-                enableInteractiveSelection: false,
-                controller: controller.contentController,
-                decoration: const InputDecoration(
-                  hintText: "Content",
-                  hintStyle: TextStyle(
-                    fontSize: 17,
-                  ),
-                  border: InputBorder.none,
-                ),
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                autofocus: true,
-              ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              LightColors.backgroundColor,
+              Color(0xFFF1F5F9),
             ],
           ),
         ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                // Title Input Container
+                Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    gradient: LightColors.blueGradient,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: LightColors.primaryBlue.withOpacity(0.2),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Container(
+                    margin: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    child: TextField(
+                      controller: controller.titleController,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: LightColors.textPrimary,
+                        fontFamily: 'Poppins',
+                      ),
+                      cursorColor: LightColors.primaryBlue,
+                      decoration: InputDecoration(
+                        hintText: "Enter note title...",
+                        hintStyle: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                          color: LightColors.textHint,
+                          fontFamily: 'Poppins',
+                        ),
+                        border: InputBorder.none,
+                        prefixIcon: Icon(
+                          Icons.title_rounded,
+                          color: LightColors.primaryBlue.withOpacity(0.7),
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Content Input Container
+                Container(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height * 0.5,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LightColors.greenGradient,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: LightColors.kGreen.withOpacity(0.2),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Container(
+                    margin: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: TextField(
+                      controller: controller.contentController,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        height: 1.6,
+                        color: LightColors.textPrimary,
+                        fontFamily: 'Poppins',
+                      ),
+                      cursorColor: LightColors.kGreen,
+                      decoration: InputDecoration(
+                        hintText: "Start writing your note content here...",
+                        hintStyle: TextStyle(
+                          fontSize: 18,
+                          color: LightColors.textHint,
+                          fontFamily: 'Poppins',
+                        ),
+                        border: InputBorder.none,
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Icon(
+                            Icons.edit_note_rounded,
+                            color: LightColors.kGreen.withOpacity(0.7),
+                            size: 24,
+                          ),
+                        ),
+                        prefixIconConstraints: const BoxConstraints(
+                          minWidth: 40,
+                          minHeight: 0,
+                        ),
+                      ),
+                      keyboardType: TextInputType.multiline,
+                      maxLines: null,
+                      autofocus: true,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 100), // Space for FAB
+              ],
+            ),
+          ),
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: ModularFloatingButton(
         onPressed: () {
-          controller.updateNote(controller.notes[noteIndex].id!,
-              controller.notes[noteIndex].dateTimeCreated!);
-          Get.back(); // Optionally navigate back after saving
+          if (controller.titleController.text.trim().isEmpty) {
+            Get.snackbar(
+              'Warning',
+              'Please enter a title for your note',
+              backgroundColor: LightColors.redGradient.colors.first,
+              colorText: Colors.white,
+              snackPosition: SnackPosition.BOTTOM,
+            );
+            return;
+          }
+
+          controller.updateNote(
+            controller.notes[noteIndex].id!,
+            controller.notes[noteIndex].dateTimeCreated!,
+          );
+
+          Get.snackbar(
+            'Success',
+            'Note updated successfully!',
+            backgroundColor: LightColors.greenGradient.colors.first,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM,
+          );
+
+          Get.back();
         },
-        label: const Text(
-          "Save Note",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 16,
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.w500,
-              color: Colors.white),
-        ),
-        icon: const Icon(
-          Icons.save,
-        ),
-        backgroundColor: AppColor.buttonColor,
+        label: "Update Note",
+        icon: Icons.save_rounded,
+        gradient: LightColors.primaryGradient,
       ),
     );
   }

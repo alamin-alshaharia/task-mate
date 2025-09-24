@@ -346,7 +346,6 @@ import 'package:intl/intl.dart';
 import '../../model/task_model.dart';
 import '../../service/notification_services.dart';
 import '../../widgets/task_widget/task_bottom_sheet.dart';
-import '../utils/logger.dart';
 import 'controller/task_controller.dart';
 
 class CalendarTimelinePage extends StatefulWidget {
@@ -429,25 +428,7 @@ class _CalendarPageState extends State<CalendarTimelinePage> {
       // eliminate the shadow of header banner
       backgroundColor: Colors.amber[50],
       actions: [
-        IconButton(
-            onPressed: () {
-              Task task = _taskController.taskList[4];
-              AppLogger.d("Testing notification with task: ${task.title}");
-              notifyHelper.displayNotification(
-                  id: 999, title: "Theme", body: 'Theme Changed');
-              notifyHelper.createDailyReminder(8, 15, task);
-              notifyHelper.scheduledNotification(8, 20, task);
-              AppLogger.d("Theme toggle button tapped");
-            },
-            icon: Icon(
-              // Day and moon icon should change according to the Theme Mode
-              Get.isDarkMode
-                  ? Icons.wb_sunny_outlined
-                  : Icons.nightlight_rounded,
-              size: 20,
-              // Icon color should change according to the Theme Mode
-              color: Get.isDarkMode ? Colors.white : Colors.black,
-            )),
+
         SizedBox(
           width: 20,
         )

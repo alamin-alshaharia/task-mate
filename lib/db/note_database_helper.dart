@@ -93,15 +93,6 @@ class DatabaseHelper {
       );
     }
   }
-  // Future<int> updateNote(Note note) async {
-  //   Database db = await instance.database;
-  //   return await db.update(
-  //     _tableName,
-  //     note.toJson(),
-  //     where: "id = ?",
-  //     whereArgs: [note.id],
-  //   );
-  // }
 
   Future<List<Note>> getNoteList() async {
     Database db = await instance.database;

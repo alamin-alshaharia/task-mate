@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/model/note_model.dart';
-import 'package:flutter_task_planner_app/screens/note_screens/home_page.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
@@ -54,7 +53,8 @@ class NoteController extends GetxController {
     titleController.text = "";
     contentController.text = "";
     getAllNotes();
-    Get.to(Homenote());
+    // Just go back instead of navigating to a specific page
+    Get.back();
   }
 
   void deleteNote(int id) async {
@@ -66,14 +66,30 @@ class NoteController extends GetxController {
   }
 
   void favoriteNote(int id) async {
-    Note note = notes.firstWhere((note) => note.id == id);
-    if (note.isFavorite == true) {
-      note.isFavorite = false; // Mark as not favorite
-    } else {
-      note.isFavorite = true; // Mark as favorite
+    try {
+      Note note = notes.firstWhere((note) => note.id == id);
+      if (note.isFavorite == true) {
+        note.isFavorite = false; // Mark as not favorite
+      } else {
+        note.isFavorite = true; // Mark as favorite
+      }
+      await DatabaseHelper.instance.updateNote(note);
+
+      // Update the specific note in the list
+      int index = notes.indexWhere((n) => n.id == id);
+      if (index != -1) {
+        notes[index] = note;
+      }
+
+      // Trigger UI update for this specific favorite button
+      update(['favorite_$id']);
+
+      // Also trigger general update for the notes list
+      update();
+    } catch (e) {
+      // Handle error silently or use proper logging
+      // debugPrint('Error updating favorite status: $e');
     }
-    await DatabaseHelper.instance.updateNote(note);
-    getAllNotes();
   }
 
   void deleteAllNotes() async {

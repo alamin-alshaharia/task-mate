@@ -42,12 +42,3 @@ class MyTextField extends StatelessWidget {
     );
   }
 }
-
-// Unused date picker method - commented out
-// Future<void> _getDate(context) async {
-//   DateTime? pickDate = await showDatePicker(
-//       context: context,
-//       firstDate: DateTime(2020),
-//       lastDate: DateTime(2125),
-//       initialDate: DateTime.now());
-// }

@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_task_planner_app/controller/data_sync_manager.dart';
@@ -19,12 +18,9 @@ void main() async {
   // Initialize database
   await DatabaseHelper.instance.database;
 
-  // Initialize notification helper
+  // Initialize notification helper (without requesting permissions)
   final notifyHelper = NotifyHelper();
-  await notifyHelper.initializeNotification();
-
-  // Initialize Firebase
-  await Firebase.initializeApp();
+  await notifyHelper.initializeNotificationWithoutPermissions();
 
   // Initialize task controller
   final TaskController taskController = Get.put(TaskController());

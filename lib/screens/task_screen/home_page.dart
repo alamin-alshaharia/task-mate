@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/controller/task_controller.dart';
-import 'package:flutter_task_planner_app/latest_calender_screen.dart';
+import 'package:flutter_task_planner_app/screens/task_screen/calendar_page.dart';
 import 'package:flutter_task_planner_app/screens/task_screen/category_details.dart';
 import 'package:flutter_task_planner_app/service/speech_service.dart';
 import 'package:flutter_task_planner_app/widgets/custom_slider_drawer/custom_slider_drawer.dart';
@@ -14,6 +14,7 @@ import '../../model/category_model.dart';
 import '../../model/task_model.dart';
 import '../../theme/colors/light_colors.dart';
 import '../../utils/logger.dart';
+import '../../widgets/common/delete_confirmation_dialog.dart';
 import '../../widgets/task_widget/home_page/drawer.dart';
 import '../../widgets/task_widget/home_page/homepage_button.dart';
 import '../../widgets/task_widget/home_page/top_container.dart';
@@ -44,7 +45,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with DataSyncMixin {
-  GlobalKey<CustomSliderDrawerState> dKey = GlobalKey<CustomSliderDrawerState>();
+  GlobalKey<CustomSliderDrawerState> dKey =
+      GlobalKey<CustomSliderDrawerState>();
   final TaskController _taskController = Get.put(TaskController());
   final ProfileController _profileController = Get.put(ProfileController());
 
@@ -198,9 +200,14 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
                                 radius: 40.0,
                                 backgroundImage: profile.imageData != null
                                     ? MemoryImage(profile.imageData!)
-                                    : const AssetImage(
-                                            'assets/images/avatar.png')
-                                        as ImageProvider,
+                                    : null,
+                                child: profile.imageData == null
+                                    ? Icon(
+                                        Icons.person,
+                                        size: 60,
+                                        color: LightColors.kDarkYellow,
+                                      )
+                                    : null,
                               ),
                             );
                           }),
@@ -274,7 +281,7 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
                                 subheading('My Tasks'),
                                 GestureDetector(
                                   onTap: () async {
-                                    Get.to(CalendarTimelinePage());
+                                    Get.to(() => const CalendarPage());
                                   },
                                   child: HomePage.calendarIcon(),
                                 ),
@@ -808,8 +815,15 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(12),
+          gradient: _getCategoryGradient(color),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -820,20 +834,20 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
               children: [
                 Icon(
                   iconData,
-                  color: Colors.grey[700],
+                  color: Colors.white.withOpacity(0.9),
                   size: 28,
                 ),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     '$totalTasks',
                     style: TextStyle(
-                      color: Colors.grey[700],
+                      color: Colors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -847,7 +861,7 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 12),
@@ -870,9 +884,9 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: Colors.black.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -880,19 +894,35 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
           Icon(
             icon,
             size: 12,
-            color: color,
+            color: Colors.white,
           ),
           const SizedBox(width: 4),
           Text(
             text,
             style: TextStyle(
-              color: color,
+              color: Colors.white,
               fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  LinearGradient _getCategoryGradient(Color baseColor) {
+    // Create beautiful gradients based on the base color
+    final hsl = HSLColor.fromColor(baseColor);
+    final lightColor =
+        hsl.withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0)).toColor();
+    final darkColor =
+        hsl.withLightness((hsl.lightness - 0.15).clamp(0.0, 1.0)).toColor();
+
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [lightColor, baseColor, darkColor],
+      stops: const [0.0, 0.5, 1.0],
     );
   }
 
@@ -992,43 +1022,11 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
   }
 
   Future<void> _showDeleteCategoryDialog(CategoryModel category) async {
-    return showDialog<void>(
+    return DeleteConfirmationDialog.showCategoryDeleteDialog(
       context: context,
-      barrierDismissible: false, // User must tap button to dismiss
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete Category'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Are you sure you want to delete "${category.name}"?'),
-                const SizedBox(height: 8),
-                const Text(
-                  'This action cannot be undone. Tasks associated with this category will prevent deletion.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text(
-                'Delete',
-                style: TextStyle(color: Colors.red),
-              ),
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _deleteCategory(category.id);
-              },
-            ),
-          ],
-        );
+      categoryName: category.name,
+      onConfirm: () async {
+        await _deleteCategory(category.id);
       },
     );
   }

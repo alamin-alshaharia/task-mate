@@ -2,13 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:get/get.dart';
 
-// import 'package:todo_app_new_edition/controllers/task_controller.dart';
-// import 'package:todo_app_new_edition/models/task.dart';
-// import 'package:todo_app_new_edition/ui/widgets/button.dart';
-// import 'package:todo_app_new_edition/ui/widgets/input_field.dart';
-// import 'package:todo_app_new_edition/utils/theme.dart';
-
-import '../../controller/task_controller.dart';
 import '../../model/task_model.dart';
 import '../../widgets/task_widget/my_text_field.dart';
 
@@ -24,8 +17,7 @@ class TaskDetailPage extends StatefulWidget {
 }
 
 class _TaskDetailsPageState extends State<TaskDetailPage> {
-  late Task? task = widget.task; // todo how to get the task?
-  final TaskController _taskController = Get.put(TaskController());
+  late Task? task = widget.task;
   final TextEditingController _titleController = TextEditingController();
   // final TextEditingController _noteController = TextEditingController();
   List<int> reminderList = [
@@ -115,63 +107,7 @@ class _TaskDetailsPageState extends State<TaskDetailPage> {
               //     icon: const Icon(
               //       Icons.keyboard_arrow_down,
               //       color: Colors.grey,
-              //     ),
-              //     iconSize: 32,
-              //     elevation: 4,
-              //     style: subTitleStyle,
-              //     underline: Container(
-              //       height: 0,
-              //     ),
-              //     // estimate the underline
-              //     onChanged: (String? newValue) {
-              //       setState(() {
-              //         _selectedRemind =
-              //             int.parse(newValue!); // saved the selected time
-              //         task?.remind = _selectedRemind;
-              //       });
-              //     },
-              //     items:
-              //         reminderList.map<DropdownMenuItem<String>>((int value) {
-              //       return DropdownMenuItem<String>(
-              //         value: value.toString(),
-              //         child: Text(value.toString()),
-              //       );
-              //     }).toList(),
-              //   ),
-              // ),
-              // MyInputField(
-              //   title: "Repeat",
-              //   hint: task!.repeat!,
-              //   widget: DropdownButton(
-              //     icon: const Icon(
-              //       Icons.keyboard_arrow_down,
-              //       color: Colors.grey,
-              //     ),
-              //     iconSize: 32,
-              //     elevation: 4,
-              //     style: subTitleStyle,
-              //     underline: Container(
-              //       height: 0,
-              //     ),
-              //     // estimate the underline
-              //     onChanged: (String? newValue) {
-              //       setState(() {
-              //         _selectedRepeat = newValue!; // saved the selected value
-              //         task?.repeat = _selectedRepeat;
-              //       });
-              //     },
-              //     items:
-              //         repeatList.map<DropdownMenuItem<String>>((String? value) {
-              //       return DropdownMenuItem<String>(
-              //         value: value,
-              //         child: Text(
-              //           value!,
-              //           style: const TextStyle(color: Colors.grey),
-              //         ),
-              //       );
-              //     }).toList(),
-              //   ),
-              // ),
+
               const SizedBox(
                 height: 15,
               ),
@@ -183,8 +119,6 @@ class _TaskDetailsPageState extends State<TaskDetailPage> {
                   Container(),
                   Padding(
                     padding: const EdgeInsets.all(2.0),
-                    // child: MyButton(
-                    //     label: "Update Task", onTap: () => _validateDate()),
                   ),
                 ],
               )
@@ -195,17 +129,6 @@ class _TaskDetailsPageState extends State<TaskDetailPage> {
     );
   }
 
-  // /* 控制TASK LIST 卡片颜色 */
-  // _getBGClr(int no) {
-  //   switch (no) {
-  //     case 0:
-  //       return bluishClr;
-  //     case 1:
-  //       return pinkClr;
-  //     case 2:
-  //       return yellowClr;
-  //     case 3:
-  //       return deepOrange;
   //     default:
   //       return bluishClr;
   //   }

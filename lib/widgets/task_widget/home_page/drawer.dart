@@ -1,15 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/screens/settings/settings_screen.dart';
-import 'package:flutter_task_planner_app/widgets/task_widget/home_page/setting_dialouge.dart';
+
 import 'package:get/get.dart';
 
 import '../../../controller/profile_controller.dart';
+import '../../../screens/settings/profile_edit_screen.dart';
 import '../../../screens/task_screen/all_task_page.dart';
 import '../../../screens/task_screen/calendar_page.dart';
-import '../../../screens/task_screen/profile.dart';
+
 import '../../../screens/task_screen/report_page.dart';
 import '../../../theme/colors/light_colors.dart';
+import '../show_appinfo.dart';
 
 class MySlider extends StatelessWidget {
   MySlider({
@@ -46,90 +48,99 @@ class MySlider extends StatelessWidget {
       decoration: const BoxDecoration(gradient: LightColors.brownGradient),
       child: Obx(() {
         final profile = _profileController.profile.value;
-        return Column(
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: profile.imageData != null
-                  ? MemoryImage(profile.imageData!)
-                  : const AssetImage('assets/images/avatar.png')
-                      as ImageProvider,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              profile.name ?? "User Name",
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 50,
+                backgroundImage: profile.imageData != null
+                    ? MemoryImage(profile.imageData!)
+                    : null,
+                child: profile.imageData == null
+                    ? Icon(
+                  Icons.person,
+                  size: 60,
+                  color: LightColors.kDarkYellow,
+                )
+                    : null,
               ),
-            ),
-            Text(
-              profile.profession ?? "Profession",
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
+              const SizedBox(height: 8),
+              Text(
+                profile.name ?? "User Name",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(
-                vertical: 30,
-                horizontal: 10,
+              Text(
+                profile.profession ?? "Profession",
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
               ),
-              width: double.infinity,
-              height: 400,
-              child: ListView.builder(
-                itemCount: icons.length,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (ctx, i) {
-                  return InkWell(
-                    onTap: () {
-                      switch (i) {
-                        case 0:
-                          // Navigate to Profile Edit Page
-                          Get.to(() => ProfilePage());
-                          break;
-                        case 1:
-                          Get.to(() => AllTaskPage());
-                          break;
-                        case 2:
-                          Get.to(() => CalendarPage());
-                          break;
-                        case 3:
-                          Get.to(() => ReportPage());
-                          break;
-                        case 4:
-                          // Navigate to Settings Screen
-                          Get.to(() => const SettingsScreen());
-                          break;
-                        case 5:
-                          showSettingsDialog(context);
-                          break;
-                      }
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      child: ListTile(
-                        leading: Icon(
-                          icons[i],
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                        title: Text(
-                          texts[i],
-                          style: const TextStyle(
+              Container(
+                margin: const EdgeInsets.symmetric(
+                  vertical: 30,
+                  horizontal: 10,
+                ),
+                width: double.infinity,
+                height: 600,
+                child: ListView.builder(
+                  itemCount: icons.length,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (ctx, i) {
+                    return InkWell(
+                      onTap: () {
+                        switch (i) {
+                          case 0:
+                            // Navigate to Profile Edit Page
+                            Get.to(() => ProfileEditScreen());
+                            break;
+                          case 1:
+                            Get.to(() => AllTaskPage());
+                            break;
+                          case 2:
+                            Get.to(() => CalendarPage());
+                            break;
+                          case 3:
+                            Get.to(() => ReportPage());
+                            break;
+                          case 4:
+                            // Navigate to Settings Screen
+                            Get.to(() => const SettingsScreen());
+                            break;
+                          case 5:
+                            showAppInfoDialog(context);
+                            break;
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.all(5),
+                        child: ListTile(
+                          leading: Icon(
+                            icons[i],
                             color: Colors.white,
+                            size: 30,
+                          ),
+                          title: Text(
+                            texts[i],
+                            style: const TextStyle(
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            )
-          ],
+                    );
+                  },
+                ),
+              )
+            ],
+          ),
         );
       }),
     );
   }
+
 }

@@ -7,6 +7,7 @@ import 'package:flutter_task_planner_app/screens/settings/profile_edit_screen.da
 import 'package:flutter_task_planner_app/screens/test/notification_test_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:flutter_task_planner_app/utils/logger.dart';
+import 'package:flutter_task_planner_app/widgets/task_widget/show_appinfo.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -232,7 +233,7 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.info,
                 title: 'App Version',
                 subtitle: 'TaskMate v1.0.0',
-                onTap: () => _showAppInfoDialog(context),
+                onTap: () => showAppInfoDialog(context),
               ),
 
               const SizedBox(height: 8),
@@ -604,79 +605,6 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showAppInfoDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: LightColors.kDarkYellow.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.task_alt,
-                color: LightColors.kDarkYellow,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'TaskMate',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: LightColors.kDarkBlue,
-              ),
-            ),
-          ],
-        ),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Version: 1.0.0',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'A powerful task management app built with Flutter.',
-              style: TextStyle(fontSize: 14),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Features:',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
-            SizedBox(height: 8),
-            Text(
-              '• Create and organize tasks\n• Set reminders and notifications\n• Track progress with categories\n• Voice input support\n• Beautiful UI design',
-              style: TextStyle(fontSize: 13),
-            ),
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: LightColors.kDarkYellow,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showDeveloperInfo(BuildContext context) {
     showDialog(
       context: context,
@@ -706,12 +634,21 @@ class SettingsScreen extends StatelessWidget {
             ),
             SizedBox(height: 8),
             Text(
-              '• Flutter Framework\n• GetX State Management\n• SQLite Database\n• Material Design\n• Firebase Integration',
+              '• Flutter Framework\n• GetX State Management\n• SQLite Database\n• Material Design\n• Local Storage',
               style: TextStyle(fontSize: 13),
             ),
             SizedBox(height: 16),
             Text(
               'Made with ❤️ for productivity enthusiasts',
+              style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Contact:',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+            Text(
+              'alaminalshaharia@gmail.com',
               style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
             ),
           ],

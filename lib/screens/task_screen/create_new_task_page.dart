@@ -15,6 +15,7 @@ import 'package:flutter_task_planner_app/widgets/voice/voice_input_widget.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+import '../../widgets/common/delete_confirmation_dialog.dart';
 import '../../widgets/task_widget/input_field_with_widget.dart';
 
 class CreateNewTaskPage extends StatefulWidget {
@@ -520,43 +521,11 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage>
 
   Future<void> _showDeleteCategoryDialog(
       CategoryModel category, int index) async {
-    return showDialog<void>(
+    return DeleteConfirmationDialog.showCategoryDeleteDialog(
       context: context,
-      barrierDismissible: false, // User must tap button to dismiss
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete Category'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Are you sure you want to delete "${category.name}"?'),
-                const SizedBox(height: 8),
-                const Text(
-                  'This action cannot be undone. Tasks associated with this category will prevent deletion.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text(
-                'Delete',
-                style: TextStyle(color: Colors.red),
-              ),
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _deleteCategory(category.id);
-              },
-            ),
-          ],
-        );
+      categoryName: category.name,
+      onConfirm: () async {
+        await _deleteCategory(category.id);
       },
     );
   }
@@ -731,7 +700,14 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage>
           return CircleAvatar(
             backgroundImage: profile.imageData != null
                 ? MemoryImage(profile.imageData!)
-                : const AssetImage('assets/images/avatar.png') as ImageProvider,
+                : null,
+            child: profile.imageData == null
+                ? Icon(
+                    Icons.person,
+                    size: 30,
+                    color: LightColors.kDarkYellow,
+                  )
+                : null,
           );
         }),
         SizedBox(
