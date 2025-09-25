@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_task_planner_app/controller/data_sync_manager.dart';
@@ -146,15 +147,16 @@ class SettingsScreen extends StatelessWidget {
 
               const SizedBox(height: 8),
 
-              // Notification Test (Debug)
-              _buildSettingsTile(
-                icon: Icons.bug_report,
-                title: 'Test Notifications',
-                subtitle: 'Debug notification functionality',
-                onTap: () => Get.to(() => const NotificationTestPage()),
-              ),
-
-              const SizedBox(height: 8),
+              // Notification Test (Debug) - Only visible in debug builds
+              if (kDebugMode) ...[
+                _buildSettingsTile(
+                  icon: Icons.bug_report,
+                  title: 'Test Notifications',
+                  subtitle: 'Debug notification functionality',
+                  onTap: () => Get.to(() => const NotificationTestPage()),
+                ),
+                const SizedBox(height: 8),
+              ],
 
               // Clear Tasks Only
               _buildSettingsTile(

@@ -1,3 +1,7 @@
+// *** DEVELOPMENT/DEBUG ONLY FILE ***
+// This file is for testing and debugging notification functionality
+// It is only accessible in debug builds and should not be included in production releases
+
 import 'package:flutter/material.dart';
 import 'package:flutter_task_planner_app/model/task_model.dart';
 import 'package:flutter_task_planner_app/service/notification_services.dart';
@@ -56,13 +60,13 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
       final now = DateTime.now();
       final scheduleTime = now.add(const Duration(seconds: 10));
 
-      await _notifyHelper.scheduledNotification(
-          scheduleTime.hour, scheduleTime.minute, testTask);
+      await _notifyHelper.scheduleNotificationAt(scheduleTime, testTask);
 
       setState(() {
         _testResult =
-            "✅ Task notification scheduled for ${scheduleTime.hour}:${scheduleTime.minute.toString().padLeft(2, '0')}\n"
-            "Check your notifications in 10 seconds!";
+            "✅ Task notification scheduled for ${scheduleTime.toString().split('.')[0]}\n"
+            "⏰ Should appear in exactly 10 seconds!\n"
+            "Current time: ${now.toString().split('.')[0]}";
       });
     } catch (e) {
       setState(() {
@@ -178,6 +182,69 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
     }
   }
 
+  Future<void> _debugTimezone() async {
+    setState(() {
+      _testResult = "⏳ Debugging timezone and time information...";
+    });
+
+    try {
+      // Initialize the notification service to trigger timezone setup
+      await _notifyHelper.ensureInitialized();
+
+      // Get system time information
+      final now = DateTime.now();
+      final timeZoneName = now.timeZoneName;
+      final timeZoneOffset = now.timeZoneOffset;
+
+      setState(() {
+        _testResult = "🌍 Timezone Debug Information:\n\n"
+            "📅 System Date/Time: ${now.toString().split('.')[0]}\n"
+            "🌐 Timezone Name: $timeZoneName\n"
+            "⏰ UTC Offset: $timeZoneOffset\n"
+            "🌎 Is UTC: ${now.isUtc}\n\n"
+            "Check console logs for detailed timezone\n"
+            "configuration information from the\n"
+            "notification service.";
+      });
+    } catch (e) {
+      setState(() {
+        _testResult = "❌ Timezone debug failed: $e";
+      });
+    }
+  }
+
+  Future<void> _testTaskCreationFlow() async {
+    setState(() {
+      _testResult =
+          "⏳ Testing complete task creation with notification scheduling...";
+    });
+
+    try {
+      final success =
+          await NotificationValidator.testTaskCreationWithNotification();
+
+      setState(() {
+        if (success) {
+          _testResult = "✅ Task Creation Flow Test - PASSED!\n\n"
+              "• Task created successfully\n"
+              "• Notification automatically scheduled\n"
+              "• Task removed after test\n\n"
+              "Task creation page should now properly\n"
+              "schedule notifications for new tasks!";
+        } else {
+          _testResult = "❌ Task Creation Flow Test - FAILED!\n\n"
+              "The task was created but notification\n"
+              "scheduling may not be working properly.\n"
+              "Check console for more details.";
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _testResult = "❌ Task creation test failed: $e";
+      });
+    }
+  }
+
   Future<void> _runFullValidation() async {
     setState(() {
       _testResult = "⏳ Running comprehensive validation tests...\n";
@@ -244,6 +311,16 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
               child: ListView(
                 children: [
                   ElevatedButton.icon(
+                    onPressed: _debugTimezone,
+                    icon: const Icon(Icons.public),
+                    label: const Text('Debug Timezone & Time'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton.icon(
                     onPressed: _testInstantNotification,
                     icon: const Icon(Icons.flash_on),
                     label: const Text('Test Instant Notification'),
@@ -269,6 +346,16 @@ class _NotificationTestPageState extends State<NotificationTestPage> {
                     label: const Text('Test Daily Notification'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.purple,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton.icon(
+                    onPressed: _testTaskCreationFlow,
+                    icon: const Icon(Icons.add_task),
+                    label: const Text('Test Task Creation + Notification'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
                       foregroundColor: Colors.white,
                     ),
                   ),

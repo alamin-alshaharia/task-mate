@@ -8,6 +8,7 @@ import 'package:flutter_task_planner_app/screens/task_screen/home_page.dart';
 import 'package:flutter_task_planner_app/service/speech_service.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:flutter_task_planner_app/utils/logger.dart';
+import 'package:flutter_task_planner_app/utils/time_parser.dart';
 import 'package:flutter_task_planner_app/widgets/task_widget/back_button.dart';
 import 'package:flutter_task_planner_app/widgets/task_widget/home_page/top_container.dart';
 import 'package:flutter_task_planner_app/widgets/task_widget/my_text_field.dart';
@@ -590,8 +591,8 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage>
   Future<TimeOfDay?> _showTimePicker() {
     return showTimePicker(
         initialTime: TimeOfDay(
-            hour: int.parse(_startTime.split(":")[0]),
-            minute: int.parse(_startTime.split(":")[1].split(" ")[0])),
+            hour: TimeParser.parseTimeToHoursMinutes(_startTime).hours,
+            minute: TimeParser.parseTimeToHoursMinutes(_startTime).minutes),
         context: context);
   }
 

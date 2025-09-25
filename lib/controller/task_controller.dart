@@ -3,12 +3,15 @@ import 'package:get/get.dart';
 import '../db/database_helper.dart';
 import '../model/category_model.dart';
 import '../model/task_model.dart';
+import '../service/notification_services.dart';
 import '../utils/app_preferences.dart';
 import '../utils/logger.dart';
+import '../utils/time_parser.dart';
 
 class TaskController extends GetxController {
   var taskList = <Task>[].obs;
   var categoryList = <CategoryModel>[].obs;
+  final NotifyHelper _notifyHelper = NotifyHelper();
 
   @override
   void onInit() {
@@ -138,6 +141,29 @@ class TaskController extends GetxController {
   Future<int> addTask({Task? task}) async {
     try {
       int result = await DatabaseHelper.instance.insertTask(task);
+
+      // Schedule notification for the task if it has a valid time and remind setting
+      if (task != null &&
+          task.startTime != null &&
+          task.remind != null &&
+          result > 0) {
+        // Create a copy of the task with the database-generated ID
+        final taskWithId = Task(
+          id: result,
+          title: task.title,
+          description: task.description,
+          startTime: task.startTime,
+          remind: task.remind,
+          repeat: task.repeat,
+          date: task.date,
+          color: task.color,
+          isCompleted: task.isCompleted,
+          categoryId: task.categoryId,
+        );
+
+        await _scheduleTaskNotification(taskWithId);
+      }
+
       await getTasks();
       return result;
     } catch (e) {
@@ -149,9 +175,60 @@ class TaskController extends GetxController {
   void updateTask({Task? task}) async {
     try {
       await DatabaseHelper.instance.updateTaskDetail(task!);
+
+      // Cancel existing notification and schedule new one if task has valid time
+      if (task.id != null) {
+        await _notifyHelper.cancelNotification(task.id!.toInt());
+      }
+
+      if (task.startTime != null && task.remind != null) {
+        await _scheduleTaskNotification(task);
+      }
+
       await getTasks();
     } catch (e) {
       AppLogger.e('Error updating task: $e');
+    }
+  }
+
+  /// Schedule notification for a task based on its start time and reminder setting
+  Future<void> _scheduleTaskNotification(Task task) async {
+    try {
+      if (task.startTime == null || task.remind == null || task.id == null) {
+        AppLogger.d(
+            'Task ${task.title} missing required fields for notification - startTime: ${task.startTime}, remind: ${task.remind}, id: ${task.id}');
+        return;
+      }
+
+      // Skip notification for completed tasks
+      if (task.isCompleted == 1) {
+        AppLogger.d('Skipping notification for completed task: ${task.title}');
+        return;
+      }
+
+      // Parse the task's start time
+      final parsed = TimeParser.parseTimeToHoursMinutes(task.startTime!);
+      int notificationHour = parsed.hours;
+      int notificationMinute = parsed.minutes;
+
+      // Subtract the reminder time (in minutes)
+      final reminderMinutes = task.remind!;
+      final startDateTime =
+          DateTime(2000, 1, 1, notificationHour, notificationMinute);
+      final reminderDateTime =
+          startDateTime.subtract(Duration(minutes: reminderMinutes));
+
+      notificationHour = reminderDateTime.hour;
+      notificationMinute = reminderDateTime.minute;
+
+      // Schedule the notification
+      await _notifyHelper.scheduledNotification(
+          notificationHour, notificationMinute, task);
+
+      AppLogger.d(
+          'Scheduled notification for task "${task.title}" at $notificationHour:${notificationMinute.toString().padLeft(2, '0')} ($reminderMinutes min before ${task.startTime})');
+    } catch (e) {
+      AppLogger.e('Error scheduling notification for task ${task.title}: $e');
     }
   }
 
@@ -256,6 +333,14 @@ class TaskController extends GetxController {
     try {
       await DatabaseHelper.instance.undoCompleted(id);
       await getTasks();
+
+      // Re-schedule notification for the task that was unmarked as completed
+      final task = taskList.firstWhereOrNull((t) => t.id == id);
+      if (task != null && task.startTime != null && task.remind != null) {
+        await _scheduleTaskNotification(task);
+        AppLogger.d(
+            'Re-scheduled notification for unmarked task: ${task.title}');
+      }
     } catch (e) {
       AppLogger.e('Error undoing task completion: $e');
     }
@@ -263,6 +348,10 @@ class TaskController extends GetxController {
 
   void markTaskCompleted(int id) async {
     try {
+      // Cancel notification for completed task
+      await _notifyHelper.cancelNotification(id);
+      AppLogger.d('Cancelled notification for completed task ID: $id');
+
       await DatabaseHelper.instance.update(id);
       await getTasks();
     } catch (e) {
@@ -314,6 +403,10 @@ class TaskController extends GetxController {
   void delete(Task task) async {
     try {
       if (task.id != null) {
+        // Cancel any existing notification for this task
+        await _notifyHelper.cancelNotification(task.id!.toInt());
+        AppLogger.d('Cancelled notification for deleted task: ${task.title}');
+
         await DatabaseHelper.instance.delete(task);
         await getTasks();
       }
@@ -325,6 +418,10 @@ class TaskController extends GetxController {
   // Method to delete all tasks
   Future<void> deleteAllTasks() async {
     try {
+      // Cancel all task notifications before deleting
+      await _notifyHelper.cancelAllNotifications();
+      AppLogger.d('Cancelled all task notifications');
+
       await DatabaseHelper.instance.deleteAllTasks();
       await getTasks();
       await getCategories(); // Refresh categories to update task counts

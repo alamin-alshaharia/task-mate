@@ -5,6 +5,7 @@ import 'package:flutter_task_planner_app/screens/task_screen/create_new_task_pag
 import 'package:flutter_task_planner_app/screens/task_screen/home_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:flutter_task_planner_app/utils/logger.dart';
+import 'package:flutter_task_planner_app/utils/time_parser.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
@@ -343,23 +344,8 @@ class _CalendarPageState extends State<CalendarPage> {
 
   DateTime _getDateTime(String timeString, {bool from5am = false}) {
     try {
-      final now = DateTime.now();
-      final time = DateFormat.jm().parse(timeString);
-
-      var dateTime = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        time.hour,
-        time.minute,
-      );
-
-      // If from5am is true and time is before 5 AM, add a day
-      if (from5am && dateTime.hour < 5) {
-        dateTime = dateTime.add(const Duration(days: 1));
-      }
-
-      return dateTime;
+      // Use the TimeParser utility for consistent parsing
+      return TimeParser.parseTimeString(timeString, from5am: from5am);
     } catch (e) {
       AppLogger.e("Error parsing time string '$timeString': $e");
       return DateTime.now();

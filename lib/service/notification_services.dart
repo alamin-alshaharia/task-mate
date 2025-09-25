@@ -413,6 +413,109 @@ class NotifyHelper {
     }
   }
 
+  /// Schedule a notification for a specific DateTime (for immediate/short-term scheduling)
+  Future<void> scheduleNotificationAt(DateTime scheduleTime, Task task) async {
+    debugPrint(
+        '🔔 Scheduling immediate notification for task: ${task.title} at $scheduleTime');
+
+    // Validate task data
+    if (task.id == null) {
+      debugPrint('❌ Cannot schedule notification: Task ID is null');
+      return;
+    }
+
+    await ensureInitialized();
+
+    if (!await areNotificationsEnabled()) {
+      debugPrint('⚠️ Notifications disabled, skipping task: ${task.title}');
+      return;
+    }
+
+    // Request permissions when actually trying to schedule a notification
+    final hasPermissions = await _requestNotificationPermissions();
+    if (!hasPermissions) {
+      debugPrint(
+          '⚠️ Notification permissions not granted, skipping task: ${task.title}');
+      return;
+    }
+
+    // Request exact alarm permissions for scheduling
+    await requestExactAlarmPermissions();
+
+    try {
+      final soundEnabled = await isSoundEnabled();
+      final vibrationEnabled = await isVibrationEnabled();
+
+      // Convert DateTime to TZDateTime
+      final tz.TZDateTime tzScheduleTime =
+          tz.TZDateTime.from(scheduleTime, tz.local);
+
+      debugPrint(
+          '📅 Schedule time calculated: $tzScheduleTime (now: ${tz.TZDateTime.now(tz.local)})');
+
+      final androidDetails = AndroidNotificationDetails(
+        taskChannelId,
+        taskChannelName,
+        channelDescription: 'Individual task reminders',
+        importance: Importance.high,
+        priority: Priority.high,
+        enableVibration: vibrationEnabled,
+        playSound: soundEnabled,
+        icon: '@mipmap/ic_launcher',
+        ticker: 'TaskMate: ${task.title}',
+        styleInformation: BigTextStyleInformation(
+          '⏰ ${task.description ?? "Task reminder"}',
+          htmlFormatBigText: false,
+          contentTitle: '📋 ${task.title ?? "Task Reminder"}',
+          htmlFormatContentTitle: false,
+        ),
+        actions: [
+          const AndroidNotificationAction(
+            'mark_done',
+            'Mark Done ✅',
+            showsUserInterface: false,
+          ),
+          const AndroidNotificationAction(
+            'snooze',
+            'Snooze 10min ⏰',
+            showsUserInterface: false,
+          ),
+        ],
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        subtitle: 'Task Reminder',
+        categoryIdentifier: 'task_reminder',
+      );
+
+      final platformDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        task.id!.toInt(),
+        '📋 ${task.title ?? "Task Reminder"}',
+        '⏰ ${task.description ?? "Task reminder"}',
+        tzScheduleTime,
+        platformDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: 'task_${task.id}',
+      );
+
+      final secondsUntil =
+          tzScheduleTime.difference(tz.TZDateTime.now(tz.local)).inSeconds;
+      debugPrint(
+          '✅ Scheduled immediate notification for "${task.title ?? "Task"}" at $tzScheduleTime (in ${secondsUntil}s)');
+    } catch (e) {
+      debugPrint(
+          '❌ Error scheduling immediate notification for task ${task.id}: $e');
+    }
+  }
+
   Future<void> scheduledNotification(int hour, int minute, Task task) async {
     debugPrint(
         '🔔 Scheduling notification for task: ${task.title} at $hour:$minute');
@@ -497,6 +600,20 @@ class NotifyHelper {
         iOS: iosDetails,
       );
 
+      // Determine the repeat pattern based on task settings
+      final bool isRepeating = task.repeat != null &&
+          task.repeat!.toLowerCase() != 'once' &&
+          task.repeat!.toLowerCase() != 'never';
+
+      DateTimeComponents? matchComponents;
+      if (isRepeating) {
+        if (task.repeat!.toLowerCase() == 'daily') {
+          matchComponents = DateTimeComponents.time;
+        } else if (task.repeat!.toLowerCase() == 'weekly') {
+          matchComponents = DateTimeComponents.dayOfWeekAndTime;
+        }
+      }
+
       await flutterLocalNotificationsPlugin.zonedSchedule(
         task.id!.toInt(),
         '📋 ${task.title ?? "Task Reminder"}',
@@ -504,9 +621,13 @@ class NotifyHelper {
         scheduleTime,
         platformDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
+        matchDateTimeComponents:
+            matchComponents, // Only repeat if task is recurring
         payload: 'task_${task.id}',
       );
+
+      debugPrint(
+          '📋 Notification type: ${isRepeating ? "Recurring (${task.repeat})" : "One-time"}');
 
       debugPrint(
           '✅ Scheduled notification for "${task.title ?? "Task"}" at ${scheduleTime.toString().split(' ')[1]}');
@@ -523,15 +644,71 @@ class NotifyHelper {
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
     tz.TZDateTime scheduleDate =
         tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+
+    debugPrint('⏰ Time conversion details:');
+    debugPrint('   Input: $hour:${minute.toString().padLeft(2, '0')}');
+    debugPrint('   Current time: $now');
+    debugPrint('   Initial schedule: $scheduleDate');
+
     if (scheduleDate.isBefore(now)) {
       scheduleDate = scheduleDate.add(const Duration(days: 1));
+      debugPrint('   ⏭️ Moved to next day: $scheduleDate');
     }
+
+    final minutesUntil = scheduleDate.difference(now).inMinutes;
+    debugPrint('   ⏱️ Notification will trigger in $minutesUntil minutes');
+
     return scheduleDate;
   }
 
   Future<void> _configureLocalTimeZone() async {
     tz.initializeTimeZones();
-    // You might need to configure the local timezone based on the device
+
+    try {
+      // Try to use system timezone, fallback to UTC if not available
+      final String timeZoneName = DateTime.now().timeZoneName;
+      final String timeZoneOffset = DateTime.now().timeZoneOffset.toString();
+
+      debugPrint('🌍 System timezone: $timeZoneName (offset: $timeZoneOffset)');
+
+      // Try to find a matching timezone location
+      try {
+        // Common timezone mappings - you can extend this list
+        String locationName = 'UTC';
+
+        // For Bangladesh/Dhaka timezone (GMT+6)
+        if (timeZoneOffset.contains('6:00:00')) {
+          locationName = 'Asia/Dhaka';
+        }
+        // For US Eastern (GMT-5/-4)
+        else if (timeZoneOffset.contains('-5:00:00') ||
+            timeZoneOffset.contains('-4:00:00')) {
+          locationName = 'America/New_York';
+        }
+        // For US Pacific (GMT-8/-7)
+        else if (timeZoneOffset.contains('-8:00:00') ||
+            timeZoneOffset.contains('-7:00:00')) {
+          locationName = 'America/Los_Angeles';
+        }
+        // For Europe/London (GMT+0/+1)
+        else if (timeZoneOffset.contains('0:00:00') ||
+            timeZoneOffset.contains('1:00:00')) {
+          locationName = 'Europe/London';
+        }
+        // Add more timezone mappings as needed
+
+        tz.setLocalLocation(tz.getLocation(locationName));
+        debugPrint('✅ Timezone set to: $locationName');
+      } catch (e) {
+        debugPrint('⚠️ Could not set specific timezone, using UTC: $e');
+        tz.setLocalLocation(tz.UTC);
+      }
+
+      debugPrint('📍 Final local time: ${tz.TZDateTime.now(tz.local)}');
+    } catch (e) {
+      debugPrint('❌ Error configuring timezone: $e');
+      tz.setLocalLocation(tz.UTC);
+    }
   }
 
   /// Schedule a daily recurring notification

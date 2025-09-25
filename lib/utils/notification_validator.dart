@@ -1,9 +1,16 @@
+// *** DEVELOPMENT/DEBUG ONLY FILE ***
+// This utility class is for testing and validating notification functionality
+// It should only be used during development and debugging
+
+import 'package:flutter_task_planner_app/controller/task_controller.dart';
 import 'package:flutter_task_planner_app/model/task_model.dart';
 import 'package:flutter_task_planner_app/service/notification_services.dart';
+import 'package:flutter_task_planner_app/utils/time_parser.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 /// This is a simple test script to validate task notification functionality
-/// Run this from your app to test notifications
+/// Run this from your app to test notifications (DEBUG BUILDS ONLY)
 class NotificationValidator {
   static final NotifyHelper _notifyHelper = NotifyHelper();
 
@@ -68,15 +75,11 @@ class NotificationValidator {
         isCompleted: 0,
       );
 
-      // Schedule for 2 minutes from now
+      // Schedule for 3 minutes from now (using immediate scheduling)
       final now = DateTime.now();
-      final scheduleTime = now.add(const Duration(minutes: 2));
+      final scheduleTime = now.add(const Duration(minutes: 3));
 
-      await _notifyHelper.scheduledNotification(
-        scheduleTime.hour,
-        scheduleTime.minute,
-        testTask,
-      );
+      await _notifyHelper.scheduleNotificationAt(scheduleTime, testTask);
 
       results['task_notification'] = true;
       print('✅ Test 4: Task notification scheduling - PASSED');
@@ -117,14 +120,10 @@ class NotificationValidator {
     try {
       final testTimes = ['09:30 AM', '02:15 PM', '11:45 PM'];
       for (final timeStr in testTimes) {
-        final date = DateFormat.jm().parse(timeStr);
-        final myTime = DateFormat("HH:mm").format(date);
-        final hours = int.parse(myTime.split(":")[0]);
-        final minutes = int.parse(myTime.split(":")[1]);
-
-        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-          throw Exception('Invalid time parsed: $hours:$minutes from $timeStr');
-        }
+        // Use the new TimeParser utility
+        final parsed = TimeParser.parseTimeToHoursMinutes(timeStr);
+        print(
+            '   ✓ Parsed $timeStr → ${parsed.hours}:${parsed.minutes.toString().padLeft(2, '0')}');
       }
       results['time_parsing'] = true;
       print('✅ Test 7: Time parsing - PASSED');
@@ -162,12 +161,13 @@ class NotificationValidator {
         return false;
       }
 
-      final date = DateFormat.jm().parse(task.startTime!);
-      final myTime = DateFormat("HH:mm").format(date);
-      final hours = int.parse(myTime.split(":")[0]);
-      final minutes = int.parse(myTime.split(":")[1]);
+      // Use the new TimeParser utility
+      final parsed = TimeParser.parseTimeToHoursMinutes(task.startTime!);
+      final hours = parsed.hours;
+      final minutes = parsed.minutes;
 
-      print('   Parsed time: $hours:$minutes from ${task.startTime}');
+      print(
+          '   Parsed time: $hours:${minutes.toString().padLeft(2, '0')} from ${task.startTime}');
 
       // Schedule the notification
       await _notifyHelper.scheduledNotification(hours, minutes, task);
@@ -176,6 +176,87 @@ class NotificationValidator {
       return true;
     } catch (e) {
       print('❌ Failed to schedule task notification: $e');
+      return false;
+    }
+  }
+
+  /// Test immediate notification scheduling (for short delays)
+  static Future<bool> testImmediateNotification(
+      Task task, Duration delay) async {
+    print(
+        '🔍 Testing immediate notification for task: ${task.title} (delay: ${delay.inSeconds}s)');
+
+    try {
+      final scheduleTime = DateTime.now().add(delay);
+      await _notifyHelper.scheduleNotificationAt(scheduleTime, task);
+
+      print(
+          '✅ Immediate notification scheduled for ${scheduleTime.toString().split('.')[0]}');
+      return true;
+    } catch (e) {
+      print('❌ Failed to schedule immediate notification: $e');
+      return false;
+    }
+  }
+
+  /// Test full task creation flow with notification scheduling
+  static Future<bool> testTaskCreationWithNotification() async {
+    print(
+        '🔍 Testing complete task creation flow with notification scheduling...');
+
+    try {
+      // Import task controller for testing
+      final taskController = Get.find<TaskController>();
+
+      // Create a test task with notification settings
+      final testTask = Task(
+        title: 'Notification Test Task',
+        description:
+            'Testing automatic notification scheduling on task creation',
+        startTime: '10:30 AM',
+        remind: 15, // 15 minutes before
+        repeat: 'Once',
+        date: DateFormat.yMd().format(DateTime.now()),
+        color: 1,
+        isCompleted: 0,
+      );
+
+      print('   Creating task: ${testTask.title}');
+      print('   Start time: ${testTask.startTime}');
+      print('   Reminder: ${testTask.remind} minutes before');
+
+      // Add task through controller (should automatically schedule notification)
+      await taskController.addTask(task: testTask);
+
+      // Check if notification was scheduled by looking at pending notifications
+      final pendingNotifications =
+          await _notifyHelper.getPendingNotifications();
+      final taskNotificationFound = pendingNotifications.any((notification) =>
+          notification.title?.contains(testTask.title!) ?? false);
+
+      if (taskNotificationFound) {
+        print('✅ Task creation with notification scheduling - PASSED');
+        print('   - Task created successfully');
+        print('   - Notification automatically scheduled');
+        print('   - Found in pending notifications list');
+
+        // Clean up test task
+        final createdTasks = taskController.taskList
+            .where((t) => t.title == testTask.title)
+            .toList();
+        if (createdTasks.isNotEmpty) {
+          taskController.delete(createdTasks.first);
+          print('   - Test task cleaned up');
+        }
+
+        return true;
+      } else {
+        print('❌ Task creation with notification scheduling - FAILED');
+        print('   - Task created but notification not found in pending list');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Task creation with notification scheduling - FAILED: $e');
       return false;
     }
   }
