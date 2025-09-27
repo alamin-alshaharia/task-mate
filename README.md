@@ -386,17 +386,13 @@ We welcome contributions to TaskMate! Here's how you can help:
 - Use conventional commit messages
 
 ## 📄 License
+Copyright (c) 2024 Md. Alamin Al Shaharia. All rights reserved.
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+This code is provided for educational and reference purposes only. 
+While you may fork this repository on GitHub for personal study, 
+you may not use, copy, modify, or distribute the code without permission.
 
-### 📋 License Summary
-
-- ✅ Commercial use
-- ✅ Modification
-- ✅ Distribution
-- ✅ Private use
-- ❌ Liability
-- ❌ Warranty
+**This project is not licensed under any open source license.**.
 
 ## 📞 Contact
 
