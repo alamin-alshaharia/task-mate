@@ -72,7 +72,8 @@
 ### 🏠 Home & Dashboard
 
 <div align="center">
-  <img src="screen_short/homepage of note.png" width="250" alt="Home Page"/>
+  <img src="screen_short/homepage-TaskMate.png" width="250" alt="Home Page"/>
+  <img src="screen_short/.png" width="250" alt="Home Page"/>
   <img src="screen_short/all_task_page.png" width="250" alt="All Tasks"/>
   <img src="screen_short/clander_page.png" width="250" alt="Calendar View"/>
 </div>
