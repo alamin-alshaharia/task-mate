@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:icons_flutter/icons_flutter.dart';
 
 import '../../controller/data_sync_manager.dart';
 import '../../model/task_model.dart';
@@ -63,7 +62,7 @@ class TaskTile extends StatelessWidget {
                         ? Row(
                             children: [
                               Icon(
-                                FlutterIcons.star_face_mco,
+                                Icons.star_rounded,
                                 // Icons.star,
                                 color: Colors.yellow[500],
                                 size: 22,

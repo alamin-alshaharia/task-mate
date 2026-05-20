@@ -21,151 +21,151 @@ class NoteDetailPage extends StatelessWidget {
     if (arguments is int) {
       final int i = arguments;
 
-      return Scaffold(
-        backgroundColor: Colors.grey.shade50,
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
-          leading: IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 18,
-              ),
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            "Note Details",
-            style: TextStyle(
-              color: Colors.black87,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-          ),
-          actions: [
-            // Favorite button
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              child: IconButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: controller.notes[i].isFavorite == true
-                        ? Colors.red.shade50
-                        : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    controller.notes[i].isFavorite == true
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    color: controller.notes[i].isFavorite == true
-                        ? Colors.red.shade600
-                        : Colors.grey.shade600,
-                    size: 20,
-                  ),
-                ),
-                onPressed: () {
-                  controller.favoriteNote(controller.notes[i].id!);
-                },
-              ),
-            ),
-
-            // Menu button
-            Container(
-              margin: const EdgeInsets.only(right: 12),
-              child: PopupMenuButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.more_vert_rounded,
-                    color: Colors.black87,
-                    size: 20,
-                  ),
-                ),
-                shape: RoundedRectangleBorder(
+      return GetBuilder<NoteController>(
+        builder: (_) => Scaffold(
+          backgroundColor: Colors.grey.shade50,
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black87,
+            leading: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                onSelected: (val) {
-                  if (val == 0) {
-                    editNote(i);
-                  } else if (val == 1) {
-                    deleteNote(context, i);
-                  } else if (val == 2) {
-                    shareNote(i);
-                  }
-                },
-                itemBuilder: (BuildContext bc) {
-                  return [
-                    const PopupMenuItem(
-                      value: 0,
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_outlined,
-                              size: 18, color: Colors.blue),
-                          SizedBox(width: 12),
-                          Text(
-                            "Edit Note",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 1,
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline,
-                              size: 18, color: Colors.red),
-                          SizedBox(width: 12),
-                          Text(
-                            "Delete Note",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 2,
-                      child: Row(
-                        children: [
-                          Icon(Icons.share_outlined,
-                              size: 18, color: Colors.green),
-                          SizedBox(width: 12),
-                          Text(
-                            "Share Note",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ];
-                },
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 18,
+                ),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: const Text(
+              "Note Details",
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
               ),
             ),
-          ],
-          systemOverlayStyle: SystemUiOverlayStyle.dark,
-        ),
-        body: GetBuilder<NoteController>(
-          builder: (_) => Container(
+            actions: [
+              // Favorite button
+              Container(
+                margin: const EdgeInsets.only(right: 8),
+                child: IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: controller.notes[i].isFavorite == true
+                          ? Colors.red.shade50
+                          : Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      controller.notes[i].isFavorite == true
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      color: controller.notes[i].isFavorite == true
+                          ? Colors.red.shade600
+                          : Colors.grey.shade600,
+                      size: 20,
+                    ),
+                  ),
+                  onPressed: () {
+                    controller.favoriteNote(controller.notes[i].id!);
+                  },
+                ),
+              ),
+
+              // Menu button
+              Container(
+                margin: const EdgeInsets.only(right: 12),
+                child: PopupMenuButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.more_vert_rounded,
+                      color: Colors.black87,
+                      size: 20,
+                    ),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  onSelected: (val) {
+                    if (val == 0) {
+                      editNote(i);
+                    } else if (val == 1) {
+                      deleteNote(context, i);
+                    } else if (val == 2) {
+                      shareNote(i);
+                    }
+                  },
+                  itemBuilder: (BuildContext bc) {
+                    return [
+                      const PopupMenuItem(
+                        value: 0,
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_outlined,
+                                size: 18, color: Colors.blue),
+                            SizedBox(width: 12),
+                            Text(
+                              "Edit Note",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 1,
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline,
+                                size: 18, color: Colors.red),
+                            SizedBox(width: 12),
+                            Text(
+                              "Delete Note",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 2,
+                        child: Row(
+                          children: [
+                            Icon(Icons.share_outlined,
+                                size: 18, color: Colors.green),
+                            SizedBox(width: 12),
+                            Text(
+                              "Share Note",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ];
+                  },
+                ),
+              ),
+            ],
+            systemOverlayStyle: SystemUiOverlayStyle.dark,
+          ),
+          body: Container(
             color: Colors.grey.shade50,
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
@@ -388,35 +388,35 @@ class NoteDetailPage extends StatelessWidget {
               ],
             ),
           ),
-        ),
 
-        // Floating Action Buttons
-        floatingActionButton: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            // Edit button
-            Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              child: FloatingActionButton(
-                heroTag: "edit",
-                onPressed: () => editNote(i),
-                backgroundColor: Colors.blue.shade600,
+          // Floating Action Buttons
+          floatingActionButton: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              // Edit button
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: FloatingActionButton(
+                  heroTag: "edit",
+                  onPressed: () => editNote(i),
+                  backgroundColor: Colors.blue.shade600,
+                  foregroundColor: Colors.white,
+                  elevation: 8,
+                  child: const Icon(Icons.edit_rounded, size: 24),
+                ),
+              ),
+
+              // Share button
+              FloatingActionButton(
+                heroTag: "share",
+                onPressed: () => shareNote(i),
+                backgroundColor: Colors.green.shade600,
                 foregroundColor: Colors.white,
                 elevation: 8,
-                child: const Icon(Icons.edit_rounded, size: 24),
+                child: const Icon(Icons.share_rounded, size: 24),
               ),
-            ),
-
-            // Share button
-            FloatingActionButton(
-              heroTag: "share",
-              onPressed: () => shareNote(i),
-              backgroundColor: Colors.green.shade600,
-              foregroundColor: Colors.white,
-              elevation: 8,
-              child: const Icon(Icons.share_rounded, size: 24),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     } else {

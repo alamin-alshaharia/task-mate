@@ -188,7 +188,7 @@ class DataSyncManager extends GetxController {
       AppLogger.d('Updating task with sync: ${task.title}');
 
       // Update task through controller
-      _taskController.updateTask(task: task);
+      await _taskController.updateTask(task: task);
 
       // Sync all task data to update UI everywhere
       await syncTaskData();
@@ -209,7 +209,7 @@ class DataSyncManager extends GetxController {
       AppLogger.d('Deleting task with sync: ${task.title}');
 
       // Delete task through controller
-      _taskController.delete(task);
+      await _taskController.delete(task);
 
       // Sync all task data to update UI everywhere
       await syncTaskData();
@@ -231,7 +231,7 @@ class DataSyncManager extends GetxController {
           'Toggling task completion with sync: ${task.title} - New status: ${task.isCompleted}');
 
       // Update the task directly with the new data
-      _taskController.updateTask(task: task);
+      await _taskController.updateTask(task: task);
 
       // Sync all task data to update UI everywhere
       await syncTaskData();
@@ -253,7 +253,7 @@ class DataSyncManager extends GetxController {
           'Toggling task star with sync: ${task.title} - New star status: ${task.isStar}');
 
       // Update the task directly with the new data
-      _taskController.updateTask(task: task);
+      await _taskController.updateTask(task: task);
 
       // Sync all task data to update UI everywhere
       await syncTaskData();
@@ -385,6 +385,9 @@ class DataSyncManager extends GetxController {
         profile?.imageData = null;
       });
       await _profileController.saveProfile();
+
+      // Reinitialize default categories so the app remains usable
+      await _taskController.reinitializeCategories();
 
       // Sync all data to update UI everywhere
       await syncAllData();

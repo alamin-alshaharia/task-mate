@@ -21,7 +21,7 @@ Color primaryClr = Colors.white;
 const double kDefaultPadding = 20;
 
 class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
-  final _taskController = Get.put(TaskController());
+  final _taskController = Get.find<TaskController>();
   int currentIndex = 3;
   int totalTask = 0;
   int completedTask = 0;
@@ -36,8 +36,8 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
 
   Future<void> _fetchAllTaskStats() async {
     try {
-      double totalResult = await _taskController.getTotalTask();
-      double completedResult = await _taskController.getTotalCompletedTask();
+      double totalResult = _taskController.getTotalTask();
+      double completedResult = _taskController.getTotalCompletedTask();
 
       setState(() {
         totalTask = totalResult.toInt();

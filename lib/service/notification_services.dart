@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_task_planner_app/screens/task_screen/calendar_page.dart';
 import 'package:flutter_task_planner_app/model/task_model.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -321,12 +322,11 @@ class NotifyHelper {
   }
 
   void _navigateToTaskDetails(String taskId) {
-    // Navigate to home or calendar based on app state
     try {
-      // Since we can't import specific pages here to avoid circular imports,
-      // we'll use a more generic approach
-      debugPrint('📍 Should navigate to task: $taskId');
-      // The actual navigation will be handled by the app's routing system
+      debugPrint('📍 Navigating to task: $taskId');
+      // Navigate to CalendarPage or a task detail page if one exists
+      // For now, navigating to CalendarPage is a safe default for tasks
+      Get.to(() => const CalendarPage());
     } catch (e) {
       debugPrint('Error handling task navigation: $e');
     }
@@ -334,8 +334,8 @@ class NotifyHelper {
 
   void _navigateToCalendar() {
     try {
-      debugPrint('📍 Should navigate to calendar page');
-      // The actual navigation will be handled by the app's routing system
+      debugPrint('📍 Navigating to calendar page');
+      Get.to(() => const CalendarPage());
     } catch (e) {
       debugPrint('Error handling calendar navigation: $e');
     }
@@ -665,45 +665,30 @@ class NotifyHelper {
     tz.initializeTimeZones();
 
     try {
-      // Try to use system timezone, fallback to UTC if not available
-      final String timeZoneName = DateTime.now().timeZoneName;
-      final String timeZoneOffset = DateTime.now().timeZoneOffset.toString();
+      // Get the system's UTC offset
+      final Duration offset = DateTime.now().timeZoneOffset;
+      final int offsetMinutes = offset.inMinutes;
 
-      debugPrint('🌍 System timezone: $timeZoneName (offset: $timeZoneOffset)');
+      debugPrint(
+          '🌍 System timezone offset: ${offset.inHours}h ${offset.inMinutes % 60}m');
 
-      // Try to find a matching timezone location
+      // Find a timezone location that matches the current offset
+      String locationName = 'UTC';
       try {
-        // Common timezone mappings - you can extend this list
-        String locationName = 'UTC';
-
-        // For Bangladesh/Dhaka timezone (GMT+6)
-        if (timeZoneOffset.contains('6:00:00')) {
-          locationName = 'Asia/Dhaka';
+        // Search all timezone locations for one matching our offset
+        for (final location in tz.timeZoneDatabase.locations.values) {
+          final now = tz.TZDateTime.now(location);
+          if (now.timeZoneOffset.inMinutes == offsetMinutes) {
+            locationName = location.name;
+            break;
+          }
         }
-        // For US Eastern (GMT-5/-4)
-        else if (timeZoneOffset.contains('-5:00:00') ||
-            timeZoneOffset.contains('-4:00:00')) {
-          locationName = 'America/New_York';
-        }
-        // For US Pacific (GMT-8/-7)
-        else if (timeZoneOffset.contains('-8:00:00') ||
-            timeZoneOffset.contains('-7:00:00')) {
-          locationName = 'America/Los_Angeles';
-        }
-        // For Europe/London (GMT+0/+1)
-        else if (timeZoneOffset.contains('0:00:00') ||
-            timeZoneOffset.contains('1:00:00')) {
-          locationName = 'Europe/London';
-        }
-        // Add more timezone mappings as needed
-
-        tz.setLocalLocation(tz.getLocation(locationName));
-        debugPrint('✅ Timezone set to: $locationName');
       } catch (e) {
-        debugPrint('⚠️ Could not set specific timezone, using UTC: $e');
-        tz.setLocalLocation(tz.UTC);
+        debugPrint('⚠️ Error searching timezone locations: $e');
       }
 
+      tz.setLocalLocation(tz.getLocation(locationName));
+      debugPrint('✅ Timezone set to: $locationName');
       debugPrint('📍 Final local time: ${tz.TZDateTime.now(tz.local)}');
     } catch (e) {
       debugPrint('❌ Error configuring timezone: $e');

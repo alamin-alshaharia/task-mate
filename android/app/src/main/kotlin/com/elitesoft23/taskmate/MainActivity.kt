@@ -1,4 +1,4 @@
-package com.example.flutter_task_planner_app
+package com.elitesoft23.taskmate
 
 import io.flutter.embedding.android.FlutterActivity
 

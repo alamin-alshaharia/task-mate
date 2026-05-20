@@ -29,14 +29,21 @@ class CategoryModel {
 
   // Convert CategoryModel to a Map for database insertion
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
+    final Map<String, dynamic> data = {
       'name': name,
       'icon': icon,
       'color': color,
       'remainingTasks': remainingTasks,
       'completedTasks': completedTasks,
     };
+
+    // Only include ID if it's not a new/temporary one (e.g., if > 0)
+    // or if we specifically want to update an existing record.
+    if (id > 0) {
+      data['id'] = id;
+    }
+
+    return data;
   }
 
   // Optional: Create a copyWith method for easy updates

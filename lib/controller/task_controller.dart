@@ -92,6 +92,19 @@ class TaskController extends GetxController {
       final categoriesMap = await DatabaseHelper.instance.queryCategories();
       final categories =
           categoriesMap.map((map) => CategoryModel.fromJson(map)).toList();
+
+      // Enrich each category with live task counts derived from taskList.
+      // The DB columns (remainingTasks/completedTasks) are legacy and are
+      // not kept in sync — computing counts here ensures they are always correct.
+      for (final category in categories) {
+        final categoryTasks =
+            taskList.where((t) => t.categoryId == category.id).toList();
+        category.remainingTasks =
+            categoryTasks.where((t) => t.isCompleted == 0).length;
+        category.completedTasks =
+            categoryTasks.where((t) => t.isCompleted == 1).length;
+      }
+
       categoryList.assignAll(categories); // Update the observable list
       AppLogger.d('Categories fetched: ${categories.length}');
       return categories;
@@ -140,11 +153,14 @@ class TaskController extends GetxController {
 
   Future<int> addTask({Task? task}) async {
     try {
+      if (task == null) {
+        AppLogger.e('Cannot add null task');
+        return -1;
+      }
       int result = await DatabaseHelper.instance.insertTask(task);
 
       // Schedule notification for the task if it has a valid time and remind setting
-      if (task != null &&
-          task.startTime != null &&
+      if (task.startTime != null &&
           task.remind != null &&
           result > 0) {
         // Create a copy of the task with the database-generated ID
@@ -172,11 +188,12 @@ class TaskController extends GetxController {
     }
   }
 
-  void updateTask({Task? task}) async {
+  Future<void> updateTask({Task? task}) async {
     try {
-      await DatabaseHelper.instance.updateTaskDetail(task!);
+      if (task == null) return;
+      await DatabaseHelper.instance.updateTaskDetail(task);
 
-      // Cancel existing notification and schedule new one if task has valid time
+      // Cancel existing notification and schedule new one
       if (task.id != null) {
         await _notifyHelper.cancelNotification(task.id!.toInt());
       }
@@ -196,162 +213,56 @@ class TaskController extends GetxController {
     try {
       if (task.startTime == null || task.remind == null || task.id == null) {
         AppLogger.d(
-            'Task ${task.title} missing required fields for notification - startTime: ${task.startTime}, remind: ${task.remind}, id: ${task.id}');
+            'Task ${task.title} missing required fields for notification');
         return;
       }
 
       // Skip notification for completed tasks
-      if (task.isCompleted == 1) {
-        AppLogger.d('Skipping notification for completed task: ${task.title}');
-        return;
-      }
+      if (task.isCompleted == 1) return;
 
-      // Parse the task's start time
       final parsed = TimeParser.parseTimeToHoursMinutes(task.startTime!);
-      int notificationHour = parsed.hours;
-      int notificationMinute = parsed.minutes;
-
-      // Subtract the reminder time (in minutes)
-      final reminderMinutes = task.remind!;
-      final startDateTime =
-          DateTime(2000, 1, 1, notificationHour, notificationMinute);
+      final startDateTime = DateTime(2000, 1, 1, parsed.hours, parsed.minutes);
       final reminderDateTime =
-          startDateTime.subtract(Duration(minutes: reminderMinutes));
+          startDateTime.subtract(Duration(minutes: task.remind!));
 
-      notificationHour = reminderDateTime.hour;
-      notificationMinute = reminderDateTime.minute;
-
-      // Schedule the notification
       await _notifyHelper.scheduledNotification(
-          notificationHour, notificationMinute, task);
+          reminderDateTime.hour, reminderDateTime.minute, task);
 
       AppLogger.d(
-          'Scheduled notification for task "${task.title}" at $notificationHour:${notificationMinute.toString().padLeft(2, '0')} ($reminderMinutes min before ${task.startTime})');
+          'Scheduled notification for task "${task.title}" at ${reminderDateTime.hour}:${reminderDateTime.minute}');
     } catch (e) {
       AppLogger.e('Error scheduling notification for task ${task.title}: $e');
     }
   }
 
-  Future<void> _addDefaultCategoriesIfEmpty() async {
-    try {
-      // Check if default categories have already been added using SharedPreferences
-      final categoriesAlreadyAdded =
-          await AppPreferences.areDefaultCategoriesAdded();
-      if (categoriesAlreadyAdded) {
-        AppLogger.d('Default categories already added previously');
-        return;
-      }
+  // Optimized Statistics Methods (No redundant DB queries)
+  double getTotalTask() => taskList.length.toDouble();
 
-      // Double check by looking at database
-      final categoriesFromDb = await DatabaseHelper.instance.queryCategories();
-      if (categoriesFromDb.isNotEmpty) {
-        AppLogger.d('Categories exist in database: ${categoriesFromDb.length}');
-        // Mark as added in preferences to avoid future checks
-        await AppPreferences.setDefaultCategoriesAdded();
-        return;
-      }
+  double getTotalCompletedTask() =>
+      taskList.where((task) => task.isCompleted == 1).length.toDouble();
 
-      AppLogger.d('No categories found in database. Adding default categories');
-      List<Map<String, dynamic>> defaultCategories = [
-        {
-          'name': 'Personal',
-          'icon': 'person_outline',
-          'color': '#FF7B86',
-        },
-        {
-          'name': 'Work',
-          'icon': 'work_outline',
-          'color': '#4ECDC4',
-        },
-        {
-          'name': 'Important',
-          'icon': 'priority_high',
-          'color': '#FFB900',
-        }
-      ];
-
-      for (var category in defaultCategories) {
-        // Create CategoryModel and insert directly to avoid duplicate checking in addCategory
-        final newCategory = CategoryModel(
-          id: DateTime.now().millisecondsSinceEpoch +
-              defaultCategories.indexOf(category),
-          name: category['name']!,
-          icon: category['icon']!,
-          color: category['color']!,
-          remainingTasks: 0,
-          completedTasks: 0,
-        );
-        await DatabaseHelper.instance.insertCategory(newCategory);
-      }
-
-      // Mark default categories as added in SharedPreferences
-      await AppPreferences.setDefaultCategoriesAdded();
-
-      // Refresh the category list after adding defaults
-      await getCategories();
-      AppLogger.d(
-          'Default categories added successfully. Total: ${categoryList.length}');
-    } catch (e) {
-      AppLogger.e('Error in _addDefaultCategoriesIfEmpty: $e');
-    }
+  int getTotalCompletedProgress() {
+    double total = getTotalTask();
+    return total > 0 ? ((getTotalCompletedTask() / total) * 100).toInt() : 0;
   }
 
-  // Task Statistics Methods
-  Future<double> getTotalTask() async {
-    try {
-      await getTasks();
-      return taskList.length.toDouble();
-    } catch (e) {
-      AppLogger.e('Error getting total tasks: $e');
-      return 0.0;
-    }
-  }
-
-  Future<double> getTotalCompletedTask() async {
-    try {
-      await getTasks();
-      return taskList.where((task) => task.isCompleted == 1).length.toDouble();
-    } catch (e) {
-      AppLogger.e('Error getting completed tasks: $e');
-      return 0.0;
-    }
-  }
-
-  Future<int> getTotalCompletedProgress() async {
-    try {
-      double comp = await getTotalCompletedTask();
-      double total = await getTotalTask();
-      return total > 0 ? ((comp / total) * 100).toInt() : 0;
-    } catch (e) {
-      AppLogger.e('Error calculating completion progress: $e');
-      return 0;
-    }
-  }
-
-  // Other existing methods (undoTaskCompleted, markTaskCompleted, etc.)
-  void undoTaskCompleted(int id) async {
+  Future<void> undoTaskCompleted(int id) async {
     try {
       await DatabaseHelper.instance.undoCompleted(id);
       await getTasks();
 
-      // Re-schedule notification for the task that was unmarked as completed
       final task = taskList.firstWhereOrNull((t) => t.id == id);
       if (task != null && task.startTime != null && task.remind != null) {
         await _scheduleTaskNotification(task);
-        AppLogger.d(
-            'Re-scheduled notification for unmarked task: ${task.title}');
       }
     } catch (e) {
       AppLogger.e('Error undoing task completion: $e');
     }
   }
 
-  void markTaskCompleted(int id) async {
+  Future<void> markTaskCompleted(int id) async {
     try {
-      // Cancel notification for completed task
       await _notifyHelper.cancelNotification(id);
-      AppLogger.d('Cancelled notification for completed task ID: $id');
-
       await DatabaseHelper.instance.update(id);
       await getTasks();
     } catch (e) {
@@ -359,29 +270,7 @@ class TaskController extends GetxController {
     }
   }
 
-  // Existing date-related methods
-  bool isWithinSameMonth(DateTime taskDate, DateTime today) {
-    return taskDate.month == today.month && taskDate.year == today.year;
-  }
-
-  bool isWithinSevenDays(DateTime taskDate, DateTime today) {
-    Duration difference = today.difference(taskDate);
-    return difference.inDays <= 6;
-  }
-
-  // Method to get tasks by category
-  Future<List<Task>> getTasksByCategory(int categoryId) async {
-    try {
-      await getTasks();
-      return taskList.where((task) => task.categoryId == categoryId).toList();
-    } catch (e) {
-      AppLogger.e('Error getting tasks by category: $e');
-      return [];
-    }
-  }
-
-  // Method to mark task as starred
-  void markTaskStar(int id) async {
+  Future<void> markTaskStar(int id) async {
     try {
       await DatabaseHelper.instance.markStar(id);
       await getTasks();
@@ -390,8 +279,7 @@ class TaskController extends GetxController {
     }
   }
 
-  // Method to undo task star
-  void undoTaskStar(int id) async {
+  Future<void> undoTaskStar(int id) async {
     try {
       await DatabaseHelper.instance.undoStar(id);
       await getTasks();
@@ -400,19 +288,75 @@ class TaskController extends GetxController {
     }
   }
 
-  void delete(Task task) async {
+  Future<void> delete(Task task) async {
     try {
       if (task.id != null) {
-        // Cancel any existing notification for this task
         await _notifyHelper.cancelNotification(task.id!.toInt());
-        AppLogger.d('Cancelled notification for deleted task: ${task.title}');
-
         await DatabaseHelper.instance.delete(task);
         await getTasks();
       }
     } catch (e) {
       AppLogger.e('Error deleting task: $e');
     }
+  }
+
+  Future<void> _addDefaultCategoriesIfEmpty() async {
+    try {
+      final categoriesAlreadyAdded =
+          await AppPreferences.areDefaultCategoriesAdded();
+      if (categoriesAlreadyAdded) return;
+
+      final categoriesFromDb = await DatabaseHelper.instance.queryCategories();
+      if (categoriesFromDb.isNotEmpty) {
+        await AppPreferences.setDefaultCategoriesAdded();
+        return;
+      }
+
+      List<Map<String, dynamic>> defaultCategories = [
+        {'name': 'Personal', 'icon': 'person_outline', 'color': '#FF7B86'},
+        {'name': 'Work', 'icon': 'work_outline', 'color': '#4ECDC4'},
+        {'name': 'Important', 'icon': 'priority_high', 'color': '#FFB900'}
+      ];
+
+      for (var category in defaultCategories) {
+        final newCategory = CategoryModel(
+          id: DateTime.now().millisecondsSinceEpoch +
+              defaultCategories.indexOf(category),
+          name: category['name']!,
+          icon: category['icon']!,
+          color: category['color']!,
+        );
+        await DatabaseHelper.instance.insertCategory(newCategory);
+      }
+
+      await AppPreferences.setDefaultCategoriesAdded();
+      await getCategories();
+    } catch (e) {
+      AppLogger.e('Error in _addDefaultCategoriesIfEmpty: $e');
+    }
+  }
+
+  /// Re-initialize categories after data has been cleared.
+  /// This resets the default categories flag and re-adds them.
+  Future<void> reinitializeCategories() async {
+    try {
+      // Reset the flag so defaults can be re-added
+      await AppPreferences.resetCategoryPreferences();
+      // Re-add default categories
+      await _addDefaultCategoriesIfEmpty();
+      AppLogger.d('Categories re-initialized: ${categoryList.length}');
+    } catch (e) {
+      AppLogger.e('Error re-initializing categories: $e');
+    }
+  }
+
+  bool isWithinSameMonth(DateTime taskDate, DateTime today) {
+    return taskDate.month == today.month && taskDate.year == today.year;
+  }
+
+  bool isWithinSevenDays(DateTime taskDate, DateTime today) {
+    Duration difference = today.difference(taskDate);
+    return difference.inDays >= 0 && difference.inDays <= 6;
   }
 
   // Method to delete all tasks

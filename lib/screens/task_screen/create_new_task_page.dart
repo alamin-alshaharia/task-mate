@@ -22,9 +22,13 @@ import '../../widgets/task_widget/input_field_with_widget.dart';
 class CreateNewTaskPage extends StatefulWidget {
   final CategoryModel? preSelectedCategory;
   final Task? editingTask;
+  final TaskSpeechData? initialSpeechData;
 
   const CreateNewTaskPage(
-      {super.key, this.preSelectedCategory, this.editingTask});
+      {super.key,
+      this.preSelectedCategory,
+      this.editingTask,
+      this.initialSpeechData});
 
   @override
   State<CreateNewTaskPage> createState() => _CreateNewTaskPageState();
@@ -65,6 +69,16 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage>
     // If editing a task, populate the fields
     if (widget.editingTask != null) {
       _populateFieldsFromTask();
+    }
+
+    // If opened from voice input, pre-fill the form after the first frame
+    // so the widget tree is fully mounted before we call setState/snackbar.
+    if (widget.initialSpeechData != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _fillFormWithSpeechData(widget.initialSpeechData!);
+        }
+      });
     }
 
     if (widget.preSelectedCategory != null) {
@@ -130,6 +144,12 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage>
     if (_taskController.categoryList.isEmpty) {
       AppLogger.d('Initializing categories in CreateNewTaskPage');
       await _taskController.getCategories();
+
+      // If still empty after fetching, re-add default categories
+      if (_taskController.categoryList.isEmpty) {
+        AppLogger.d('Categories still empty, re-initializing defaults');
+        await _taskController.reinitializeCategories();
+      }
     }
   }
 
@@ -630,7 +650,8 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage>
     );
   }
 
-  // Fill form with speech data
+  // Fill form with speech data — may be called from addPostFrameCallback
+  // or from the in-page voice icon. Never call from initState directly.
   void _fillFormWithSpeechData(TaskSpeechData speechData) {
     setState(() {
       titleController.text = speechData.title;
@@ -653,15 +674,20 @@ class _CreateNewTaskPageState extends State<CreateNewTaskPage>
       }
     });
 
-    // Show success message
-    Get.snackbar(
-      'Voice Input',
-      'Task details filled from voice input!',
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-    );
+    // Snackbar only when the widget is already visible (not during build).
+    // Using a short delay to ensure the overlay is ready.
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        Get.snackbar(
+          'Voice Input',
+          'Task details filled from voice input!',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 2),
+        );
+      }
+    });
   }
 
   // App bar method

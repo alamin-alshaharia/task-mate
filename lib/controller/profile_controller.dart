@@ -22,7 +22,7 @@ class ProfileController extends GetxController {
   Future<void> fetchProfile() async {
     try {
       isLoading.value = true;
-      final fetchedProfile = await DatabaseHelper().getProfile();
+      final fetchedProfile = await ProfileDatabaseHelper().getProfile();
       if (fetchedProfile != null) {
         profile.value = fetchedProfile;
       }
@@ -59,7 +59,7 @@ class ProfileController extends GetxController {
   Future<void> saveProfile() async {
     try {
       isLoading.value = true;
-      await DatabaseHelper().insertProfile(profile.value);
+      await ProfileDatabaseHelper().insertProfile(profile.value);
       Get.snackbar('Success', 'Profile Updated Successfully');
       fetchProfile(); // Refresh profile after saving
     } catch (e) {

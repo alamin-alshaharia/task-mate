@@ -32,7 +32,7 @@ class NoteController extends GetxController {
         dateTimeCreated:
             DateFormat("dd-MM-yyyy hh:mm a").format(DateTime.now()),
         isFavorite: false);
-    await DatabaseHelper.instance.addNote(note);
+    await NoteDatabaseHelper.instance.addNote(note);
     titleController.text = "";
     contentController.text = "";
     getAllNotes();
@@ -49,7 +49,7 @@ class NoteController extends GetxController {
       dateTimeEdited: DateFormat("dd-MM-yyyy hh:mm a").format(DateTime.now()),
       dateTimeCreated: dTCreated,
     );
-    await DatabaseHelper.instance.updateNote(note);
+    await NoteDatabaseHelper.instance.updateNote(note);
     titleController.text = "";
     contentController.text = "";
     getAllNotes();
@@ -61,7 +61,7 @@ class NoteController extends GetxController {
     Note note = Note(
       id: id,
     );
-    await DatabaseHelper.instance.deleteNote(note);
+    await NoteDatabaseHelper.instance.deleteNote(note);
     getAllNotes();
   }
 
@@ -73,7 +73,7 @@ class NoteController extends GetxController {
       } else {
         note.isFavorite = true; // Mark as favorite
       }
-      await DatabaseHelper.instance.updateNote(note);
+      await NoteDatabaseHelper.instance.updateNote(note);
 
       // Update the specific note in the list
       int index = notes.indexWhere((n) => n.id == id);
@@ -93,12 +93,12 @@ class NoteController extends GetxController {
   }
 
   void deleteAllNotes() async {
-    await DatabaseHelper.instance.deleteAllNotes();
+    await NoteDatabaseHelper.instance.deleteAllNotes();
     getAllNotes();
   }
 
   void getAllNotes() async {
-    notes.value = await DatabaseHelper.instance.getNoteList();
+    notes.value = await NoteDatabaseHelper.instance.getNoteList();
     update();
   }
 

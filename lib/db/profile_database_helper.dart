@@ -3,12 +3,13 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../model/profile_model.dart';
 
-class DatabaseHelper {
-  static final DatabaseHelper _instance = DatabaseHelper._internal();
+class ProfileDatabaseHelper {
+  static final ProfileDatabaseHelper _instance =
+      ProfileDatabaseHelper._internal();
   static Database? _database;
 
-  factory DatabaseHelper() => _instance;
-  DatabaseHelper._internal();
+  factory ProfileDatabaseHelper() => _instance;
+  ProfileDatabaseHelper._internal();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -29,10 +30,8 @@ class DatabaseHelper {
             'imageData BLOB)');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        // Handle database schema changes if needed
         if (oldVersion < newVersion) {
-          // Example of adding a new column
-          // await db.execute('ALTER TABLE profiles ADD COLUMN new_column TEXT');
+          // Handle database schema changes if needed
         }
       },
     );

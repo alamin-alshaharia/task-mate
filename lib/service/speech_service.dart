@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -65,6 +66,7 @@ class SpeechService {
   Future<void> startListening({
     required Function(String) onResult,
     Function(String)? onError,
+    VoidCallback? onDone,
   }) async {
     if (!_speechEnabled) {
       await initialize();
@@ -75,17 +77,23 @@ class SpeechService {
         onResult: (result) {
           _lastWords = result.recognizedWords;
           onResult(_lastWords);
-          AppLogger.d('Speech result: $_lastWords');
+          AppLogger.d('Speech result: $_lastWords (final: ${result.finalResult})');
+          // When a final result is received, notify done
+          if (result.finalResult && onDone != null) {
+            onDone();
+          }
         },
         listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
-        partialResults: true,
+        pauseFor: const Duration(seconds: 4),
         localeId: "en_US",
-        cancelOnError: true,
-        listenMode: ListenMode.confirmation,
+        listenOptions: SpeechListenOptions(
+          partialResults: true,
+          cancelOnError: false,
+          listenMode: ListenMode.dictation,
+        ),
       );
     } else {
-      onError?.call('Speech recognition not available');
+      onError?.call('Speech recognition not available. Please check microphone permissions.');
     }
   }
 

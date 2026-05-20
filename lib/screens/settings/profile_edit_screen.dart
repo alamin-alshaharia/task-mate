@@ -441,6 +441,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       // Save profile to database
       await _profileController.saveProfile();
 
+      // Navigate back first, then show success message on the settings screen
       Get.back();
 
       Get.snackbar(
@@ -457,9 +458,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         colorText: Colors.white,
       );
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      // Only call setState if the widget is still mounted
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

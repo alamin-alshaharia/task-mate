@@ -1,11 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_task_planner_app/controller/data_sync_manager.dart';
 import 'package:flutter_task_planner_app/controller/profile_controller.dart';
 import 'package:flutter_task_planner_app/screens/settings/notification_settings_page.dart';
 import 'package:flutter_task_planner_app/screens/settings/profile_edit_screen.dart';
-import 'package:flutter_task_planner_app/screens/test/notification_test_page.dart';
 import 'package:flutter_task_planner_app/theme/colors/light_colors.dart';
 import 'package:flutter_task_planner_app/utils/logger.dart';
 import 'package:flutter_task_planner_app/widgets/task_widget/show_appinfo.dart';
@@ -146,17 +144,6 @@ class SettingsScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 8),
-
-              // Notification Test (Debug) - Only visible in debug builds
-              if (kDebugMode) ...[
-                _buildSettingsTile(
-                  icon: Icons.bug_report,
-                  title: 'Test Notifications',
-                  subtitle: 'Debug notification functionality',
-                  onTap: () => Get.to(() => const NotificationTestPage()),
-                ),
-                const SizedBox(height: 8),
-              ],
 
               // Clear Tasks Only
               _buildSettingsTile(
@@ -650,7 +637,7 @@ class SettingsScreen extends StatelessWidget {
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
             Text(
-              'alaminalshaharia@gmail.com',
+              'elitesoft23.dev@gmail.com',
               style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
             ),
           ],

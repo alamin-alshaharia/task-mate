@@ -240,7 +240,11 @@ class HomenoteImproved extends StatelessWidget {
               color: Colors.blue,
               title: "Recently Modified",
               onTap: () {
-                // TODO: Implement sorting by date
+                controller.notes.sort((a, b) {
+                  return (b.dateTimeEdited ?? '')
+                      .compareTo(a.dateTimeEdited ?? '');
+                });
+                controller.update();
                 Get.back();
               },
             ),
@@ -249,7 +253,12 @@ class HomenoteImproved extends StatelessWidget {
               color: Colors.red,
               title: "Favorites First",
               onTap: () {
-                // TODO: Implement sorting by favorite
+                controller.notes.sort((a, b) {
+                  final aFav = a.isFavorite == true ? 1 : 0;
+                  final bFav = b.isFavorite == true ? 1 : 0;
+                  return bFav.compareTo(aFav);
+                });
+                controller.update();
                 Get.back();
               },
             ),
@@ -258,7 +267,10 @@ class HomenoteImproved extends StatelessWidget {
               color: Colors.green,
               title: "Alphabetical",
               onTap: () {
-                // TODO: Implement alphabetical sorting
+                controller.notes.sort((a, b) {
+                  return (a.title ?? '').compareTo(b.title ?? '');
+                });
+                controller.update();
                 Get.back();
               },
             ),

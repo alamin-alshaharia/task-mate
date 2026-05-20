@@ -39,36 +39,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     });
   }
 
-  Future<void> _testNotification() async {
-    await _notifyHelper.displayNotification(
-      id: 0,
-      title: "🧪 Test Notification",
-      body: "This is how your notifications will look! 🚀",
-      payload: "test",
-    );
-
-    Get.snackbar(
-      "Test Sent! 📤",
-      "Check your notification panel",
-      backgroundColor: context.theme.colorScheme.primaryContainer,
-      colorText: context.theme.colorScheme.onPrimaryContainer,
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-    );
-  }
-
-  Future<void> _sendMotivationalNotification() async {
-    await _notifyHelper.showMotivationalNotification();
-    Get.snackbar(
-      "Motivation Sent! 💪",
-      "Hope it inspires you!",
-      backgroundColor: context.theme.colorScheme.secondaryContainer,
-      colorText: context.theme.colorScheme.onSecondaryContainer,
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-    );
-  }
-
   Future<void> _scheduleDaily() async {
     await _notifyHelper.scheduleDailyNotification(
       id: 1001,
@@ -107,41 +77,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       colorText: context.theme.colorScheme.onTertiaryContainer,
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 3),
-    );
-  }
-
-  Future<void> _showPendingNotifications() async {
-    final pending = await _notifyHelper.getPendingNotifications();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('📅 Pending Notifications'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: pending.isEmpty
-              ? const Text('No pending notifications')
-              : ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: pending.length,
-                  itemBuilder: (context, index) {
-                    final notification = pending[index];
-                    return ListTile(
-                      leading: const Icon(Icons.notifications_outlined),
-                      title: Text(notification.title ?? 'No title'),
-                      subtitle: Text(notification.body ?? 'No body'),
-                      trailing: Text('ID: ${notification.id}'),
-                    );
-                  },
-                ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -293,77 +228,9 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             ),
           ),
 
-          const SizedBox(height: 16),
-
-          // Quick Actions Card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '🚀 Quick Actions',
-                    style: context.theme.textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _testNotification,
-                          icon: const Icon(Icons.science),
-                          label: const Text('Test Notification'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _sendMotivationalNotification,
-                          icon: const Icon(Icons.psychology),
-                          label: const Text('Get Motivated'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _showPendingNotifications,
-                          icon: const Icon(Icons.schedule),
-                          label: const Text('View Pending'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            await _notifyHelper.cancelAllNotifications();
-                            Get.snackbar(
-                              "Cleared! 🧹",
-                              "All notifications cancelled",
-                              backgroundColor:
-                                  context.theme.colorScheme.errorContainer,
-                              colorText:
-                                  context.theme.colorScheme.onErrorContainer,
-                              snackPosition: SnackPosition.BOTTOM,
-                              duration: const Duration(seconds: 2),
-                            );
-                          },
-                          icon: const Icon(Icons.clear_all),
-                          label: const Text('Clear All'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
 
           const SizedBox(height: 16),
+
 
           // Info Card
           Card(

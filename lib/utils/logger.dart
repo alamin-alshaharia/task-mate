@@ -7,27 +7,27 @@ class AppLogger {
   /// Log debug information (only in debug mode)
   static void d(String message, {String? tag}) {
     if (kDebugMode) {
-      debugPrint('[$tag ?? $_tag] DEBUG: $message');
+      debugPrint('[${tag ?? _tag}] DEBUG: $message');
     }
   }
 
   /// Log information (only in debug mode)
   static void i(String message, {String? tag}) {
     if (kDebugMode) {
-      debugPrint('[$tag ?? $_tag] INFO: $message');
+      debugPrint('[${tag ?? _tag}] INFO: $message');
     }
   }
 
   /// Log warnings (only in debug mode)
   static void w(String message, {String? tag}) {
     if (kDebugMode) {
-      debugPrint('[$tag ?? $_tag] WARNING: $message');
+      debugPrint('[${tag ?? _tag}] WARNING: $message');
     }
   }
 
   /// Log errors (always logged)
   static void e(String message, {String? tag}) {
-    debugPrint('[$tag ?? $_tag] ERROR: $message');
+    debugPrint('[${tag ?? _tag}] ERROR: $message');
   }
 
   /// Log database operations

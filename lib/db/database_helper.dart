@@ -112,9 +112,9 @@ class DatabaseHelper {
     return await db.query(_taskTable);
   }
 
-  Future<int> insertTask(Task? task) async {
+  Future<int> insertTask(Task task) async {
     final db = await database;
-    return await db.insert(_taskTable, task!.toJson());
+    return await db.insert(_taskTable, task.toJson());
   }
 
   Future<int> updateTaskDetail(Task task) async {

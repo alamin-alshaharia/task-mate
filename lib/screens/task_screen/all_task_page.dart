@@ -21,7 +21,7 @@ class AllTaskPage extends StatefulWidget {
 }
 
 class _AllTaskPageState extends State<AllTaskPage> {
-  final _taskController = Get.put(TaskController());
+  final _taskController = Get.find<TaskController>();
   var notifyHelper = NotifyHelper();
   int currentIndex = 0;
 
@@ -119,35 +119,32 @@ class _AllTaskPageState extends State<AllTaskPage> {
                 ),
               ],
             ),
-            child: FutureBuilder<int>(
-              future: _taskController.getTotalCompletedProgress(),
-              builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-                int result = snapshot.data ?? 0;
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "$result%",
-                        style: GoogleFonts.lato(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+            child: Obx(() {
+              int result = _taskController.getTotalCompletedProgress();
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "$result%",
+                      style: GoogleFonts.lato(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text(
-                        "Done",
-                        style: GoogleFonts.lato(
-                          color: Colors.white70,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    ),
+                    Text(
+                      "Done",
+                      style: GoogleFonts.lato(
+                        color: Colors.white70,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    ),
+                  ],
+                ),
+              );
+            }),
           ),
         ],
       ),

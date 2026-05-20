@@ -11,7 +11,6 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../controller/profile_controller.dart';
 import '../../mixins/data_sync_mixin.dart';
 import '../../model/category_model.dart';
-import '../../model/task_model.dart';
 import '../../theme/colors/light_colors.dart';
 import '../../utils/logger.dart';
 import '../../widgets/common/delete_confirmation_dialog.dart';
@@ -47,8 +46,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with DataSyncMixin {
   GlobalKey<CustomSliderDrawerState> dKey =
       GlobalKey<CustomSliderDrawerState>();
-  final TaskController _taskController = Get.put(TaskController());
-  final ProfileController _profileController = Get.put(ProfileController());
+  final TaskController _taskController = Get.find<TaskController>();
+  final ProfileController _profileController = Get.find<ProfileController>();
 
   int totalTask = 0;
   int completedTask = 0;
@@ -83,10 +82,11 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
 
   Future<void> _fetchAllTaskStats() async {
     try {
-      totalTask = (await _taskController.getTotalTask()).toInt();
-      completedTask = (await _taskController.getTotalCompletedTask()).toInt();
+      await _taskController.getTasks();
+      totalTask = _taskController.getTotalTask().toInt();
+      completedTask = _taskController.getTotalCompletedTask().toInt();
       todoTask = totalTask - completedTask;
-      totalProgress = (await _taskController.getTotalCompletedProgress()) / 100;
+      totalProgress = _taskController.getTotalCompletedProgress() / 100;
       setState(() {});
     } catch (error) {
       AppLogger.e('Error: $error');
@@ -95,16 +95,31 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
 
   Future<void> _fetchCategories() async {
     try {
-      // Fetch categories from the task controller (includes default categories)
+      // Make sure tasks are loaded first so counts are up-to-date
+      await _taskController.getTasks();
+
+      // Fetch category metadata (name, icon, color) from the DB
       List<CategoryModel> fetchedCategories =
           await _taskController.getCategories();
+
+      // Compute remaining/completed counts live from the task list.
+      // The DB columns are never updated on task changes, so we always
+      // derive the numbers here to avoid stale-zero bugs.
+      final tasks = _taskController.taskList;
+      for (final category in fetchedCategories) {
+        final categoryTasks =
+            tasks.where((t) => t.categoryId == category.id).toList();
+        category.remainingTasks =
+            categoryTasks.where((t) => t.isCompleted == 0).length;
+        category.completedTasks =
+            categoryTasks.where((t) => t.isCompleted == 1).length;
+      }
 
       setState(() {
         _categories = fetchedCategories;
       });
     } catch (error) {
       AppLogger.e('Error fetching categories: $error');
-      // Keep empty list if fetching fails
       setState(() {
         _categories = [];
       });
@@ -128,28 +143,26 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
     double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      floatingActionButton: todoTask != 0
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Voice input button
-                FloatingActionButton(
-                  onPressed: () => _showVoiceInput(context),
-                  heroTag: "voice",
-                  backgroundColor: Colors.red[400],
-                  mini: true,
-                  child: const Icon(Icons.mic, color: Colors.white),
-                ),
-                const SizedBox(height: 10),
-                // Regular add button
-                FloatingActionButton(
-                  onPressed: () => Get.to(CreateNewTaskPage()),
-                  heroTag: "add",
-                  child: const Icon(Icons.add),
-                ),
-              ],
-            )
-          : SizedBox(),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Voice input button
+          FloatingActionButton(
+            onPressed: () => _showVoiceInput(context),
+            heroTag: "voice",
+            backgroundColor: Colors.red[400],
+            mini: true,
+            child: const Icon(Icons.mic, color: Colors.white),
+          ),
+          const SizedBox(height: 10),
+          // Regular add button
+          FloatingActionButton(
+            onPressed: () => Get.to(CreateNewTaskPage()),
+            heroTag: "add",
+            child: const Icon(Icons.add),
+          ),
+        ],
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: CustomSliderDrawer(
         key: dKey,
@@ -786,11 +799,11 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
     String title,
     String icon,
     Color color,
-    int totalTasks,
+    int remainingTasks,   // already the "left" count from the model
     int completedTasks,
   ) {
     final iconData = _getIconData(icon);
-    final remainingTasks = totalTasks - completedTasks;
+    final totalTasks = remainingTasks + completedTasks;
     final category = _categories.firstWhere((cat) => cat.name == title);
 
     return GestureDetector(
@@ -943,27 +956,28 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
     }
   }
 
-  // Voice input method for quick task creation
+  // Voice input method — opens bottom sheet, then navigates to CreateNewTaskPage
   void _showVoiceInput(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
+      builder: (sheetContext) => Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
         ),
         child: VoiceInputWidget(
           onSpeechResult: (TaskSpeechData speechData) {
-            // Create task directly from voice input
-            _createTaskFromVoice(speechData);
-            Navigator.of(context).pop();
+            // Close the bottom sheet first
+            Navigator.of(sheetContext).pop();
+            // Then navigate to CreateNewTaskPage pre-filled with the voice data
+            Get.to(() => CreateNewTaskPage(initialSpeechData: speechData));
           },
           onCancel: () {
-            Navigator.of(context).pop();
+            Navigator.of(sheetContext).pop();
           },
           onError: (String error) {
-            Navigator.of(context).pop();
+            Navigator.of(sheetContext).pop();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(error),
@@ -975,50 +989,6 @@ class _HomePageState extends State<HomePage> with DataSyncMixin {
         ),
       ),
     );
-  }
-
-  // Create task directly from voice input
-  Future<void> _createTaskFromVoice(TaskSpeechData speechData) async {
-    try {
-      final newTask = Task(
-        title: speechData.title,
-        description: speechData.description,
-        date: speechData.dueDate != null
-            ? "${speechData.dueDate!.day}/${speechData.dueDate!.month}/${speechData.dueDate!.year}"
-            : "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
-        startTime: "9:00 AM",
-        endTime: "10:00 AM",
-        remind: 10,
-        repeat: "None",
-        color: speechData.priority == 'high'
-            ? 0
-            : (speechData.priority == 'low' ? 2 : 1),
-        isCompleted: 0,
-        isStar: 0,
-      );
-
-      // Use DataSyncMixin to create task with sync
-      await createTaskWithSync(newTask);
-
-      // Refresh UI data
-      _fetchAllTaskStats();
-      _fetchCategories();
-
-      Get.snackbar(
-        'Success',
-        'Task created from voice input successfully!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } catch (error) {
-      AppLogger.e('Error creating task from voice: $error');
-      Get.snackbar(
-        'Error',
-        'Failed to create task: $error',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
   }
 
   Future<void> _showDeleteCategoryDialog(CategoryModel category) async {
